@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "PROGRAMMERS-BADGE-V2",
+  "version": "0.1.0",
+  "description": "Sync Programmers badge data and prepare a hosted badge URL.",
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
+  "host_permissions": ["http://localhost:3000/*"],
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://school.programmers.co.kr/learn/courses/*/lessons/*"],
+      "js": ["content/index.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "PROGRAMMERS-BADGE-V2",
+    "default_popup": "popup.html"
+  }
+}
