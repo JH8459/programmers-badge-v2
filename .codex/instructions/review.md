@@ -15,17 +15,27 @@
 
 ### Architecture
 
+- `apps/api`, `apps/extension`, `packages/*` 책임이 섞이지 않았는가
+- app 간 직접 import나 구현 누수가 없는가
+- 공통 규칙과 개별 규칙이 충돌하지 않는가
+
+### API
+
+- 서버 입력 검증과 normalization이 누락되지 않았는가
+- persistence/public badge 규칙이 `badge-core`, `shared-types`와 어긋나지 않는가
+- public response에 과한 데이터가 노출되지 않는가
+
+### Extension
+
+- extension 권한이 최소 범위를 유지하는가
+- sync state, popup, auto-sync 흐름이 함께 갱신되었는가
+- backend persistence나 admin 성격 로직이 extension에 복제되지 않았는가
+
+### Shared Packages
+
 - `packages/badge-core`는 pure하고 deterministic한가
 - `packages/shared-types`는 contract만 소유하는가
-- `apps/api`와 `apps/extension` 책임이 섞이지 않았는가
-- app 간 직접 import나 구현 누수가 없는가
-
-### Security / Privacy
-
-- raw credential 저장 구조가 추가되지 않았는가
-- public surface에 민감 정보가 노출되지 않는가
-- 서버 입력 검증과 normalization이 누락되지 않았는가
-- extension 권한이 최소 범위를 유지하는가
+- shared package 변경이 consumer app들에 반영되었는가
 
 ### Quality
 

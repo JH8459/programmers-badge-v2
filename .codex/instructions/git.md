@@ -14,7 +14,7 @@
 ## Commit Splitting Rule
 
 - 서로 다른 목적의 변경은 분리한다.
-- 큰 cross-package 변경은 가능하면 boundary별로 나눈다.
+- 큰 cross-project 변경은 가능하면 boundary별로 나눈다.
 - 동일 기능의 코드, 테스트, 최소 문서 보강은 함께 묶을 수 있다.
 
 ## Never Commit

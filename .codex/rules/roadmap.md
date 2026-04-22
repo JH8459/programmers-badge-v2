@@ -3,21 +3,22 @@
 ## Current State
 
 - monorepo baseline은 준비되어 있다.
-- `packages/badge-core`와 `packages/shared-types`는 기본 contract/rendering을 제공한다.
-- `apps/api`는 SQLite 기반 sync/public badge MVP를 제공한다.
+- `packages/badge-core`와 `packages/shared-types`는 기본 rendering/contract를 제공한다.
+- `apps/api`는 SQLite 기반 sync/public badge/health MVP를 제공한다.
+- `apps/extension`은 manual sync, 제출 감지 기반 auto-sync, popup copy flow를 제공한다.
 - Docker Compose 기반 단일 API 배포 베이스가 있다.
 
-## Next Phase 1 - Extension MVP Completion
+## Next Phase 1 - Runtime Strategy Hardening
 
-- 실제 Programmers page/session에서 sync payload를 추출한다.
-- popup에서 sync 결과, 마지막 상태, 복사 액션을 연결한다.
 - local/dev/prod API base URL 전략을 확정한다.
+- extension 배포 시 host permission과 runtime config 주입 방식을 정리한다.
+- API env strategy와 public base URL 운영 규칙을 문서화한다.
 
-## Next Phase 2 - Contract Hardening
+## Next Phase 2 - Contract And Identity Hardening
 
 - sync payload와 public response contract를 안정화한다.
 - validation failure, not-found, re-sync semantics를 문서와 테스트로 고정한다.
-- extension과 API 사이의 ownership/auth strategy를 명확히 한다.
+- `programmerHandle`, `displayName`, public 노출 데이터의 의미를 명확히 한다.
 
 ## Next Phase 3 - Hosted Delivery Hardening
 

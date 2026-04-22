@@ -27,10 +27,14 @@ packages/
 ## Key Documents
 
 - `AGENTS.md`
-- `.opencode/rules/product.md`
-- `.opencode/rules/architecture.md`
-- `.opencode/rules/roadmap.md`
-- `.opencode/rules/adrs/README.md`
-- `.opencode/instructions/workflow.md`
-- `.opencode/instructions/review.md`
-- `.opencode/instructions/git.md`
+- `.codex/README.md`
+- `.codex/rules/common.md`
+- `.codex/rules/architecture.md`
+- `.codex/rules/api.md`
+- `.codex/rules/extension.md`
+- `.codex/rules/packages.md`
+- `.codex/rules/roadmap.md`
+- `.codex/rules/adrs/README.md`
+- `.codex/instructions/workflow.md`
+- `.codex/instructions/review.md`
+- `.codex/instructions/git.md`

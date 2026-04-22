@@ -15,7 +15,7 @@ packages/config     shared lint/prettier/tsconfig config
 ### `apps/api`
 
 - sync endpoint와 public badge endpoint를 제공한다.
-- persistence, storage adapter, cache policy를 소유한다.
+- persistence, storage adapter, env/runtime wiring을 소유한다.
 - 저장된 badge data를 `packages/badge-core`에 전달해 렌더링한다.
 
 ### `apps/extension`
@@ -24,14 +24,9 @@ packages/config     shared lint/prettier/tsconfig config
 - 로그인된 Programmers 세션을 활용해 sync payload를 준비한다.
 - 사용자 트리거 기반 sync와 copy flow를 제공한다.
 
-### `packages/badge-core`
+### `packages/*`
 
-- badge rendering rule과 deterministic helper를 소유한다.
-- framework, network, filesystem, Chrome API에 의존하지 않는다.
-
-### `packages/shared-types`
-
-- API와 extension 사이의 request/response contract만 소유한다.
+- shared package는 app 간 contract, rendering, config만 소유한다.
 - app-specific implementation이나 runtime dependency를 담지 않는다.
 
 ## Dependency Rules
@@ -48,6 +43,12 @@ packages/config     shared lint/prettier/tsconfig config
 3. API가 payload를 검증하고 정규화한다.
 4. API가 persistence에 badge snapshot을 저장한다.
 5. API가 `badge-core`를 사용해 public badge SVG를 제공한다.
+
+## Current Monorepo Defaults
+
+- root workspace는 `pnpm-workspace.yaml`과 `turbo.json`으로 관리한다.
+- 공통 검증은 root `pnpm verify`를 기준으로 본다.
+- cross-project 변경은 shared contract와 boundary를 먼저 고정한 뒤 app 구현을 맞춘다.
 
 ## Forbidden Patterns
 

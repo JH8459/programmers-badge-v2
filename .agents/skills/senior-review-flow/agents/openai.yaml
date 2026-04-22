@@ -1,0 +1,4 @@
+interface:
+  display_name: "Senior Review Flow"
+  short_description: "Configurable reviewer timing for api and extension changes"
+  default_prompt: "Use senior-review-flow. review_timing: after-implementation. review_scope: auto. Run the task, then call the appropriate senior reviewer agent at the configured checkpoint."
