@@ -122,6 +122,7 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
+          request_pty: true
           script: |
             set -eu
 
