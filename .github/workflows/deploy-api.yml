@@ -9,7 +9,6 @@ on:
       - ".github/release.yml"
       - "Dockerfile"
       - "docker-compose.yml"
-      - "docker-compose.deploy.yml"
       - "deploy/**"
       - "apps/api/**"
       - "packages/badge-core/**"
@@ -119,7 +118,7 @@ jobs:
         id: compose
         shell: bash
         run: |
-          echo "content=$(base64 < docker-compose.deploy.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
+          echo "content=$(base64 < docker-compose.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
 
       - name: Sync deploy files on NAS
         uses: appleboy/ssh-action@v1.2.5
@@ -139,7 +138,7 @@ jobs:
             set -eu
 
             mkdir -p "${NAS_DEPLOY_DIR}"
-            printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
+            printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.yml"
 
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
@@ -171,7 +170,7 @@ jobs:
             fi
 
             COMPOSE_STANDALONE="/usr/local/bin/docker-compose"
-            COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
+            COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.yml"
 
             if [ -z "${DOCKER_BIN}" ]; then
               echo "docker binary not found on NAS" >&2

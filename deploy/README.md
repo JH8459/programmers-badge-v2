@@ -1,7 +1,9 @@
 # Deployment
 
 이 디렉토리는 NAS production 배포 문서를 둔다.
-compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.deploy.yml` 두 개를 기준으로 관리한다.
+compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 두 개를 기준으로 관리한다.
+- `docker-compose.yml`: NAS production deploy 기본 파일
+- `docker-compose.local.yml`: 로컬 개발/검증용 파일
 
 ## Workflow Split
 
@@ -24,7 +26,7 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.deploy.yml`
 - `NAS_PORT`: SSH 포트
 - `NAS_USER`: SSH 로그인 사용자
 - `NAS_PASSWORD`: 배포에 사용할 NAS 계정 비밀번호
-- `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.deploy.yml`, `.env.deploy`를 둘 디렉터리
+- `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
 - `NAS_API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
 - `PUBLIC_BASE_URL`: badge URL 생성에 사용할 public base URL
 
@@ -49,10 +51,10 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.deploy.yml`
 ## Deploy Artifact
 
 배포는 DockerHub `latest` 이미지를 기준으로 수행한다.
-workflow는 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-compose.deploy.yml`에서 참조하는 `latest`만 pull한다.
+workflow는 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull한다.
 `sha-<commit>`는 추적과 수동 롤백용 보조 tag로만 유지한다.
 
 배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.
 
-- `docker-compose.deploy.yml`
+- `docker-compose.yml`
 - `.env.deploy`

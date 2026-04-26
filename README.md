@@ -41,5 +41,5 @@ packages/
 
 ## Deployment
 
-- local Docker flow: `docker-compose.yml`
+- local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`

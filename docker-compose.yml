@@ -1,17 +1,15 @@
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE:?DOCKER_IMAGE is required}
     container_name: programmers-badge-api
     environment:
       PORT: 3000
       DATABASE_PATH: /data/programmers-badge.sqlite
       BADGE_OUTPUT_DIR: /data/badges
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
       PUBLIC_BADGE_PATH_PREFIX: /badge
     ports:
-      - "3000:3000"
+      - "${API_PORT:-5010}:3000"
     volumes:
       - badge-data:/data
     restart: unless-stopped
