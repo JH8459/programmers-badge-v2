@@ -4,9 +4,10 @@
 
 - monorepo baseline은 준비되어 있다.
 - `packages/badge-core`와 `packages/shared-types`는 기본 rendering/contract를 제공한다.
-- `apps/api`는 SQLite 기반 sync/public badge/health MVP를 제공한다.
+- `apps/api`는 SQLite 기반 sync/public badge/health MVP와 pre-rendered SVG 정적 서빙을 제공한다.
 - `apps/extension`은 manual sync, 제출 감지 기반 auto-sync, popup copy flow를 제공한다.
 - Docker Compose 기반 단일 API 배포 베이스가 있다.
+- PR verify, master deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 
 ## Next Phase 1 - Runtime Strategy Hardening
 
@@ -28,7 +29,6 @@
 
 ## Deferred Until Explicit Need
 
-- GitHub automation
 - admin UI
 - multi-tenant admin features
 - queue/worker infra

@@ -38,3 +38,8 @@ packages/
 - `.codex/instructions/workflow.md`
 - `.codex/instructions/review.md`
 - `.codex/instructions/git.md`
+
+## Deployment
+
+- local Docker flow: `docker-compose.yml`
+- NAS production flow: `deploy/README.md`

@@ -15,8 +15,10 @@ packages/config     shared lint/prettier/tsconfig config
 ### `apps/api`
 
 - sync endpoint와 public badge endpoint를 제공한다.
-- persistence, storage adapter, env/runtime wiring을 소유한다.
-- 저장된 badge data를 `packages/badge-core`에 전달해 렌더링한다.
+- persistence, badge asset storage adapter, env/runtime wiring을 소유한다.
+- sync 시 저장된 badge data를 `packages/badge-core`에 전달해 pre-rendered SVG asset을 생성한다.
+- Nest/Express static serving으로 `/badge/*.svg`를 정적으로 서빙한다.
+- production artifact는 단일 Docker image로 관리하고, NAS는 GHCR pull 기반으로 배포한다.
 
 ### `apps/extension`
 
@@ -42,7 +44,9 @@ packages/config     shared lint/prettier/tsconfig config
 2. extension이 sync payload를 만든다.
 3. API가 payload를 검증하고 정규화한다.
 4. API가 persistence에 badge snapshot을 저장한다.
-5. API가 `badge-core`를 사용해 public badge SVG를 제공한다.
+5. API가 `badge-core`를 사용해 public badge SVG를 pre-render하여 shared volume에 저장한다.
+6. API가 `/badge/*.svg`를 정적으로 서빙한다.
+7. GitHub Actions가 API 이미지를 GHCR에 push하고 NAS가 이를 pull해 production 배포를 갱신한다.
 
 ## Current Monorepo Defaults
 

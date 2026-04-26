@@ -1,0 +1,30 @@
+services:
+  api:
+    image: ${API_IMAGE:?API_IMAGE is required}
+    container_name: programmers-badge-api
+    environment:
+      PORT: 3000
+      DATABASE_PATH: /data/programmers-badge.sqlite
+      BADGE_OUTPUT_DIR: /data/badges
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
+      PUBLIC_BADGE_PATH_PREFIX: ${PUBLIC_BADGE_PATH_PREFIX:-/badge}
+    ports:
+      - "${API_PORT:-5010}:3000"
+    volumes:
+      - badge-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  badge-data:

@@ -33,14 +33,14 @@
 ## MVP Out Of Scope
 
 - GitHub repository write
-- GitHub Actions, PAT, repository dispatch 기반 자동화
+- broad GitHub write automation, PAT, repository dispatch 기반 product automation
 - raw credential 저장
 - admin dashboard
 - queue, Redis, analytics, WebSocket 같은 추가 인프라
 
 ## Shared Guardrails
 
-- GitHub repository write, GitHub Actions, PAT, admin dashboard, queue/Redis/WebSocket은 명시적 요청 없이는 다루지 않는다.
+- GitHub repository write, broad GitHub write automation, PAT, admin dashboard, queue/Redis/WebSocket은 명시적 요청 없이는 다루지 않는다.
 - raw credential 저장을 기본값으로 두지 않는다.
 - public surface에 민감한 사용자 정보를 노출하지 않는다.
 - 저장 대상은 public badge delivery에 필요한 최소 데이터로 제한한다.
