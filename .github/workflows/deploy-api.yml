@@ -66,9 +66,6 @@ jobs:
     name: Build and push API image
     needs: verify
     runs-on: ubuntu-latest
-    outputs:
-      image_ref: ${{ steps.image.outputs.image_ref }}
-      compose_b64: ${{ steps.deploy_compose.outputs.compose_b64 }}
 
     steps:
       - name: Checkout repository
@@ -83,7 +80,6 @@ jobs:
         run: |
           image="${{ secrets.DOCKERHUB_USERNAME }}/${DOCKER_IMAGE_NAME}"
           echo "image_name=${image}" >> "$GITHUB_OUTPUT"
-          echo "image_ref=${image}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
@@ -99,7 +95,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.image.outputs.image_name }}:latest
-            ${{ steps.image.outputs.image_ref }}
+            ${{ steps.image.outputs.image_name }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.title=programmers-badge-api
             org.opencontainers.image.description=PROGRAMMERS-BADGE-V2 API image
@@ -107,31 +103,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Render deploy compose for NAS
-        id: deploy_compose
-        shell: bash
-        env:
-          IMAGE_REF: ${{ steps.image.outputs.image_ref }}
-          API_PORT: ${{ secrets.NAS_API_PORT }}
-          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
-          PUBLIC_BADGE_PATH_PREFIX: /badge
-        run: |
-          rendered="${RUNNER_TEMP}/docker-compose.deploy.rendered.yml"
-
-          sed \
-            -e "s|__API_IMAGE__|${IMAGE_REF}|g" \
-            -e "s|__API_PORT__|${API_PORT}|g" \
-            -e "s|__PUBLIC_BASE_URL__|${PUBLIC_BASE_URL}|g" \
-            -e "s|__PUBLIC_BADGE_PATH_PREFIX__|${PUBLIC_BADGE_PATH_PREFIX}|g" \
-            docker-compose.deploy.yml > "${rendered}"
-
-          {
-            echo "compose_b64<<EOF"
-            base64 -w0 "${rendered}"
-            echo
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy to NAS
@@ -144,23 +115,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Render deploy files on NAS
+      - name: Encode deploy compose
+        id: compose
+        shell: bash
+        run: |
+          echo "content=$(base64 < docker-compose.deploy.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
+
+      - name: Sync deploy files on NAS
         uses: appleboy/ssh-action@v1.2.5
         env:
+          DEPLOY_COMPOSE_B64: ${{ steps.compose.outputs.content }}
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          DEPLOY_COMPOSE_B64: ${{ needs.build.outputs.compose_b64 }}
+          API_PORT: ${{ secrets.NAS_API_PORT }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: NAS_DEPLOY_DIR,DEPLOY_COMPOSE_B64
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,DOCKER_IMAGE
           script: |
             set -eu
 
             mkdir -p "${NAS_DEPLOY_DIR}"
-
             printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
+
+            cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
+            DOCKER_IMAGE=${DOCKER_IMAGE}
+            API_PORT=${API_PORT}
+            PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+            EOF
 
       - name: Pull and restart containers
         uses: appleboy/ssh-action@v1.2.5
@@ -174,7 +159,6 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          request_pty: true
           envs: NAS_DEPLOY_DIR,API_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
           script: |
             set -eu
@@ -194,6 +178,8 @@ jobs:
               exit 1
             fi
 
+            cd "${NAS_DEPLOY_DIR}"
+
             docker_cmd() {
               "${DOCKER_BIN}" "$@"
             }
@@ -205,6 +191,10 @@ jobs:
                 docker_cmd compose "$@"
               fi
             }
+
+            set -a
+            . ./.env.deploy
+            set +a
 
             echo "${DOCKERHUB_PASSWORD}" | docker_cmd login -u "${DOCKERHUB_USERNAME}" --password-stdin
             compose_cmd -f "${COMPOSE_FILE}" pull

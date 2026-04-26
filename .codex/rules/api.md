@@ -20,7 +20,7 @@
 - `BADGE_OUTPUT_DIR`가 없으면 기본 SVG 출력 디렉토리는 `data/badges`다.
 - Docker Compose runtime은 `/data/programmers-badge.sqlite`를 사용한다.
 - Docker Compose public entrypoint는 API 단일 컨테이너 `:3000`을 사용한다.
-- NAS production runtime은 root `docker-compose.deploy.yml` 템플릿을 렌더링한 결과를 기준으로 DockerHub 이미지를 pull한다.
+- NAS production runtime은 root `docker-compose.deploy.yml` 파일과 `.env.deploy`를 기준으로 DockerHub 이미지를 pull한다.
 - NAS host port 기본 추천값은 `5010`이다.
 
 ## Current Behavior Defaults
@@ -32,8 +32,8 @@
 - sync 시 동일 slug의 SVG asset을 pre-render하여 갱신한다.
 - `/badge/*.svg`는 Nest/Express static middleware로 정적 서빙한다.
 - persistence schema 변경은 현재 additive migration 패턴을 우선한다.
-- API production deploy는 `verify -> DockerHub push -> deploy compose render -> NAS SSH deploy` 순서를 기본 흐름으로 둔다.
-- 현재 NAS deploy workflow는 root `docker-compose.deploy.yml` 템플릿을 CI에서 렌더링해 NAS에 기록하고, `appleboy/ssh-action`의 password 인증으로 배포 명령을 실행한다.
+- API production deploy는 `verify -> DockerHub push -> deploy compose sync -> .env.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 둔다.
+- 현재 NAS deploy workflow는 root `docker-compose.deploy.yml` 파일을 NAS에 동기화하고, `.env.deploy`에 `DOCKER_IMAGE=<dockerhub-user>/programmers-badge-api:latest`를 기록한 뒤 배포 명령을 실행한다.
 
 ## Validation And Security
 
