@@ -7,7 +7,9 @@ services:
     environment:
       PORT: 3000
       DATABASE_PATH: /data/programmers-badge.sqlite
+      BADGE_OUTPUT_DIR: /data/badges
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      PUBLIC_BADGE_PATH_PREFIX: /badge
     ports:
       - "3000:3000"
     volumes:

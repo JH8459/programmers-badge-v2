@@ -1,22 +1,10 @@
 import type { BadgeSyncResponse, PublicBadgeResponse } from "@programmers-badge/shared-types";
 
 import type { BadgeProfileRecord } from "../persistence/badge-profile.repository";
-
-const DEFAULT_PORT = "3000";
-
-const getPublicBaseUrl = (): string => {
-  const configuredBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
-
-  if (configuredBaseUrl) {
-    return configuredBaseUrl.replace(/\/$/, "");
-  }
-
-  const port = process.env.PORT?.trim() || DEFAULT_PORT;
-  return `http://localhost:${port}`;
-};
+import { getPublicBadgePathPrefix, getPublicBaseUrl } from "./badge-runtime";
 
 export const buildPublicBadgeResponse = (slug: string): PublicBadgeResponse => {
-  const badgeUrl = `${getPublicBaseUrl()}/api/badge/${slug}.svg`;
+  const badgeUrl = `${getPublicBaseUrl()}${getPublicBadgePathPrefix()}/${slug}.svg`;
 
   return {
     slug,

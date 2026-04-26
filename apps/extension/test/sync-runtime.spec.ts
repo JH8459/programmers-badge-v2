@@ -40,8 +40,8 @@ describe("sync runtime", () => {
     mockedSyncBadgePayload.mockReset();
     mockedSyncBadgePayload.mockResolvedValue({
       slug: "abc123def456",
-      badgeUrl: "http://localhost:3000/api/badge/abc123def456.svg",
-      markdownSnippet: "![Programmers Badge](http://localhost:3000/api/badge/abc123def456.svg)",
+      badgeUrl: "http://localhost:3000/badge/abc123def456.svg",
+      markdownSnippet: "![Programmers Badge](http://localhost:3000/badge/abc123def456.svg)",
       programmerHandle: "programmers-user",
       displayName: "Programmers User",
       solvedCount: 123,
