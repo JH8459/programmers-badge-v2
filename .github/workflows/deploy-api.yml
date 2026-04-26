@@ -209,7 +209,6 @@ jobs:
 
             COMPOSE_STANDALONE="/usr/local/bin/docker-compose"
             COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
-            ENV_FILE="${NAS_DEPLOY_DIR}/.env.deploy"
 
             if [ -z "${DOCKER_BIN}" ]; then
               echo "docker binary not found on NAS" >&2
@@ -221,10 +220,17 @@ jobs:
             }
 
             compose_cmd() {
+              env_cmd=(env
+                "API_IMAGE=${API_IMAGE}"
+                "API_PORT=${API_PORT}"
+                "PUBLIC_BASE_URL=${PUBLIC_BASE_URL}"
+                "PUBLIC_BADGE_PATH_PREFIX=${PUBLIC_BADGE_PATH_PREFIX}"
+              )
+
               if [ -x "${COMPOSE_STANDALONE}" ]; then
-                sudo -n "${COMPOSE_STANDALONE}" "$@"
+                sudo -n "${env_cmd[@]}" "${COMPOSE_STANDALONE}" "$@"
               else
-                docker_cmd compose "$@"
+                sudo -n "${env_cmd[@]}" "${DOCKER_BIN}" compose "$@"
               fi
             }
 
