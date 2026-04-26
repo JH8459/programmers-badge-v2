@@ -27,11 +27,11 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   NODE_VERSION: 22.13.0
   PNPM_VERSION: 10.28.2
+  DOCKER_IMAGE_NAME: programmers-badge-api
 
 jobs:
   verify:
@@ -78,17 +78,15 @@ jobs:
         id: image
         shell: bash
         run: |
-          owner="$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')"
-          image="ghcr.io/${owner}/programmers-badge-api"
+          image="${{ secrets.DOCKERHUB_USERNAME }}/${DOCKER_IMAGE_NAME}"
           echo "image_name=${image}" >> "$GITHUB_OUTPUT"
           echo "image_ref=${image}:sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Log in to GHCR
+      - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and push API image
         uses: docker/build-push-action@v6
@@ -115,80 +113,97 @@ jobs:
       name: production
 
     steps:
-      - name: Deploy via SSH
+      - name: Prepare deploy directory
         uses: appleboy/ssh-action@v1.2.5
         env:
-          REPO_DIR: ${{ secrets.NAS_REPO_DIR }}
-          API_PORT: ${{ secrets.NAS_API_PORT }}
-          SUDO_PASSWORD: ${{ secrets.NAS_PASSWORD }}
-          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
-          PUBLIC_BADGE_PATH_PREFIX: /badge
-          API_IMAGE: ${{ needs.build.outputs.image_ref }}
-          GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
-          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+          NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          request_pty: true
-          envs: REPO_DIR,API_PORT,SUDO_PASSWORD,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE,GHCR_PULL_USERNAME,GHCR_PULL_TOKEN
+          envs: NAS_DEPLOY_DIR
+          script: |
+            set -eu
+            mkdir -p "${NAS_DEPLOY_DIR}"
+
+      - name: Upload compose manifest
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.NAS_HOST }}
+          username: ${{ secrets.NAS_USER }}
+          password: ${{ secrets.NAS_PASSWORD }}
+          port: ${{ secrets.NAS_PORT }}
+          source: "deploy/docker-compose.deploy.yml"
+          target: ${{ secrets.NAS_DEPLOY_DIR }}
+          strip_components: 1
+
+      - name: Render deploy env file
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
+          API_PORT: ${{ secrets.NAS_API_PORT }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          PUBLIC_BADGE_PATH_PREFIX: /badge
+          API_IMAGE: ${{ needs.build.outputs.image_ref }}
+        with:
+          host: ${{ secrets.NAS_HOST }}
+          username: ${{ secrets.NAS_USER }}
+          password: ${{ secrets.NAS_PASSWORD }}
+          port: ${{ secrets.NAS_PORT }}
+          envs: NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE
           script: |
             set -eu
 
-            if [ ! -d "${REPO_DIR}/.git" ]; then
-              echo "NAS_REPO_DIR does not contain a git repository: ${REPO_DIR}" >&2
-              echo "Clone the repository on the NAS once before using this workflow." >&2
-              exit 1
-            fi
-
-            cd "${REPO_DIR}"
-            git fetch origin master
-            git checkout master
-            git reset --hard origin/master
-
-            cat <<EOF > .env.deploy
+            cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             API_IMAGE=${API_IMAGE}
             API_PORT=${API_PORT}
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
             PUBLIC_BADGE_PATH_PREFIX=${PUBLIC_BADGE_PATH_PREFIX}
             EOF
 
-            if docker info >/dev/null 2>&1; then
-              DOCKER_USE_SUDO=0
-            elif printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' docker info >/dev/null 2>&1; then
-              DOCKER_USE_SUDO=1
-            else
-              echo "Docker daemon is not accessible for NAS_USER. Grant docker access or sudo permissions." >&2
+      - name: Pull and restart containers
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
+          API_PORT: ${{ secrets.NAS_API_PORT }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        with:
+          host: ${{ secrets.NAS_HOST }}
+          username: ${{ secrets.NAS_USER }}
+          password: ${{ secrets.NAS_PASSWORD }}
+          port: ${{ secrets.NAS_PORT }}
+          request_pty: true
+          envs: NAS_DEPLOY_DIR,API_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
+          script: |
+            set -eu
+
+            DOCKER_BIN="$(command -v docker || true)"
+            COMPOSE_STANDALONE="/usr/local/bin/docker-compose"
+            COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
+            ENV_FILE="${NAS_DEPLOY_DIR}/.env.deploy"
+
+            if [ -z "${DOCKER_BIN}" ]; then
+              echo "docker binary not found on NAS" >&2
               exit 1
             fi
 
-            if [ -n "${GHCR_PULL_USERNAME}" ] && [ -n "${GHCR_PULL_TOKEN}" ]; then
-              if [ "${DOCKER_USE_SUDO}" = "1" ]; then
-                printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' sh -c 'echo "$1" | docker login ghcr.io -u "$0" --password-stdin' "${GHCR_PULL_USERNAME}" "${GHCR_PULL_TOKEN}"
-              else
-                echo "${GHCR_PULL_TOKEN}" | docker login ghcr.io -u "${GHCR_PULL_USERNAME}" --password-stdin
-              fi
-            fi
+            docker_cmd() {
+              sudo -n "${DOCKER_BIN}" "$@"
+            }
 
-            compose() {
-              if docker compose version >/dev/null 2>&1; then
-                if [ "${DOCKER_USE_SUDO}" = "1" ]; then
-                  printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' docker compose "$@"
-                else
-                  docker compose "$@"
-                fi
+            compose_cmd() {
+              if [ -x "${COMPOSE_STANDALONE}" ]; then
+                sudo -n "${COMPOSE_STANDALONE}" "$@"
               else
-                if [ "${DOCKER_USE_SUDO}" = "1" ]; then
-                  printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' /usr/local/bin/docker-compose "$@"
-                else
-                  /usr/local/bin/docker-compose "$@"
-                fi
+                docker_cmd compose "$@"
               fi
             }
 
-            compose -f deploy/docker-compose.deploy.yml --env-file .env.deploy pull
-            compose -f deploy/docker-compose.deploy.yml --env-file .env.deploy up -d --remove-orphans
+            echo "${DOCKERHUB_PASSWORD}" | docker_cmd login -u "${DOCKERHUB_USERNAME}" --password-stdin
+            compose_cmd -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" pull
+            compose_cmd -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d --remove-orphans
 
             for attempt in $(seq 1 30); do
               if curl -fsS "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then
