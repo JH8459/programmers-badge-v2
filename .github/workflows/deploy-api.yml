@@ -117,18 +117,24 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.5
+        env:
+          REPO_DIR: ${{ secrets.NAS_REPO_DIR }}
+          API_PORT: ${{ secrets.NAS_API_PORT }}
+          SUDO_PASSWORD: ${{ secrets.NAS_PASSWORD }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          PUBLIC_BADGE_PATH_PREFIX: /badge
+          API_IMAGE: ${{ needs.build.outputs.image_ref }}
+          GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
           request_pty: true
+          envs: REPO_DIR,API_PORT,SUDO_PASSWORD,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE,GHCR_PULL_USERNAME,GHCR_PULL_TOKEN
           script: |
             set -eu
-
-            REPO_DIR="${{ secrets.NAS_REPO_DIR }}"
-            API_PORT="${{ secrets.NAS_API_PORT }}"
-            SUDO_PASSWORD="${{ secrets.NAS_PASSWORD }}"
 
             if [ ! -d "${REPO_DIR}/.git" ]; then
               echo "NAS_REPO_DIR does not contain a git repository: ${REPO_DIR}" >&2
@@ -142,10 +148,10 @@ jobs:
             git reset --hard origin/master
 
             cat <<EOF > .env.deploy
-            API_IMAGE=${{ needs.build.outputs.image_ref }}
+            API_IMAGE=${API_IMAGE}
             API_PORT=${API_PORT}
-            PUBLIC_BASE_URL=${{ secrets.PUBLIC_BASE_URL }}
-            PUBLIC_BADGE_PATH_PREFIX=/badge
+            PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+            PUBLIC_BADGE_PATH_PREFIX=${PUBLIC_BADGE_PATH_PREFIX}
             EOF
 
             if docker info >/dev/null 2>&1; then
@@ -157,11 +163,11 @@ jobs:
               exit 1
             fi
 
-            if [ -n "${{ secrets.GHCR_PULL_USERNAME }}" ] && [ -n "${{ secrets.GHCR_PULL_TOKEN }}" ]; then
+            if [ -n "${GHCR_PULL_USERNAME}" ] && [ -n "${GHCR_PULL_TOKEN}" ]; then
               if [ "${DOCKER_USE_SUDO}" = "1" ]; then
-                printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' sh -c 'echo "$1" | docker login ghcr.io -u "$0" --password-stdin' "${{ secrets.GHCR_PULL_USERNAME }}" "${{ secrets.GHCR_PULL_TOKEN }}"
+                printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' sh -c 'echo "$1" | docker login ghcr.io -u "$0" --password-stdin' "${GHCR_PULL_USERNAME}" "${GHCR_PULL_TOKEN}"
               else
-                echo "${{ secrets.GHCR_PULL_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_PULL_USERNAME }}" --password-stdin
+                echo "${GHCR_PULL_TOKEN}" | docker login ghcr.io -u "${GHCR_PULL_USERNAME}" --password-stdin
               fi
             fi
 
