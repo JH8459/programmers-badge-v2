@@ -139,16 +139,16 @@ jobs:
             cat <<EOF > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
             services:
               api:
-                image: \${API_IMAGE:?API_IMAGE is required}
+                image: "${API_IMAGE}"
                 container_name: programmers-badge-api
                 environment:
                   PORT: 3000
                   DATABASE_PATH: /data/programmers-badge.sqlite
                   BADGE_OUTPUT_DIR: /data/badges
-                  PUBLIC_BASE_URL: \${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
-                  PUBLIC_BADGE_PATH_PREFIX: \${PUBLIC_BADGE_PATH_PREFIX:-/badge}
+                  PUBLIC_BASE_URL: "${PUBLIC_BASE_URL}"
+                  PUBLIC_BADGE_PATH_PREFIX: "${PUBLIC_BADGE_PATH_PREFIX}"
                 ports:
-                  - "\${API_PORT:-5010}:3000"
+                  - "${API_PORT}:3000"
                 volumes:
                   - badge-data:/data
                 restart: unless-stopped
@@ -181,9 +181,6 @@ jobs:
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
           API_PORT: ${{ secrets.NAS_API_PORT }}
-          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
-          PUBLIC_BADGE_PATH_PREFIX: /badge
-          API_IMAGE: ${{ needs.build.outputs.image_ref }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         with:
@@ -192,15 +189,11 @@ jobs:
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
           request_pty: true
-          envs: NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
+          envs: NAS_DEPLOY_DIR,API_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
           script: |
             set -eu
 
             export PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
-            export API_IMAGE
-            export API_PORT
-            export PUBLIC_BASE_URL
-            export PUBLIC_BADGE_PATH_PREFIX
 
             DOCKER_BIN="$(command -v docker || true)"
             if [ -z "${DOCKER_BIN}" ] && [ -x "/usr/local/bin/docker" ]; then
@@ -220,17 +213,10 @@ jobs:
             }
 
             compose_cmd() {
-              env_cmd=(env
-                "API_IMAGE=${API_IMAGE}"
-                "API_PORT=${API_PORT}"
-                "PUBLIC_BASE_URL=${PUBLIC_BASE_URL}"
-                "PUBLIC_BADGE_PATH_PREFIX=${PUBLIC_BADGE_PATH_PREFIX}"
-              )
-
               if [ -x "${COMPOSE_STANDALONE}" ]; then
-                sudo -n "${env_cmd[@]}" "${COMPOSE_STANDALONE}" "$@"
+                sudo -n "${COMPOSE_STANDALONE}" "$@"
               else
-                sudo -n "${env_cmd[@]}" "${DOCKER_BIN}" compose "$@"
+                docker_cmd compose "$@"
               fi
             }
 
