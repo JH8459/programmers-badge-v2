@@ -181,6 +181,9 @@ jobs:
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
           API_PORT: ${{ secrets.NAS_API_PORT }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          PUBLIC_BADGE_PATH_PREFIX: /badge
+          API_IMAGE: ${{ needs.build.outputs.image_ref }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         with:
@@ -189,11 +192,15 @@ jobs:
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
           request_pty: true
-          envs: NAS_DEPLOY_DIR,API_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
+          envs: NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
           script: |
             set -eu
 
             export PATH="/usr/local/bin:/usr/bin:/bin:${PATH}"
+            export API_IMAGE
+            export API_PORT
+            export PUBLIC_BASE_URL
+            export PUBLIC_BADGE_PATH_PREFIX
 
             DOCKER_BIN="$(command -v docker || true)"
             if [ -z "${DOCKER_BIN}" ] && [ -x "/usr/local/bin/docker" ]; then
@@ -222,8 +229,8 @@ jobs:
             }
 
             echo "${DOCKERHUB_PASSWORD}" | docker_cmd login -u "${DOCKERHUB_USERNAME}" --password-stdin
-            compose_cmd -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" pull
-            compose_cmd -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d --remove-orphans
+            compose_cmd -f "${COMPOSE_FILE}" pull
+            compose_cmd -f "${COMPOSE_FILE}" up -d --remove-orphans
 
             for attempt in $(seq 1 30); do
               if curl -fsS "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then
