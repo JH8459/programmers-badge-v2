@@ -48,6 +48,21 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 2. `NAS_USER`가 해당 디렉터리에 쓸 수 있게 한다.
 3. `NAS_USER`가 `docker ...` 또는 `/usr/local/bin/docker-compose ...`를 직접 실행할 수 있게 한다.
 
+## Synology Reverse Proxy
+
+- source protocol: `HTTPS`
+- source host: `programmers-badge.jh8459.com` 또는 실제 public domain
+- source port: `443`
+- destination protocol: `HTTP`
+- destination host: `127.0.0.1`
+- destination port: `5010`
+
+이 서비스는 루트 `/` 페이지를 따로 제공하지 않는다.
+배포 확인은 아래 URL 기준으로 보는 편이 안전하다.
+
+- `https://<domain>/api/health`
+- `https://<domain>/badge/<slug>.svg`
+
 ## Deploy Artifact
 
 배포는 DockerHub `latest` 이미지를 기준으로 수행한다.
@@ -58,3 +73,21 @@ workflow는 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-c
 
 - `docker-compose.yml`
 - `.env.deploy`
+
+## Post-Deploy Check
+
+NAS 내부 확인:
+
+```bash
+cd <NAS_DEPLOY_DIR>
+cat .env.deploy
+docker compose --env-file .env.deploy -f docker-compose.yml ps
+curl -i http://127.0.0.1:5010/api/health
+```
+
+외부 확인:
+
+```bash
+curl -i https://<domain>/api/health
+curl -I https://<domain>/badge/<slug>.svg
+```

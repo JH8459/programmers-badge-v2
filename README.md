@@ -43,3 +43,9 @@ packages/
 
 - local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`
+
+## Local Docker
+
+```bash
+docker compose -f docker-compose.local.yml up -d --build
+```
