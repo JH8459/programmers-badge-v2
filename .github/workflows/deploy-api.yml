@@ -117,32 +117,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Prepare deploy directory
-        uses: appleboy/ssh-action@v1.2.5
-        env:
-          NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-        with:
-          host: ${{ secrets.NAS_HOST }}
-          username: ${{ secrets.NAS_USER }}
-          password: ${{ secrets.NAS_PASSWORD }}
-          port: ${{ secrets.NAS_PORT }}
-          envs: NAS_DEPLOY_DIR
-          script: |
-            set -eu
-            mkdir -p "${NAS_DEPLOY_DIR}"
-
-      - name: Upload compose manifest
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.NAS_HOST }}
-          username: ${{ secrets.NAS_USER }}
-          password: ${{ secrets.NAS_PASSWORD }}
-          port: ${{ secrets.NAS_PORT }}
-          source: "deploy/docker-compose.deploy.yml"
-          target: ${{ secrets.NAS_DEPLOY_DIR }}
-          strip_components: 1
-
-      - name: Render deploy env file
+      - name: Render deploy files on NAS
         uses: appleboy/ssh-action@v1.2.5
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
@@ -158,6 +133,41 @@ jobs:
           envs: NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE
           script: |
             set -eu
+
+            mkdir -p "${NAS_DEPLOY_DIR}"
+
+            cat <<EOF > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
+            services:
+              api:
+                image: \${API_IMAGE:?API_IMAGE is required}
+                container_name: programmers-badge-api
+                environment:
+                  PORT: 3000
+                  DATABASE_PATH: /data/programmers-badge.sqlite
+                  BADGE_OUTPUT_DIR: /data/badges
+                  PUBLIC_BASE_URL: \${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
+                  PUBLIC_BADGE_PATH_PREFIX: \${PUBLIC_BADGE_PATH_PREFIX:-/badge}
+                ports:
+                  - "\${API_PORT:-5010}:3000"
+                volumes:
+                  - badge-data:/data
+                restart: unless-stopped
+                healthcheck:
+                  test:
+                    [
+                      "CMD",
+                      "node",
+                      "-e",
+                      "fetch('http://127.0.0.1:3000/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+                    ]
+                  interval: 30s
+                  timeout: 5s
+                  retries: 3
+                  start_period: 10s
+
+            volumes:
+              badge-data:
+            EOF
 
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             API_IMAGE=${API_IMAGE}
