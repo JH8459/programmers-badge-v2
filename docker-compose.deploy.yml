@@ -1,15 +1,15 @@
 services:
   api:
-    image: ${API_IMAGE:?API_IMAGE is required}
+    image: "__API_IMAGE__"
     container_name: programmers-badge-api
     environment:
       PORT: 3000
       DATABASE_PATH: /data/programmers-badge.sqlite
       BADGE_OUTPUT_DIR: /data/badges
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
-      PUBLIC_BADGE_PATH_PREFIX: ${PUBLIC_BADGE_PATH_PREFIX:-/badge}
+      PUBLIC_BASE_URL: "__PUBLIC_BASE_URL__"
+      PUBLIC_BADGE_PATH_PREFIX: "__PUBLIC_BADGE_PATH_PREFIX__"
     ports:
-      - "${API_PORT:-5010}:3000"
+      - "__API_PORT__:3000"
     volumes:
       - badge-data:/data
     restart: unless-stopped

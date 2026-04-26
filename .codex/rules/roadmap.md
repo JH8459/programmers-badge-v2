@@ -8,7 +8,7 @@
 - `apps/extension`은 manual sync, 제출 감지 기반 auto-sync, popup copy flow를 제공한다.
 - Docker Compose 기반 단일 API 배포 베이스가 있다.
 - PR verify, master deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
-- NAS deploy는 DockerHub image와 deploy manifest sync 기준으로 운영한다.
+- NAS deploy는 DockerHub image와 rendered deploy compose sync 기준으로 운영한다.
 
 ## Next Phase 1 - Runtime Strategy Hardening
 

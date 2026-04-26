@@ -18,7 +18,7 @@ packages/config     shared lint/prettier/tsconfig config
 - persistence, badge asset storage adapter, env/runtime wiring을 소유한다.
 - sync 시 저장된 badge data를 `packages/badge-core`에 전달해 pre-rendered SVG asset을 생성한다.
 - Nest/Express static serving으로 `/badge/*.svg`를 정적으로 서빙한다.
-- production artifact는 단일 Docker image로 관리하고, NAS는 DockerHub image pull과 deploy manifest sync로 배포한다.
+- production artifact는 단일 Docker image로 관리하고, NAS는 DockerHub image pull과 rendered deploy compose로 배포한다.
 
 ### `apps/extension`
 
@@ -46,7 +46,7 @@ packages/config     shared lint/prettier/tsconfig config
 4. API가 persistence에 badge snapshot을 저장한다.
 5. API가 `badge-core`를 사용해 public badge SVG를 pre-render하여 shared volume에 저장한다.
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
-7. GitHub Actions가 API 이미지를 DockerHub에 push하고, deploy compose/env 파일을 NAS로 동기화한 뒤 production 배포를 갱신한다.
+7. GitHub Actions가 API 이미지를 DockerHub에 push하고, rendered deploy compose 파일을 NAS로 동기화한 뒤 production 배포를 갱신한다.
 
 ## Current Monorepo Defaults
 

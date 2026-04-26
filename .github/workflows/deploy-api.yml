@@ -9,6 +9,7 @@ on:
       - ".github/release.yml"
       - "Dockerfile"
       - "docker-compose.yml"
+      - "docker-compose.deploy.yml"
       - "deploy/**"
       - "apps/api/**"
       - "packages/badge-core/**"
@@ -67,6 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_ref: ${{ steps.image.outputs.image_ref }}
+      compose_b64: ${{ steps.deploy_compose.outputs.compose_b64 }}
 
     steps:
       - name: Checkout repository
@@ -106,6 +108,31 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Render deploy compose for NAS
+        id: deploy_compose
+        shell: bash
+        env:
+          IMAGE_REF: ${{ steps.image.outputs.image_ref }}
+          API_PORT: ${{ secrets.NAS_API_PORT }}
+          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
+          PUBLIC_BADGE_PATH_PREFIX: /badge
+        run: |
+          rendered="${RUNNER_TEMP}/docker-compose.deploy.rendered.yml"
+
+          sed \
+            -e "s|__API_IMAGE__|${IMAGE_REF}|g" \
+            -e "s|__API_PORT__|${API_PORT}|g" \
+            -e "s|__PUBLIC_BASE_URL__|${PUBLIC_BASE_URL}|g" \
+            -e "s|__PUBLIC_BADGE_PATH_PREFIX__|${PUBLIC_BADGE_PATH_PREFIX}|g" \
+            docker-compose.deploy.yml > "${rendered}"
+
+          {
+            echo "compose_b64<<EOF"
+            base64 -w0 "${rendered}"
+            echo
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
   deploy:
     name: Deploy to NAS
     needs: build
@@ -121,60 +148,19 @@ jobs:
         uses: appleboy/ssh-action@v1.2.5
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          API_PORT: ${{ secrets.NAS_API_PORT }}
-          PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
-          PUBLIC_BADGE_PATH_PREFIX: /badge
-          API_IMAGE: ${{ needs.build.outputs.image_ref }}
+          DEPLOY_COMPOSE_B64: ${{ needs.build.outputs.compose_b64 }}
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,PUBLIC_BADGE_PATH_PREFIX,API_IMAGE
+          envs: NAS_DEPLOY_DIR,DEPLOY_COMPOSE_B64
           script: |
             set -eu
 
             mkdir -p "${NAS_DEPLOY_DIR}"
 
-            cat <<EOF > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
-            services:
-              api:
-                image: "${API_IMAGE}"
-                container_name: programmers-badge-api
-                environment:
-                  PORT: 3000
-                  DATABASE_PATH: /data/programmers-badge.sqlite
-                  BADGE_OUTPUT_DIR: /data/badges
-                  PUBLIC_BASE_URL: "${PUBLIC_BASE_URL}"
-                  PUBLIC_BADGE_PATH_PREFIX: "${PUBLIC_BADGE_PATH_PREFIX}"
-                ports:
-                  - "${API_PORT}:3000"
-                volumes:
-                  - badge-data:/data
-                restart: unless-stopped
-                healthcheck:
-                  test:
-                    [
-                      "CMD",
-                      "node",
-                      "-e",
-                      "fetch('http://127.0.0.1:3000/api/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
-                    ]
-                  interval: 30s
-                  timeout: 5s
-                  retries: 3
-                  start_period: 10s
-
-            volumes:
-              badge-data:
-            EOF
-
-            cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
-            API_IMAGE=${API_IMAGE}
-            API_PORT=${API_PORT}
-            PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
-            PUBLIC_BADGE_PATH_PREFIX=${PUBLIC_BADGE_PATH_PREFIX}
-            EOF
+            printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.deploy.yml"
 
       - name: Pull and restart containers
         uses: appleboy/ssh-action@v1.2.5
@@ -209,12 +195,12 @@ jobs:
             fi
 
             docker_cmd() {
-              sudo -n "${DOCKER_BIN}" "$@"
+              "${DOCKER_BIN}" "$@"
             }
 
             compose_cmd() {
               if [ -x "${COMPOSE_STANDALONE}" ]; then
-                sudo -n "${COMPOSE_STANDALONE}" "$@"
+                "${COMPOSE_STANDALONE}" "$@"
               else
                 docker_cmd compose "$@"
               fi
