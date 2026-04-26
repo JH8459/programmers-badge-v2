@@ -122,12 +122,12 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          script_stop: true
           script: |
             set -eu
 
             REPO_DIR="${{ secrets.NAS_REPO_DIR }}"
             API_PORT="${{ secrets.NAS_API_PORT }}"
+            SUDO_PASSWORD="${{ secrets.NAS_PASSWORD }}"
 
             if [ ! -d "${REPO_DIR}/.git" ]; then
               echo "NAS_REPO_DIR does not contain a git repository: ${REPO_DIR}" >&2
@@ -147,15 +147,36 @@ jobs:
             PUBLIC_BADGE_PATH_PREFIX=/badge
             EOF
 
+            if docker info >/dev/null 2>&1; then
+              DOCKER_USE_SUDO=0
+            elif printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' docker info >/dev/null 2>&1; then
+              DOCKER_USE_SUDO=1
+            else
+              echo "Docker daemon is not accessible for NAS_USER. Grant docker access or sudo permissions." >&2
+              exit 1
+            fi
+
             if [ -n "${{ secrets.GHCR_PULL_USERNAME }}" ] && [ -n "${{ secrets.GHCR_PULL_TOKEN }}" ]; then
-              echo "${{ secrets.GHCR_PULL_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_PULL_USERNAME }}" --password-stdin
+              if [ "${DOCKER_USE_SUDO}" = "1" ]; then
+                printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' sh -c 'echo "$1" | docker login ghcr.io -u "$0" --password-stdin' "${{ secrets.GHCR_PULL_USERNAME }}" "${{ secrets.GHCR_PULL_TOKEN }}"
+              else
+                echo "${{ secrets.GHCR_PULL_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_PULL_USERNAME }}" --password-stdin
+              fi
             fi
 
             compose() {
               if docker compose version >/dev/null 2>&1; then
-                docker compose "$@"
+                if [ "${DOCKER_USE_SUDO}" = "1" ]; then
+                  printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' docker compose "$@"
+                else
+                  docker compose "$@"
+                fi
               else
-                /usr/local/bin/docker-compose "$@"
+                if [ "${DOCKER_USE_SUDO}" = "1" ]; then
+                  printf '%s\n' "${SUDO_PASSWORD}" | sudo -S -p '' /usr/local/bin/docker-compose "$@"
+                else
+                  /usr/local/bin/docker-compose "$@"
+                fi
               fi
             }
 

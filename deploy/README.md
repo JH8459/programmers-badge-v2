@@ -37,6 +37,7 @@
 - GHCR package를 public으로 운영하면 `GHCR_PULL_USERNAME`, `GHCR_PULL_TOKEN` 없이도 pull할 수 있다.
 - `deploy-api.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
 - password 인증은 빠르게 붙이기 쉽지만, 장기적으로는 deploy 전용 SSH key로 전환하는 편이 더 안전하다.
+- 현재 workflow는 Docker daemon 접근이 안 되면 `sudo docker ...`로 fallback 한다. 따라서 `NAS_USER`는 docker 직접 권한이 있거나 `sudo` 권한이 있어야 한다.
 
 ## NAS Prerequisites
 
