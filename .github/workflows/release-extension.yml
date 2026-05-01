@@ -68,6 +68,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate manifest version against release tag
+        id: manifest
+        shell: bash
+        run: |
+          manifest_version="$(node -p "require('./apps/extension/manifest.json').version")"
+          expected_tag="extension-v${manifest_version}"
+
+          echo "manifest_version=${manifest_version}" >> "$GITHUB_OUTPUT"
+          echo "expected_tag=${expected_tag}" >> "$GITHUB_OUTPUT"
+
+          if [ "${{ steps.release.outputs.tag }}" != "${expected_tag}" ]; then
+            echo "Release tag must match manifest version." >&2
+            echo "Expected: ${expected_tag}" >&2
+            echo "Received: ${{ steps.release.outputs.tag }}" >&2
+            exit 1
+          fi
+
       - name: Verify extension
         run: |
           pnpm --filter @programmers-badge/extension lint
@@ -81,10 +98,11 @@ jobs:
         id: package
         shell: bash
         run: |
-          archive_name="programmers-badge-extension-${{ steps.release.outputs.tag }}.zip"
+          archive_name="programmers-badge-extension-v${{ steps.manifest.outputs.manifest_version }}.zip"
           rm -f "${archive_name}"
           cd apps/extension/dist
-          zip -r "../../../${archive_name}" .
+          zip -r "../../../${archive_name}" . \
+            -x '*.d.ts' '*.d.ts.map' '*.js.map'
           cd ../../..
           echo "archive_name=${archive_name}" >> "$GITHUB_OUTPUT"
 
@@ -103,5 +121,5 @@ jobs:
           gh release create "${tag}" \
             "${archive}" \
             --target "${{ steps.release.outputs.target }}" \
-            --title "Extension ${tag}" \
+            --title "Extension v${{ steps.manifest.outputs.manifest_version }}" \
             --notes "Chrome extension package release for ${tag}."
