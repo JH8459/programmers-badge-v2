@@ -13,7 +13,7 @@
 
 - Manifest V3를 사용한다.
 - 현재 permission은 `storage`, `activeTab`, `tabs`, `scripting`이다.
-- 현재 `host_permissions`는 `http://localhost:3000/*`만 허용한다.
+- 현재 `host_permissions`는 `https://programmers-badge.jh8459.com/*`만 허용한다.
 - content script는 Programmers lesson page 매치에서 동작한다.
 - background는 logged-in Programmers 세션으로 `https://programmers.co.kr/api/v1/users/record`를 읽는다.
 
@@ -22,7 +22,7 @@
 - popup은 수동 sync 진입점과 마지막 sync 상태를 보여준다.
 - 성공 시 badge preview, public badge URL, Markdown snippet 복사를 제공한다.
 - content script는 제출 시그널을 감지하면 dedupe와 cooldown을 거쳐 auto-sync를 요청한다.
-- 현재 API base URL은 localhost 상수에 고정돼 있다.
+- 현재 API base URL은 `https://programmers-badge.jh8459.com` 상수에 고정돼 있다.
 
 ## Security And Privacy
 

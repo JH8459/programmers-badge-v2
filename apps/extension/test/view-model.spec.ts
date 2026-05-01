@@ -23,8 +23,9 @@ describe("getPopupViewModel", () => {
       message: "동기화가 완료되었습니다.",
       lastSync: {
         slug: "abc123def456",
-        badgeUrl: "http://localhost:3000/badge/abc123def456.svg",
-        markdownSnippet: "![Programmers Badge](http://localhost:3000/badge/abc123def456.svg)",
+        badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        markdownSnippet:
+          "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
         programmerHandle: "programmers-user",
         displayName: "Programmers User",
         solvedCount: 100,
@@ -41,7 +42,9 @@ describe("getPopupViewModel", () => {
     expect(viewModel.title).toBe("배지 반영 완료");
     expect(viewModel.summaryTitle).toBe("Programmers User");
     expect(viewModel.summarySubtitle).toBe("@programmers-user");
-    expect(viewModel.badgeImageUrl).toBe("http://localhost:3000/badge/abc123def456.svg");
+    expect(viewModel.badgeImageUrl).toBe(
+      "https://programmers-badge.jh8459.com/badge/abc123def456.svg"
+    );
     expect(viewModel.badgeImageAlt).toBe("Programmers User 배지 미리보기");
     expect(viewModel.summaryItems).toEqual([
       { label: "점수", value: "9,999점" },
@@ -50,7 +53,7 @@ describe("getPopupViewModel", () => {
       { label: "순위", value: "42위" },
     ]);
     expect(viewModel.copyItems).toHaveLength(2);
-    expect(viewModel.copyItems[0]?.value).toContain("localhost:3000");
+    expect(viewModel.copyItems[0]?.value).toContain("programmers-badge.jh8459.com");
     expect(viewModel.copyItems.map((item) => item.buttonLabel)).toEqual(["복사", "복사"]);
   });
 
@@ -60,8 +63,9 @@ describe("getPopupViewModel", () => {
       message: "동기화가 완료되었습니다.",
       lastSync: {
         slug: "abc123def456",
-        badgeUrl: "http://localhost:3000/badge/abc123def456.svg",
-        markdownSnippet: "![Programmers Badge](http://localhost:3000/badge/abc123def456.svg)",
+        badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        markdownSnippet:
+          "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
         programmerHandle: "JH8459",
         displayName: "JH8459",
         solvedCount: 100,

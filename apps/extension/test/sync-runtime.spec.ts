@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/background/api-client", () => ({
+  EXTENSION_API_HOST: "programmers-badge.jh8459.com",
   syncBadgePayload: vi.fn(),
 }));
 
@@ -40,8 +41,9 @@ describe("sync runtime", () => {
     mockedSyncBadgePayload.mockReset();
     mockedSyncBadgePayload.mockResolvedValue({
       slug: "abc123def456",
-      badgeUrl: "http://localhost:3000/badge/abc123def456.svg",
-      markdownSnippet: "![Programmers Badge](http://localhost:3000/badge/abc123def456.svg)",
+      badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+      markdownSnippet:
+        "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
       programmerHandle: "programmers-user",
       displayName: "Programmers User",
       solvedCount: 123,
@@ -98,7 +100,7 @@ describe("sync runtime", () => {
       })
     );
     expect(nextState.status).toBe("success");
-    expect(nextState.message).toContain("localhost:3000");
+    expect(nextState.message).toContain("programmers-badge.jh8459.com");
   });
 
   it("keeps the manual sync path working through the active tab query", async () => {

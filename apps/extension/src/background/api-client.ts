@@ -1,9 +1,10 @@
 import type { BadgeSyncPayload, BadgeSyncResponse } from "@programmers-badge/shared-types";
 
-const LOCAL_API_BASE_URL = "http://localhost:3000";
+export const EXTENSION_API_BASE_URL = "https://programmers-badge.jh8459.com";
+export const EXTENSION_API_HOST = new URL(EXTENSION_API_BASE_URL).host;
 
 export const syncBadgePayload = async (payload: BadgeSyncPayload): Promise<BadgeSyncResponse> => {
-  const response = await fetch(`${LOCAL_API_BASE_URL}/api/sync`, {
+  const response = await fetch(`${EXTENSION_API_BASE_URL}/api/sync`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -13,7 +14,7 @@ export const syncBadgePayload = async (payload: BadgeSyncPayload): Promise<Badge
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(errorText || `Local sync failed with ${response.status}.`);
+    throw new Error(errorText || `Hosted sync failed with ${response.status}.`);
   }
 
   return (await response.json()) as BadgeSyncResponse;

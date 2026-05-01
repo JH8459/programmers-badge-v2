@@ -62,25 +62,25 @@ describe("content auto-sync helpers", () => {
     expect(
       getAutoSyncToastViewModel({
         status: "success",
-        message: "Programmers User 데이터가 localhost:3000으로 동기화되었습니다.",
+        message: "Programmers User 데이터가 programmers-badge.jh8459.com으로 동기화되었습니다.",
         lastSync: null,
       })
     ).toEqual({
       tone: "success",
       title: "자동 동기화 완료",
-      message: "Programmers User 데이터가 localhost:3000으로 동기화되었습니다.",
+      message: "Programmers User 데이터가 programmers-badge.jh8459.com으로 동기화되었습니다.",
     });
 
     expect(
       getAutoSyncToastViewModel({
         status: "error",
-        message: "localhost API로 동기화하지 못했습니다.",
+        message: "programmers-badge.jh8459.com API로 동기화하지 못했습니다.",
         lastSync: null,
       })
     ).toEqual({
       tone: "error",
       title: "자동 동기화 실패",
-      message: "localhost API로 동기화하지 못했습니다.",
+      message: "programmers-badge.jh8459.com API로 동기화하지 못했습니다.",
     });
   });
 });

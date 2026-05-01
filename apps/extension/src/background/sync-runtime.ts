@@ -1,6 +1,6 @@
 import { toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
 import { createIdleSyncState, type ExtensionSyncState } from "../shared/sync-state.js";
-import { syncBadgePayload } from "./api-client.js";
+import { EXTENSION_API_HOST, syncBadgePayload } from "./api-client.js";
 
 const PROGRAMMERS_HOST = "programmers.co.kr";
 const PROGRAMMERS_RECORD_URL = `https://${PROGRAMMERS_HOST}/api/v1/users/record`;
@@ -185,13 +185,16 @@ const performSyncForResolvedTab = async (
 
     return {
       status: "success",
-      message: `${syncResponse.displayName} 데이터가 localhost:3000으로 동기화되었습니다.`,
+      message: `${syncResponse.displayName} 데이터가 ${EXTENSION_API_HOST}으로 동기화되었습니다.`,
       lastSync: syncResponse,
     };
   } catch (error) {
     return {
       status: "error",
-      message: error instanceof Error ? error.message : "localhost API로 동기화하지 못했습니다.",
+      message:
+        error instanceof Error
+          ? error.message
+          : `${EXTENSION_API_HOST} API로 동기화하지 못했습니다.`,
       lastSync: null,
     };
   }
