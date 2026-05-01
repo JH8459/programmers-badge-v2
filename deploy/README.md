@@ -13,6 +13,10 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `.github/workflows/deploy-api.yml`
   - `master` push 시 API 관련 변경만 골라서 실행한다.
   - `pnpm verify` 후 DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - GitHub environment는 `api-production`을 사용한다.
+- `.github/workflows/release-extension.yml`
+  - `extension-v*` tag push 또는 수동 실행 시 extension zip 패키지를 GitHub Release asset으로 게시한다.
+  - GitHub environment는 `extension-release`를 사용한다.
 - `.github/workflows/release.yml`
   - `v*` tag push 또는 수동 실행 시 GitHub Release를 생성한다.
 
@@ -32,9 +36,10 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 
 ## Secret Guidance
 
-- `deploy-api.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
+- `deploy-api.yml`의 `deploy` job은 `api-production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
 - password 인증은 빠르게 붙이기 쉽지만, 장기적으로는 deploy 전용 SSH key로 전환하는 편이 더 안전하다.
 - 현재 workflow는 root 계정 또는 docker 실행 권한이 있는 계정 기준을 전제로 한다.
+- `release-extension.yml`은 현재 GitHub Release asset 게시까지만 자동화한다. Chrome Web Store 게시 자동화는 별도 OAuth/API secret 구성이 필요하다.
 
 ## NAS Prerequisites
 

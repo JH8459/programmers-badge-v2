@@ -9,6 +9,7 @@
 - Docker Compose 기반 단일 API 배포 베이스가 있다.
 - PR verify, master deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 - NAS deploy는 DockerHub image와 committed root `docker-compose.yml` sync 기준으로 운영한다.
+- API deploy environment는 `api-production`, extension package release environment는 `extension-release`를 사용한다.
 
 ## Next Phase 1 - Runtime Strategy Hardening
 

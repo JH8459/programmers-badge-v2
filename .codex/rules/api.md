@@ -32,7 +32,7 @@
 - sync 시 동일 slug의 SVG asset을 pre-render하여 갱신한다.
 - `/badge/*.svg`는 Nest/Express static middleware로 정적 서빙한다.
 - persistence schema 변경은 현재 additive migration 패턴을 우선한다.
-- API production deploy는 `verify -> DockerHub push -> deploy compose sync -> .env.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 둔다.
+- API production deploy는 `verify -> DockerHub push -> deploy compose sync -> .env.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 두고, GitHub environment는 `api-production`을 사용한다.
 - 현재 NAS deploy workflow는 root `docker-compose.yml` 파일을 NAS에 동기화하고, `.env.deploy`에 `DOCKER_IMAGE=<dockerhub-user>/programmers-badge-api:latest`를 기록한 뒤 배포 명령을 실행한다.
 
 ## Validation And Security

@@ -43,6 +43,7 @@ packages/
 
 - local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`
+- extension package release flow: `.github/workflows/release-extension.yml`
 
 ## Local Docker
 

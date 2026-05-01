@@ -1,0 +1,107 @@
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - "extension-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Extension release tag (example: extension-v0.1.0)"
+        required: true
+        type: string
+      target:
+        description: "Target branch or commit SHA"
+        required: false
+        default: master
+        type: string
+
+concurrency:
+  group: extension-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: 22.13.0
+  PNPM_VERSION: 10.28.2
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release-extension:
+    name: Build and release extension package
+    runs-on: ubuntu-latest
+    environment:
+      name: extension-release
+
+    steps:
+      - name: Resolve release inputs
+        id: release
+        shell: bash
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "target=${{ inputs.target }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "target=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.release.outputs.target }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify extension
+        run: |
+          pnpm --filter @programmers-badge/extension lint
+          pnpm --filter @programmers-badge/extension typecheck
+          pnpm --filter @programmers-badge/extension test
+
+      - name: Build extension
+        run: pnpm --filter @programmers-badge/extension build
+
+      - name: Package extension zip
+        id: package
+        shell: bash
+        run: |
+          archive_name="programmers-badge-extension-${{ steps.release.outputs.tag }}.zip"
+          rm -f "${archive_name}"
+          cd apps/extension/dist
+          zip -r "../../../${archive_name}" .
+          cd ../../..
+          echo "archive_name=${archive_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update extension release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${{ steps.release.outputs.tag }}"
+          archive="${{ steps.package.outputs.archive_name }}"
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release upload "${tag}" "${archive}" --clobber
+            exit 0
+          fi
+
+          gh release create "${tag}" \
+            "${archive}" \
+            --target "${{ steps.release.outputs.target }}" \
+            --title "Extension ${tag}" \
+            --notes "Chrome extension package release for ${tag}."
