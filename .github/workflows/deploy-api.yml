@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: api-production-deploy
+  group: production-deploy
   cancel-in-progress: false
 
 permissions:
@@ -108,7 +108,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     environment:
-      name: api-production
+      name: production
 
     steps:
       - name: Checkout repository
