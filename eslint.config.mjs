@@ -36,6 +36,19 @@ export default tseslint.config(
     }
   },
   {
+    files: ["apps/extension/scripts/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        ...globals.node
+      }
+    },
+    rules: {
+      "no-console": "off"
+    }
+  },
+  {
     files: ["apps/api/**/*.ts"],
     rules: {
       "@typescript-eslint/consistent-type-imports": "off"

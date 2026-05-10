@@ -23,6 +23,7 @@ packages/
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm verify`
+- `pnpm package:extension`
 
 ## Key Documents
 
@@ -44,6 +45,8 @@ packages/
 - local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`
 - extension package release flow: `.github/workflows/release-extension.yml`
+- extension local package: `pnpm package:extension`
+- Chrome Web Store listing assets: `apps/extension/store-assets`
 
 ## Local Docker
 

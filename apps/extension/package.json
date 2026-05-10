@@ -12,7 +12,8 @@
   "scripts": {
     "dev": "tsc -p tsconfig.json --watch",
     "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
-    "lint": "eslint src test --max-warnings 0",
+    "package": "node scripts/package-extension.mjs",
+    "lint": "eslint src test scripts --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   }

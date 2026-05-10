@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(currentDir, "..");
 const distDir = resolve(rootDir, "dist");
+const distIconsDir = resolve(distDir, "assets", "icons");
 
 await mkdir(resolve(distDir, "popup"), { recursive: true });
 await cp(resolve(rootDir, "manifest.json"), resolve(distDir, "manifest.json"));
@@ -16,3 +17,9 @@ try {
 } catch {
   // 정리할 assets 디렉터리가 없어도 build 결과에는 영향이 없다.
 }
+
+await mkdir(distIconsDir, { recursive: true });
+await cp(resolve(rootDir, "assets", "icons", "icon-16.png"), resolve(distIconsDir, "icon-16.png"));
+await cp(resolve(rootDir, "assets", "icons", "icon-32.png"), resolve(distIconsDir, "icon-32.png"));
+await cp(resolve(rootDir, "assets", "icons", "icon-48.png"), resolve(distIconsDir, "icon-48.png"));
+await cp(resolve(rootDir, "assets", "icons", "icon-128.png"), resolve(distIconsDir, "icon-128.png"));

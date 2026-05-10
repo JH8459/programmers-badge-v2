@@ -99,11 +99,7 @@ jobs:
         shell: bash
         run: |
           archive_name="programmers-badge-extension-v${{ steps.manifest.outputs.manifest_version }}.zip"
-          rm -f "${archive_name}"
-          cd apps/extension/dist
-          zip -r "../../../${archive_name}" . \
-            -x '*.d.ts' '*.d.ts.map' '*.js.map'
-          cd ../../..
+          pnpm --filter @programmers-badge/extension package -- --skip-build --output "${archive_name}"
           echo "archive_name=${archive_name}" >> "$GITHUB_OUTPUT"
 
       - name: Create or update extension release

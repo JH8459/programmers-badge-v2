@@ -5,6 +5,12 @@
   "description": "Sync Programmers badge data and prepare a hosted badge URL.",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
   "host_permissions": ["https://programmers-badge.jh8459.com/*"],
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
   "background": {
     "service_worker": "background/index.js",
     "type": "module"
@@ -17,6 +23,12 @@
     }
   ],
   "action": {
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    },
     "default_title": "PROGRAMMERS-BADGE-V2",
     "default_popup": "popup.html"
   }
