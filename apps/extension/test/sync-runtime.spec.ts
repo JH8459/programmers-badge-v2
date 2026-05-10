@@ -1,3 +1,5 @@
+import { runInNewContext } from "node:vm";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/background/api-client", () => ({
@@ -13,6 +15,7 @@ import {
 } from "../src/background/sync-runtime";
 
 const mockedSyncBadgePayload = vi.mocked(syncBadgePayload);
+const mockedFetch = vi.fn();
 
 describe("createAutoSyncDeduper", () => {
   it("dedupes the same tab within the cooldown window", () => {
@@ -39,6 +42,7 @@ describe("createAutoSyncDeduper", () => {
 describe("sync runtime", () => {
   beforeEach(() => {
     mockedSyncBadgePayload.mockReset();
+    mockedFetch.mockReset();
     mockedSyncBadgePayload.mockResolvedValue({
       slug: "abc123def456",
       badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
@@ -53,6 +57,16 @@ describe("sync runtime", () => {
       rankingRank: 12,
       badgeTier: "intermediate",
       syncedAt: "2026-04-19T10:00:00.000Z",
+    });
+    mockedFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        name: "Programmers User",
+        skillCheck: { level: 3 },
+        ranking: { score: 9876, rank: 12 },
+        codingTest: { solved: 123, total: 456 },
+      }),
     });
 
     Object.defineProperty(globalThis, "chrome", {
@@ -71,21 +85,36 @@ describe("sync runtime", () => {
           ]),
         },
         scripting: {
-          executeScript: vi.fn(async ({ target }: { target: { tabId: number } }) => [
-            {
-              result: {
-                ok: true,
-                record: {
-                  name: `Programmers User ${target.tabId}`,
-                  skillCheck: { level: 3 },
-                  ranking: { score: 9876, rank: 12 },
-                  codingTest: { solved: 123, total: 456 },
+          executeScript: vi.fn(
+            async ({
+              target,
+              func,
+              args,
+            }: {
+              target: { tabId: number };
+              func: (recordUrl: string) => Promise<unknown>;
+              args: [string];
+            }) => {
+              const isolatedFunc = runInNewContext(`(${func.toString()})`, {
+                Error,
+                fetch: mockedFetch,
+              }) as (recordUrl: string) => Promise<unknown>;
+
+              return [
+                {
+                  result: await isolatedFunc(...args),
+                  target,
                 },
-              },
-            },
-          ]),
+              ];
+            }
+          ),
         },
       },
+    });
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      value: mockedFetch,
+      writable: true,
     });
   });
 
@@ -99,6 +128,12 @@ describe("sync runtime", () => {
         target: { tabId: 77 },
       })
     );
+    expect(mockedFetch).toHaveBeenCalledWith("https://programmers.co.kr/api/v1/users/record", {
+      credentials: "include",
+      headers: {
+        accept: "application/json",
+      },
+    });
     expect(nextState.status).toBe("success");
     expect(nextState.message).toContain("programmers-badge.jh8459.com");
   });
@@ -117,5 +152,22 @@ describe("sync runtime", () => {
     );
     expect(nextState.status).toBe("success");
     expect(nextState.lastSync?.displayName).toBe("Programmers User");
+  });
+
+  it("treats an invalid external record as a sync error after the page-context fetch returns", async () => {
+    mockedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        name: "Programmers User",
+        skillCheck: { level: "bad" },
+      }),
+    });
+
+    const nextState = await performSyncForTab(77);
+
+    expect(nextState.status).toBe("error");
+    expect(nextState.message).toBe("Programmers 기록 형식을 확인하지 못했습니다.");
+    expect(mockedSyncBadgePayload).not.toHaveBeenCalled();
   });
 });

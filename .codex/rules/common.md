@@ -20,6 +20,7 @@
 - package manager: `pnpm`
 - task runner: `turbo`
 - Node.js: `>=22.0.0`
+- shared runtime contract validation 기본값은 `zod`다.
 - 기본 목표 스크립트: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm verify`
 - repo에 없는 명령은 지어내지 않는다.
 
@@ -42,6 +43,7 @@
 
 - GitHub repository write, broad GitHub write automation, PAT, admin dashboard, queue/Redis/WebSocket은 명시적 요청 없이는 다루지 않는다.
 - raw credential 저장을 기본값으로 두지 않는다.
+- app boundary를 넘는 request/response validation이 필요하면 app-local validator보다 shared zod schema를 우선한다.
 - public surface에 민감한 사용자 정보를 노출하지 않는다.
 - 저장 대상은 public badge delivery에 필요한 최소 데이터로 제한한다.
 - sync는 사용자 트리거 기반을 기본값으로 두고, 과한 자동화는 나중 문제로 미룬다.

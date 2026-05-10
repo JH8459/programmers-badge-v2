@@ -1,9 +1,10 @@
 import { Inject, Injectable, OnModuleDestroy, Optional } from "@nestjs/common";
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname } from "node:path";
 
-const DEFAULT_DATABASE_PATH = resolve(process.cwd(), "data", "programmers-badge.sqlite");
+import { readApiRuntimeConfig } from "../common/runtime-config";
+
 export const DATABASE_PATH_TOKEN = Symbol("DATABASE_PATH_TOKEN");
 
 @Injectable()
@@ -13,7 +14,7 @@ export class DatabaseService implements OnModuleDestroy {
   private readonly database: DatabaseSync;
 
   constructor(@Optional() @Inject(DATABASE_PATH_TOKEN) databasePath?: string) {
-    this.databasePath = databasePath ?? process.env.DATABASE_PATH ?? DEFAULT_DATABASE_PATH;
+    this.databasePath = databasePath ?? readApiRuntimeConfig().databasePath;
     mkdirSync(dirname(this.databasePath), { recursive: true });
     this.database = new DatabaseSync(this.databasePath);
     this.configure();
@@ -59,6 +60,7 @@ export class DatabaseService implements OnModuleDestroy {
   }
 
   private ensureColumn(columnName: string, definition: string): void {
+    // 현재는 additive migration만 허용하므로 누락 컬럼만 뒤늦게 보강한다.
     const existingColumns = this.database
       .prepare("PRAGMA table_info(badge_profiles)")
       .all() as Array<{ name: string }>;

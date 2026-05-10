@@ -14,5 +14,5 @@ await cp(resolve(rootDir, "src", "popup", "styles.css"), resolve(distDir, "popup
 try {
   await rm(resolve(distDir, "assets"), { recursive: true, force: true });
 } catch {
-  // no-op
+  // 정리할 assets 디렉터리가 없어도 build 결과에는 영향이 없다.
 }

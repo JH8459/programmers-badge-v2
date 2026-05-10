@@ -45,6 +45,7 @@ export class BadgeAssetService {
 
     mkdirSync(dirname(badgeFilePath), { recursive: true });
 
+    // 부분적으로 써진 SVG가 노출되지 않도록 임시 파일에 쓴 뒤 교체한다.
     const temporaryFilePath = `${badgeFilePath}.tmp-${process.pid}-${Date.now()}-${Math.random()
       .toString(16)
       .slice(2)}`;

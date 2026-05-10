@@ -9,6 +9,7 @@
 ## Language
 
 - 설명, 지침, 문서성 텍스트는 가능한 한 한국어로 작성한다.
+- 코드 주석을 추가하거나 수정할 때도 English 대신 한국어를 사용한다.
 - 경로, 명령어, 식별자, config key는 English 그대로 유지한다.
 - custom agent와 skill의 runtime identifier는 English/ASCII를 유지하고, 설명과 instructions는 한국어로 둘 수 있다.
 

@@ -1,25 +1,46 @@
+import { z } from "zod";
+
 export const SUPPORTED_BADGE_FORMATS = ["svg", "markdown"] as const;
 export const BADGE_TIERS = ["starter", "intermediate", "advanced"] as const;
 
-export type BadgeFormat = (typeof SUPPORTED_BADGE_FORMATS)[number];
-export type BadgeTier = (typeof BADGE_TIERS)[number];
+export const badgeFormatSchema = z.enum(SUPPORTED_BADGE_FORMATS);
+export const badgeTierSchema = z.enum(BADGE_TIERS);
 
-export interface BadgeSyncPayload {
-  programmerHandle: string;
-  displayName: string;
-  solvedCount: number;
-  solvedTotal: number;
-  skillLevel: number;
-  rankingScore: number;
-  rankingRank: number;
-  badgeTier: BadgeTier;
-  syncedAt: string;
-}
+// Shared zod schemas are the runtime contract source of truth for both API and extension.
+export const badgeSyncPayloadSchema = z.strictObject({
+  programmerHandle: z.string().trim().min(1),
+  displayName: z.string().trim().min(1),
+  solvedCount: z.number().int().min(0),
+  solvedTotal: z.number().int().min(0),
+  skillLevel: z.number().int().min(0),
+  rankingScore: z.number().int().min(0),
+  rankingRank: z.number().int().min(1),
+  badgeTier: badgeTierSchema,
+  syncedAt: z.string().datetime({ offset: true }),
+});
 
-export interface PublicBadgeResponse {
-  slug: string;
-  badgeUrl: string;
-  markdownSnippet: string;
-}
+export const publicBadgeResponseSchema = z.strictObject({
+  slug: z.string().trim().min(1),
+  badgeUrl: z.string().url(),
+  markdownSnippet: z.string().trim().min(1),
+});
 
-export interface BadgeSyncResponse extends PublicBadgeResponse, BadgeSyncPayload {}
+export const badgeSyncResponseSchema = z.strictObject({
+  ...publicBadgeResponseSchema.shape,
+  ...badgeSyncPayloadSchema.shape,
+});
+
+export type BadgeFormat = z.infer<typeof badgeFormatSchema>;
+export type BadgeTier = z.infer<typeof badgeTierSchema>;
+export type BadgeSyncPayload = z.infer<typeof badgeSyncPayloadSchema>;
+export type PublicBadgeResponse = z.infer<typeof publicBadgeResponseSchema>;
+export type BadgeSyncResponse = z.infer<typeof badgeSyncResponseSchema>;
+
+export const parseBadgeSyncPayload = (input: unknown): BadgeSyncPayload =>
+  badgeSyncPayloadSchema.parse(input);
+
+export const parsePublicBadgeResponse = (input: unknown): PublicBadgeResponse =>
+  publicBadgeResponseSchema.parse(input);
+
+export const parseBadgeSyncResponse = (input: unknown): BadgeSyncResponse =>
+  badgeSyncResponseSchema.parse(input);

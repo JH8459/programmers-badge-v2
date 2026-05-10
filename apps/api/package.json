@@ -8,10 +8,9 @@
     "@nestjs/platform-express": "^11.0.20",
     "@programmers-badge/badge-core": "workspace:*",
     "@programmers-badge/shared-types": "workspace:*",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "zod": "^4.4.3"
   },
   "scripts": {
     "dev": "pnpm --filter @programmers-badge/shared-types build && pnpm --filter @programmers-badge/badge-core build && tsx watch src/main.ts",

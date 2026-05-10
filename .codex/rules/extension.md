@@ -22,7 +22,9 @@
 - popup은 수동 sync 진입점과 마지막 sync 상태를 보여준다.
 - 성공 시 badge preview, public badge URL, Markdown snippet 복사를 제공한다.
 - content script는 제출 시그널을 감지하면 dedupe와 cooldown을 거쳐 auto-sync를 요청한다.
-- 현재 API base URL은 `https://programmers-badge.jh8459.com` 상수에 고정돼 있다.
+- background API client는 manifest `host_permissions`의 hosted API origin을 우선 사용하고, 없으면 hosted default URL로 fallback한다.
+- external Programmers record와 hosted sync response는 runtime에서 zod parse를 거친다.
+- page context에서 가져온 Programmers record는 raw JSON으로 반환하고, extension context에서 다시 zod parse 한다.
 - extension package release는 `extension-release` environment를 사용하는 GitHub Actions workflow로 관리한다.
 
 ## Security And Privacy
@@ -35,6 +37,7 @@
 ## Guardrails
 
 - API contract는 `packages/shared-types`를 기준으로 맞춘다.
+- contract runtime validation은 가능하면 shared zod schema를 재사용한다.
 - backend URL 전략을 바꾸면 `manifest.json`, background client, 테스트, 문서를 함께 갱신한다.
 - extension release artifact를 바꾸면 build output, zip packaging, release workflow를 함께 갱신한다.
 - 페이지 감지나 auto-sync 로직을 바꿀 때는 오탐/중복 sync 방지 규칙을 같이 검토한다.
@@ -44,4 +47,5 @@
 
 - permission 추가는 명시적 근거와 함께 최소 범위로 한다.
 - sync state를 바꾸면 popup view-model, background 메시지 처리, 테스트를 함께 갱신한다.
-- Programmers record 파싱을 바꾸면 contract 영향과 fallback/validation 동작을 함께 확인한다.
+- Programmers record 파싱을 바꾸면 external payload zod schema, contract 영향, fallback 동작을 함께 확인한다.
+- `chrome.scripting.executeScript`에 넘긴 함수는 self-contained 하게 유지하고, import 의존 검증은 반환 뒤 extension context에서 처리한다.

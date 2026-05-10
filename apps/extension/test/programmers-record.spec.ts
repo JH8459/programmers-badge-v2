@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { getBadgeTierFromSkillLevel, toBadgeSyncPayload } from "../src/shared/programmers-record";
+import {
+  getBadgeTierFromSkillLevel,
+  parseProgrammersRecord,
+  toBadgeSyncPayload,
+} from "../src/shared/programmers-record";
 
 describe("programmers record normalization", () => {
   it("maps v1-style record data into the sync payload", () => {
@@ -31,5 +35,9 @@ describe("programmers record normalization", () => {
     expect(getBadgeTierFromSkillLevel(0)).toBe("starter");
     expect(getBadgeTierFromSkillLevel(2)).toBe("intermediate");
     expect(getBadgeTierFromSkillLevel(4)).toBe("advanced");
+  });
+
+  it("rejects invalid external record payloads", () => {
+    expect(() => parseProgrammersRecord("not-an-object")).toThrow();
   });
 });

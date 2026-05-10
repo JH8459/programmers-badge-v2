@@ -63,6 +63,7 @@ const enqueueRootsForScan = (elements: Iterable<Element>): void => {
     return;
   }
 
+  // 제출 직후 짧은 구간의 DOM 변화를 한 번에 모아 success 시그널을 판별한다.
   scanTimer = window.setTimeout(() => {
     scanTimer = null;
     void scanPendingRoots();
@@ -177,6 +178,7 @@ const mutationObserver = new MutationObserver((records) => {
   enqueueRootsForScan(collectMutationRoots(records));
 });
 
+// 결과 모달, 토스트, 라이브 영역 변화까지 잡기 위해 문서 전체 mutation을 관찰한다.
 mutationObserver.observe(document.documentElement, {
   childList: true,
   subtree: true,

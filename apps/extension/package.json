@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@programmers-badge/shared-types": "workspace:*"
+    "@programmers-badge/shared-types": "workspace:*",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.319"

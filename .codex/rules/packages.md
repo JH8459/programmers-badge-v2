@@ -24,7 +24,8 @@
 ## `packages/shared-types`
 
 - API와 extension 사이의 contract만 소유한다.
-- runtime dependency나 app implementation detail을 담지 않는다.
+- shared contract의 runtime validation schema가 필요하면 zod schema와 parse helper를 여기 둔다.
+- app-specific external payload schema나 framework wiring은 여기 두지 않는다.
 - field rename/add/remove는 API, extension, 테스트, 문서를 함께 움직이는 breaking point로 취급한다.
 
 ## `packages/config`
@@ -35,5 +36,6 @@
 ## When Editing
 
 - contract 변경은 app 양쪽 영향 범위를 먼저 적는다.
+- contract validation 규칙 변경은 shared zod schema와 consumer app parse 지점을 함께 갱신한다.
 - rendering 변경은 API에서 중복 구현하지 않도록 `badge-core`를 우선 수정한다.
 - shared package 변경 후에는 해당 consumer package들의 `typecheck`, `test`, `build` 영향을 확인한다.

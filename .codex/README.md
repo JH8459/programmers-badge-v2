@@ -20,7 +20,7 @@
 - `.codex/rules/architecture.md`: monorepo 구조, 책임, dependency boundary, 기본 data flow
 - `.codex/rules/api.md`: `apps/api` 전용 규칙, runtime 기본값, persistence/public badge 규칙
 - `.codex/rules/extension.md`: `apps/extension` 전용 규칙, Chrome extension 동작/권한 기본값
-- `.codex/rules/packages.md`: `packages/*` 전용 규칙, contract/rendering/config boundary
+- `.codex/rules/packages.md`: `packages/*` 전용 규칙, contract/rendering/config boundary와 shared zod schema 기준
 - `.codex/rules/roadmap.md`: 현재 상태와 다음 단계
 - `.codex/rules/adrs/README.md`: 장기 architecture decision record 위치
 - `.codex/memory/README.md`: memory 목적, 승격 기준, 업데이트 정책
@@ -39,7 +39,7 @@
 
 - API만 수정하면 `common`, `architecture`, `api`, 필요한 `instructions`를 읽는다.
 - Extension만 수정하면 `common`, `architecture`, `extension`, 필요한 `instructions`를 읽는다.
-- `packages/*`를 수정하거나 boundary를 건드리면 `common`, `architecture`, `packages`를 함께 읽는다.
+- `packages/*`를 수정하거나 boundary를 건드리면 `common`, `architecture`, `packages`를 함께 읽고 contract zod schema 영향 여부를 확인한다.
 - API와 extension을 함께 바꾸면 두 개별 규칙을 모두 읽고 contract 영향 여부를 확인한다.
 - 구조나 workflow를 바꾸는 작업이면 `memory/*`도 먼저 읽고, 새 선호나 반복 실수가 생겼는지 확인한다.
 - repo-local skill을 직접 만들거나 수정하면 해당 `.agents/skills/*/SKILL.md`와 `agents/openai.yaml`을 함께 본다.

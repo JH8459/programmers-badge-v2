@@ -29,6 +29,7 @@ packages/config     shared lint/prettier/tsconfig config
 ### `packages/*`
 
 - shared package는 app 간 contract, rendering, config만 소유한다.
+- cross-project runtime validation이 필요하면 shared contract는 `packages/shared-types`의 zod schema를 우선 기준으로 둔다.
 - app-specific implementation이나 runtime dependency를 담지 않는다.
 
 ## Dependency Rules
@@ -42,7 +43,7 @@ packages/config     shared lint/prettier/tsconfig config
 
 1. extension이 로그인된 세션에서 최소 badge data를 읽는다.
 2. extension이 sync payload를 만든다.
-3. API가 payload를 검증하고 정규화한다.
+3. extension과 API가 shared contract면 `packages/shared-types` zod schema를 기준으로 payload와 response를 검증한다.
 4. API가 persistence에 badge snapshot을 저장한다.
 5. API가 `badge-core`를 사용해 public badge SVG를 pre-render하여 shared volume에 저장한다.
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.

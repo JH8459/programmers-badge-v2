@@ -22,6 +22,7 @@
 ### API
 
 - 서버 입력 검증과 normalization이 누락되지 않았는가
+- shared contract가 바뀌었으면 zod schema와 API boundary validation이 함께 갱신되었는가
 - persistence/public badge 규칙이 `badge-core`, `shared-types`와 어긋나지 않는가
 - public response에 과한 데이터가 노출되지 않는가
 
@@ -34,7 +35,7 @@
 ### Shared Packages
 
 - `packages/badge-core`는 pure하고 deterministic한가
-- `packages/shared-types`는 contract만 소유하는가
+- `packages/shared-types`는 contract와 shared zod schema만 소유하는가
 - shared package 변경이 consumer app들에 반영되었는가
 
 ### Quality

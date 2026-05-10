@@ -1,4 +1,4 @@
-import { toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
+import { parseProgrammersRecord, toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
 import { createIdleSyncState, type ExtensionSyncState } from "../shared/sync-state.js";
 import { EXTENSION_API_HOST, syncBadgePayload } from "./api-client.js";
 
@@ -17,6 +17,13 @@ type CollectionResult =
       reason: "not-logged-in" | "request-failed";
       message: string;
     };
+
+type InjectedCollectionResult =
+  | {
+      ok: true;
+      record: unknown;
+    }
+  | Extract<CollectionResult, { ok: false }>;
 
 export interface AutoSyncTrigger {
   tabId: number;
@@ -112,7 +119,8 @@ const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> =>
     target: { tabId },
     world: "MAIN",
     args: [PROGRAMMERS_RECORD_URL],
-    func: async (recordUrl: string): Promise<CollectionResult> => {
+    // 로그인된 Programmers 세션을 재사용하려면 페이지 컨텍스트에서 직접 fetch해야 한다.
+    func: async (recordUrl: string): Promise<InjectedCollectionResult> => {
       try {
         const response = await fetch(recordUrl, {
           credentials: "include",
@@ -139,7 +147,7 @@ const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> =>
 
         return {
           ok: true,
-          record: (await response.json()) as ProgrammersRecord,
+          record: await response.json(),
         };
       } catch (error) {
         return {
@@ -152,13 +160,30 @@ const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> =>
     },
   });
 
-  return (
-    (injectionResults[0]?.result as CollectionResult | undefined) ?? {
+  const injectedResult =
+    (injectionResults[0]?.result as InjectedCollectionResult | undefined) ?? {
       ok: false,
       reason: "request-failed",
       message: "Programmers 기록 수집 결과를 확인하지 못했습니다.",
-    }
-  );
+    };
+
+  if (!injectedResult.ok) {
+    return injectedResult;
+  }
+
+  try {
+    // executeScript에 넘긴 함수는 외부 import를 캡처할 수 없어서 raw JSON만 돌려받고 여기서 검증한다.
+    return {
+      ok: true,
+      record: parseProgrammersRecord(injectedResult.record),
+    };
+  } catch {
+    return {
+      ok: false,
+      reason: "request-failed",
+      message: "Programmers 기록 형식을 확인하지 못했습니다.",
+    };
+  }
 };
 
 const performSyncForResolvedTab = async (

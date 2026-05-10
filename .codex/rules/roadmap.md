@@ -3,9 +3,11 @@
 ## Current State
 
 - monorepo baseline은 준비되어 있다.
-- `packages/badge-core`와 `packages/shared-types`는 기본 rendering/contract를 제공한다.
+- `packages/badge-core`와 `packages/shared-types`는 기본 rendering/contract를 제공하고, shared contract runtime validation은 zod schema를 기준으로 맞춘다.
 - `apps/api`는 SQLite 기반 sync/public badge/health MVP와 pre-rendered SVG 정적 서빙을 제공한다.
+- `apps/api` runtime env는 단일 zod config로 검증하고 bootstrap 전에 fail-fast 한다.
 - `apps/extension`은 manual sync, 제출 감지 기반 auto-sync, popup copy flow를 제공한다.
+- `apps/extension`은 page-context fetch와 extension-context validation을 분리해 `executeScript` boundary를 안전하게 유지한다.
 - Docker Compose 기반 단일 API 배포 베이스가 있다.
 - PR verify, master deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 - NAS deploy는 DockerHub image와 committed root `docker-compose.yml` sync 기준으로 운영한다.
@@ -13,9 +15,9 @@
 
 ## Next Phase 1 - Runtime Strategy Hardening
 
-- local/dev/prod API base URL 전략을 확정한다.
+- local/dev/prod API base URL 전략을 장기 운영 관점에서 더 단순화할지 검토한다.
 - extension 배포 시 host permission과 runtime config 주입 방식을 정리한다.
-- API env strategy와 public base URL 운영 규칙을 문서화한다.
+- public base URL 운영 규칙과 deploy env ownership을 더 명확히 정리한다.
 
 ## Next Phase 2 - Contract And Identity Hardening
 

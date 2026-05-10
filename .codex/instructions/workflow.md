@@ -22,6 +22,7 @@
 - 합의된 범위 안에서만 구현한다.
 - 변경 위치와 검증 위치를 함께 정한다.
 - 미실행 검증은 이유와 후속 명령을 남긴다.
+- contract를 건드리면 shared zod schema를 먼저 고정하고 그 뒤 consumer app 구현을 맞춘다.
 - senior reviewer가 필요한 작업이면 `after-plan`, `after-implementation`, `after-validation`, `before-commit`, `multi-pass` 중 어떤 시점이 맞는지 먼저 고른다.
 - explicit user instruction이나 repeated correction이 생기면 memory 후보로 분류한다.
 
@@ -29,6 +30,8 @@
 
 - 코드 변경 시 `lint`, `typecheck`, `test`, `build` 중 영향 범위에 맞는 항목을 실행한다.
 - cross-project 변경이면 root `pnpm verify` 또는 필요한 package 조합으로 검증한다.
+- shared contract 변경이면 zod schema, parse 지점, 관련 테스트가 함께 갱신됐는지 확인한다.
+- runtime config 변경이면 default 값과 invalid env 실패 케이스까지 테스트로 고정한다.
 - 문서 변경만이면 링크, 참조 경로, source-of-truth 정합성을 확인한다.
 - public badge 변경이면 상태 코드, 응답 형식, 민감 정보 노출 여부를 함께 확인한다.
 - extension UI 변경이면 작은 viewport와 핵심 액션 노출 여부를 함께 본다.
