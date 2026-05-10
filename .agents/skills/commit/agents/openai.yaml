@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit"
+  short_description: "Split, stage, validate, and message repository commits"
+  default_prompt: "Use $commit to split the current diff into reviewable commits, draft the messages, and decide the right validation before any push."

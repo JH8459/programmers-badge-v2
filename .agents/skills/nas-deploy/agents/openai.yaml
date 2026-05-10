@@ -1,0 +1,4 @@
+interface:
+  display_name: "NAS Deploy"
+  short_description: "Review and guide the API DockerHub-to-NAS deploy flow"
+  default_prompt: "Use $nas-deploy to review the API deploy impact, validate the workflow, and list the required preflight and post-deploy checks."

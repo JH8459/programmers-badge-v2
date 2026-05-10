@@ -1,0 +1,4 @@
+interface:
+  display_name: "Docs Update"
+  short_description: "Update repo docs from the current diff and workflow changes"
+  default_prompt: "Use $docs-update to compare the current diff against the repo docs, update the source-of-truth files first, and then align any summary docs that became stale."

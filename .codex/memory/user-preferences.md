@@ -16,3 +16,4 @@
 
 - reviewer 호출 시점은 하드코딩보다 skill에서 조절 가능하게 두는 방식을 선호한다.
 - API와 extension은 하나의 repo 안에 있지만, 규칙과 reviewer는 분리해 관리하는 방식을 선호한다.
+- repo-local skill 이름은 호출하기 짧고 목적이 바로 드러나는 간결한 형태를 선호한다.

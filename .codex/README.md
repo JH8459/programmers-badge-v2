@@ -33,6 +33,7 @@
 - `.codex/agents/README.md`: custom subagent 목록과 호출 기준
 - `.codex/agents/api-senior-code-review.toml`: API senior reviewer 정의
 - `.codex/agents/extension-senior-code-review.toml`: extension senior reviewer 정의
+- `.agents/skills/*`: repo-local reusable skill 정의 위치
 
 ## How To Read
 
@@ -41,3 +42,4 @@
 - `packages/*`를 수정하거나 boundary를 건드리면 `common`, `architecture`, `packages`를 함께 읽는다.
 - API와 extension을 함께 바꾸면 두 개별 규칙을 모두 읽고 contract 영향 여부를 확인한다.
 - 구조나 workflow를 바꾸는 작업이면 `memory/*`도 먼저 읽고, 새 선호나 반복 실수가 생겼는지 확인한다.
+- repo-local skill을 직접 만들거나 수정하면 해당 `.agents/skills/*/SKILL.md`와 `agents/openai.yaml`을 함께 본다.

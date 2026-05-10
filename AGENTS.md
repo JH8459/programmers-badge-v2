@@ -13,7 +13,8 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 5. 작업 범위에 맞는 `.codex/rules/api.md`, `.codex/rules/extension.md`, `.codex/rules/packages.md`
 6. 관련 `.codex/instructions/*.md`
 7. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
-8. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
+8. repo-local skill을 쓰거나 수정하면 관련 `.agents/skills/*/SKILL.md`
+9. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
 
 ## Path Index
 
@@ -35,3 +36,7 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.codex/agents/README.md`: custom subagent 목록과 호출 기준
 - `.codex/agents/api-senior-code-review.toml`: API senior reviewer 정의
 - `.codex/agents/extension-senior-code-review.toml`: extension senior reviewer 정의
+- `.agents/skills/senior-review-flow/SKILL.md`: reviewer 호출 시점 제어 skill
+- `.agents/skills/nas-deploy/SKILL.md`: API DockerHub to NAS deploy workflow skill
+- `.agents/skills/commit/SKILL.md`: commit splitting, staging, push planning skill
+- `.agents/skills/docs-update/SKILL.md`: diff 기반 docs update skill
