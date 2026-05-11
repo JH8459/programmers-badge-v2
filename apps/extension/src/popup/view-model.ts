@@ -8,7 +8,7 @@ interface PopupSummaryItem {
 }
 
 interface PopupCopyItem {
-  key: "badge-url" | "markdown-snippet";
+  key: "badge-url" | "mini-badge-url" | "markdown-snippet" | "mini-markdown-snippet";
   label: string;
   buttonLabel: string;
   value: string;
@@ -118,6 +118,24 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
                 buttonLabel: "복사",
                 value: state.lastSync.markdownSnippet,
                 preview: state.lastSync.markdownSnippet,
+              }
+            : null,
+          state.lastSync?.miniBadgeUrl
+            ? {
+                key: "mini-badge-url",
+                label: "Mini Badge URL",
+                buttonLabel: "복사",
+                value: state.lastSync.miniBadgeUrl,
+                preview: state.lastSync.miniBadgeUrl,
+              }
+            : null,
+          state.lastSync?.miniMarkdownSnippet
+            ? {
+                key: "mini-markdown-snippet",
+                label: "Mini Markdown",
+                buttonLabel: "복사",
+                value: state.lastSync.miniMarkdownSnippet,
+                preview: state.lastSync.miniMarkdownSnippet,
               }
             : null,
         ].filter((item): item is PopupCopyItem => item !== null),

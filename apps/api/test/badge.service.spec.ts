@@ -41,6 +41,7 @@ describe("BadgeService", () => {
     try {
       const service = new BadgeService(repository, badgeAssetService);
       const svg = service.renderPublicBadge(record.publicSlug);
+      const miniSvg = service.renderPublicMiniBadge(record.publicSlug);
 
       expect(svg).toContain("<svg");
       expect(svg).toContain('width="350px"');
@@ -50,7 +51,12 @@ describe("BadgeService", () => {
       expect(svg).toContain("12,000");
       expect(svg).toContain("128");
       expect(svg).toContain("55");
+      expect(miniSvg).toContain("<svg");
+      expect(miniSvg).toContain('width="110"');
+      expect(miniSvg).toContain(">programmers</text>");
+      expect(miniSvg).toContain(">Lv.4</text>");
       expect(existsSync(join(badgeOutputDirectory, `${record.publicSlug}.svg`))).toBe(true);
+      expect(existsSync(join(badgeOutputDirectory, `${record.publicSlug}-mini.svg`))).toBe(true);
     } finally {
       process.env.BADGE_OUTPUT_DIR = originalBadgeOutputDirectory;
       databaseService.onModuleDestroy();

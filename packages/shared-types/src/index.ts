@@ -6,7 +6,7 @@ export const BADGE_TIERS = ["starter", "intermediate", "advanced"] as const;
 export const badgeFormatSchema = z.enum(SUPPORTED_BADGE_FORMATS);
 export const badgeTierSchema = z.enum(BADGE_TIERS);
 
-// Shared zod schemas are the runtime contract source of truth for both API and extension.
+// API와 extension이 같은 런타임 계약을 쓰도록 zod schema를 단일 기준으로 둔다.
 export const badgeSyncPayloadSchema = z.strictObject({
   programmerHandle: z.string().trim().min(1),
   displayName: z.string().trim().min(1),
@@ -22,7 +22,9 @@ export const badgeSyncPayloadSchema = z.strictObject({
 export const publicBadgeResponseSchema = z.strictObject({
   slug: z.string().trim().min(1),
   badgeUrl: z.string().url(),
+  miniBadgeUrl: z.string().url(),
   markdownSnippet: z.string().trim().min(1),
+  miniMarkdownSnippet: z.string().trim().min(1),
 });
 
 export const badgeSyncResponseSchema = z.strictObject({

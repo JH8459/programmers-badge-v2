@@ -42,7 +42,9 @@ describe("SyncService", () => {
 
       expect(response.slug).toHaveLength(12);
       expect(response.badgeUrl).toContain(`/badge/${response.slug}.svg`);
+      expect(response.miniBadgeUrl).toContain(`/badge/${response.slug}-mini.svg`);
       expect(response.markdownSnippet).toContain(response.badgeUrl);
+      expect(response.miniMarkdownSnippet).toContain(response.miniBadgeUrl);
       expect(response.displayName).toBe("Sync User");
       expect(response.rankingScore).toBe(5820);
 
@@ -57,8 +59,11 @@ describe("SyncService", () => {
       expect(savedRecord?.rankingRank).toBe(17);
 
       const badgeFilePath = join(badgeOutputDirectory, `${response.slug}.svg`);
+      const miniBadgeFilePath = join(badgeOutputDirectory, `${response.slug}-mini.svg`);
       expect(existsSync(badgeFilePath)).toBe(true);
+      expect(existsSync(miniBadgeFilePath)).toBe(true);
       expect(readFileSync(badgeFilePath, "utf8")).toContain("Sync User");
+      expect(readFileSync(miniBadgeFilePath, "utf8")).toContain("programmers");
     } finally {
       process.env.BADGE_OUTPUT_DIR = originalBadgeOutputDirectory;
       databaseService.onModuleDestroy();

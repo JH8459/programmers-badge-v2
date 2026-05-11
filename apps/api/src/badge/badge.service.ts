@@ -25,4 +25,20 @@ export class BadgeService {
 
     return this.badgeAssetService.writePublicBadge(badgeProfile);
   }
+
+  renderPublicMiniBadge(slug: string): string {
+    const cachedBadgeSvg = this.badgeAssetService.readPublicBadge(slug, "mini");
+
+    if (cachedBadgeSvg) {
+      return cachedBadgeSvg;
+    }
+
+    const badgeProfile = this.badgeProfileRepository.findByPublicSlug(slug);
+
+    if (!badgeProfile) {
+      throw new NotFoundException(`Public mini badge '${slug}' was not found.`);
+    }
+
+    return this.badgeAssetService.writePublicBadge(badgeProfile, "mini");
+  }
 }

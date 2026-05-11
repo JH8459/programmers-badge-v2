@@ -10,11 +10,14 @@ import { getPublicBadgePathPrefix, getPublicBaseUrl } from "./badge-runtime";
 
 export const buildPublicBadgeResponse = (slug: string): PublicBadgeResponse => {
   const badgeUrl = `${getPublicBaseUrl()}${getPublicBadgePathPrefix()}/${slug}.svg`;
+  const miniBadgeUrl = `${getPublicBaseUrl()}${getPublicBadgePathPrefix()}/${slug}-mini.svg`;
 
   return parsePublicBadgeResponse({
     slug,
     badgeUrl,
+    miniBadgeUrl,
     markdownSnippet: `![Programmers Badge](${badgeUrl})`,
+    miniMarkdownSnippet: `![Programmers Mini Badge](${miniBadgeUrl})`,
   });
 };
 

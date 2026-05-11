@@ -2,20 +2,28 @@ import { Injectable } from "@nestjs/common";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-import { createProgrammersBadgeRenderModel, renderBadgeSvg } from "@programmers-badge/badge-core";
+import {
+  createProgrammersBadgeRenderModel,
+  renderBadgeSvg,
+  renderMiniBadgeSvg,
+} from "@programmers-badge/badge-core";
 
 import type { BadgeProfileRecord } from "../persistence/badge-profile.repository";
 import { getBadgeOutputDirectory } from "./badge-runtime";
 
+type BadgeAssetVariant = "full" | "mini";
+
 @Injectable()
 export class BadgeAssetService {
-  private getBadgeFilePath(slug: string): string {
-    return join(getBadgeOutputDirectory(), `${slug}.svg`);
+  private getBadgeFilePath(slug: string, variant: BadgeAssetVariant): string {
+    const fileName = variant === "mini" ? `${slug}-mini.svg` : `${slug}.svg`;
+
+    return join(getBadgeOutputDirectory(), fileName);
   }
 
-  readPublicBadge(slug: string): string | null {
+  readPublicBadge(slug: string, variant: BadgeAssetVariant = "full"): string | null {
     try {
-      return readFileSync(this.getBadgeFilePath(slug), "utf8");
+      return readFileSync(this.getBadgeFilePath(slug, variant), "utf8");
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -30,18 +38,17 @@ export class BadgeAssetService {
     }
   }
 
-  writePublicBadge(record: BadgeProfileRecord): string {
-    const badgeSvg = renderBadgeSvg(
-      createProgrammersBadgeRenderModel({
-        displayName: record.displayName,
-        solvedCount: record.solvedCount,
-        solvedTotal: record.solvedTotal,
-        skillLevel: record.skillLevel,
-        rankingScore: record.rankingScore,
-        rankingRank: record.rankingRank,
-      })
-    );
-    const badgeFilePath = this.getBadgeFilePath(record.publicSlug);
+  writePublicBadge(record: BadgeProfileRecord, variant: BadgeAssetVariant = "full"): string {
+    const renderModel = createProgrammersBadgeRenderModel({
+      displayName: record.displayName,
+      solvedCount: record.solvedCount,
+      solvedTotal: record.solvedTotal,
+      skillLevel: record.skillLevel,
+      rankingScore: record.rankingScore,
+      rankingRank: record.rankingRank,
+    });
+    const badgeSvg = variant === "mini" ? renderMiniBadgeSvg(renderModel) : renderBadgeSvg(renderModel);
+    const badgeFilePath = this.getBadgeFilePath(record.publicSlug, variant);
 
     mkdirSync(dirname(badgeFilePath), { recursive: true });
 

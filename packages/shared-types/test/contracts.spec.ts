@@ -63,8 +63,11 @@ describe("shared types contracts", () => {
       parseBadgeSyncResponse({
         slug: "abc123def456",
         badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         markdownSnippet:
           "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+        miniMarkdownSnippet:
+          "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
         programmerHandle: "sync-user",
         displayName: "Sync User",
         solvedCount: 10,

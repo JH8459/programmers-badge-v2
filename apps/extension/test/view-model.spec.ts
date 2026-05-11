@@ -24,8 +24,11 @@ describe("getPopupViewModel", () => {
       lastSync: {
         slug: "abc123def456",
         badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         markdownSnippet:
           "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+        miniMarkdownSnippet:
+          "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
         programmerHandle: "programmers-user",
         displayName: "Programmers User",
         solvedCount: 100,
@@ -52,9 +55,20 @@ describe("getPopupViewModel", () => {
       { label: "풀이", value: "100/300" },
       { label: "순위", value: "42위" },
     ]);
-    expect(viewModel.copyItems).toHaveLength(2);
+    expect(viewModel.copyItems).toHaveLength(4);
     expect(viewModel.copyItems[0]?.value).toContain("programmers-badge.jh8459.com");
-    expect(viewModel.copyItems.map((item) => item.buttonLabel)).toEqual(["복사", "복사"]);
+    expect(viewModel.copyItems.map((item) => item.label)).toEqual([
+      "Badge URL",
+      "Markdown",
+      "Mini Badge URL",
+      "Mini Markdown",
+    ]);
+    expect(viewModel.copyItems.map((item) => item.buttonLabel)).toEqual([
+      "복사",
+      "복사",
+      "복사",
+      "복사",
+    ]);
   });
 
   it("hides the summary subtitle when the handle matches the display name", () => {
@@ -64,8 +78,11 @@ describe("getPopupViewModel", () => {
       lastSync: {
         slug: "abc123def456",
         badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         markdownSnippet:
           "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+        miniMarkdownSnippet:
+          "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
         programmerHandle: "JH8459",
         displayName: "JH8459",
         solvedCount: 100,

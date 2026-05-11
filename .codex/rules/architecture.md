@@ -16,7 +16,7 @@ packages/config     shared lint/prettier/tsconfig config
 
 - sync endpoint와 public badge endpoint를 제공한다.
 - persistence, badge asset storage adapter, env/runtime wiring을 소유한다.
-- sync 시 저장된 badge data를 `packages/badge-core`에 전달해 pre-rendered SVG asset을 생성한다.
+- sync 시 저장된 badge data를 `packages/badge-core`에 전달해 full/mini pre-rendered SVG asset을 생성한다.
 - Nest/Express static serving으로 `/badge/*.svg`를 정적으로 서빙한다.
 - production artifact는 단일 Docker image로 관리하고, NAS는 DockerHub image pull과 committed deploy compose sync로 배포한다.
 
@@ -24,7 +24,7 @@ packages/config     shared lint/prettier/tsconfig config
 
 - Chrome APIs와 browser UX를 소유한다.
 - 로그인된 Programmers 세션을 활용해 sync payload를 준비한다.
-- 사용자 트리거 기반 sync와 copy flow를 제공한다.
+- 사용자 트리거 기반 sync와 full/mini badge copy flow를 제공한다.
 
 ### `packages/*`
 
@@ -45,7 +45,7 @@ packages/config     shared lint/prettier/tsconfig config
 2. extension이 sync payload를 만든다.
 3. extension과 API가 shared contract면 `packages/shared-types` zod schema를 기준으로 payload와 response를 검증한다.
 4. API가 persistence에 badge snapshot을 저장한다.
-5. API가 `badge-core`를 사용해 public badge SVG를 pre-render하여 shared volume에 저장한다.
+5. API가 `badge-core`를 사용해 full/mini public badge SVG를 pre-render하여 shared volume에 저장한다.
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
 7. GitHub Actions가 API 이미지를 DockerHub에 push하고, committed deploy compose 파일과 `.env.deploy`를 NAS에 반영한 뒤 `production` environment로 production 배포를 갱신한다.
 8. GitHub Actions가 extension build 결과를 zip으로 묶어 `extension-release` environment 기준 Release asset으로 게시한다.

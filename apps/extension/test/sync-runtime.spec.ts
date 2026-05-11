@@ -46,8 +46,11 @@ describe("sync runtime", () => {
     mockedSyncBadgePayload.mockResolvedValue({
       slug: "abc123def456",
       badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+      miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
       markdownSnippet:
         "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+      miniMarkdownSnippet:
+        "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
       programmerHandle: "programmers-user",
       displayName: "Programmers User",
       solvedCount: 123,

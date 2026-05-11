@@ -11,4 +11,10 @@ export class BadgeController {
   getBadgeSvg(@Param("slug") slug: string): string {
     return this.badgeService.renderPublicBadge(slug);
   }
+
+  @Get(":slug/mini.svg")
+  @Header("Content-Type", "image/svg+xml")
+  getMiniBadgeSvg(@Param("slug") slug: string): string {
+    return this.badgeService.renderPublicMiniBadge(slug);
+  }
 }
