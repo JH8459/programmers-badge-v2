@@ -30,8 +30,10 @@ export interface ProgrammersBadgeModel {
   rankingRank: number;
 }
 
+const DEFAULT_BADGE_COLOR: BadgeColor = { start: "#F49347;", middle: "#984400;", end: "#492000;" };
+
 const BADGE_COLORS: BadgeColor[] = [
-  { start: "#F49347;", middle: "#984400;", end: "#492000;" },
+  DEFAULT_BADGE_COLOR,
   { start: "#939195;", middle: "#6B7E91;", end: "#1F354A;" },
   { start: "#FFC944;", middle: "#FFAF44;", end: "#FF9632;" },
   { start: "#8CC584;", middle: "#45B2D3;", end: "#51A795;" },
@@ -47,8 +49,11 @@ const clampSkillLevel = (skillLevel: number): number => {
   return Math.min(Math.max(Math.trunc(skillLevel), 0), BADGE_COLORS.length - 1);
 };
 
+const getBadgeColor = (skillLevel: number): BadgeColor =>
+  BADGE_COLORS[clampSkillLevel(skillLevel)] ?? DEFAULT_BADGE_COLOR;
+
 export const renderBadgeSvg = (userData: BadgeUserData): string => {
-  const colors = BADGE_COLORS[clampSkillLevel(userData.skillCheck?.level ?? 0)]!;
+  const colors = getBadgeColor(userData.skillCheck?.level ?? 0);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
@@ -167,7 +172,7 @@ export const renderBadgeSvg = (userData: BadgeUserData): string => {
 };
 
 export const renderMiniBadgeSvg = (userData: BadgeUserData): string => {
-  const colors = BADGE_COLORS[clampSkillLevel(userData.skillCheck?.level ?? 0)]!;
+  const colors = getBadgeColor(userData.skillCheck?.level ?? 0);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">

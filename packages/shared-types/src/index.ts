@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const SUPPORTED_BADGE_FORMATS = ["svg", "markdown"] as const;
-export const BADGE_TIERS = ["starter", "intermediate", "advanced"] as const;
+export const badgeFormatSchema = z.enum(["svg", "markdown"]);
+export const badgeTierSchema = z.enum(["starter", "intermediate", "advanced"]);
 
-export const badgeFormatSchema = z.enum(SUPPORTED_BADGE_FORMATS);
-export const badgeTierSchema = z.enum(BADGE_TIERS);
+export const SUPPORTED_BADGE_FORMATS = badgeFormatSchema.options;
+export const BADGE_TIERS = badgeTierSchema.options;
 
 // API와 extension이 같은 런타임 계약을 쓰도록 zod schema를 단일 기준으로 둔다.
 export const badgeSyncPayloadSchema = z.strictObject({

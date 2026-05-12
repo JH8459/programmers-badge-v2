@@ -21,8 +21,8 @@ export class SyncService {
     const normalizedPayload = parseBadgeSyncPayload(payload);
 
     const record = this.badgeProfileRepository.upsert(normalizedPayload);
-    this.badgeAssetService.writePublicBadge(record);
-    this.badgeAssetService.writePublicBadge(record, "mini");
+    this.badgeAssetService.writePublicBadge({ record });
+    this.badgeAssetService.writePublicBadge({ record, variant: "mini" });
 
     return buildBadgeSyncResponse(record);
   }

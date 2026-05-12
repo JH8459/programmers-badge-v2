@@ -2,10 +2,30 @@ import { Inject, Injectable, OnModuleDestroy, Optional } from "@nestjs/common";
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { z } from "zod";
 
 import { readApiRuntimeConfig } from "../common/runtime-config";
 
 export const DATABASE_PATH_TOKEN = Symbol("DATABASE_PATH_TOKEN");
+
+const tableColumnSchema = z
+  .object({
+    name: z.string(),
+  })
+  .passthrough();
+
+const tableColumnListSchema = z.array(tableColumnSchema);
+
+const readyRowSchema = z
+  .object({
+    ready: z.number(),
+  })
+  .passthrough();
+
+interface EnsureColumnInput {
+  columnName: string;
+  definition: string;
+}
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
@@ -52,18 +72,18 @@ export class DatabaseService implements OnModuleDestroy {
       ].join("\n")
     );
 
-    this.ensureColumn("display_name", "TEXT NOT NULL DEFAULT ''");
-    this.ensureColumn("solved_total", "INTEGER NOT NULL DEFAULT 0");
-    this.ensureColumn("skill_level", "INTEGER NOT NULL DEFAULT 0");
-    this.ensureColumn("ranking_score", "INTEGER NOT NULL DEFAULT 0");
-    this.ensureColumn("ranking_rank", "INTEGER NOT NULL DEFAULT 1");
+    this.ensureColumn({ columnName: "display_name", definition: "TEXT NOT NULL DEFAULT ''" });
+    this.ensureColumn({ columnName: "solved_total", definition: "INTEGER NOT NULL DEFAULT 0" });
+    this.ensureColumn({ columnName: "skill_level", definition: "INTEGER NOT NULL DEFAULT 0" });
+    this.ensureColumn({ columnName: "ranking_score", definition: "INTEGER NOT NULL DEFAULT 0" });
+    this.ensureColumn({ columnName: "ranking_rank", definition: "INTEGER NOT NULL DEFAULT 1" });
   }
 
-  private ensureColumn(columnName: string, definition: string): void {
+  private ensureColumn({ columnName, definition }: EnsureColumnInput): void {
     // 현재는 additive migration만 허용하므로 누락 컬럼만 뒤늦게 보강한다.
-    const existingColumns = this.database
-      .prepare("PRAGMA table_info(badge_profiles)")
-      .all() as Array<{ name: string }>;
+    const existingColumns = tableColumnListSchema.parse(
+      this.database.prepare("PRAGMA table_info(badge_profiles)").all()
+    );
 
     if (existingColumns.some((column) => column.name === columnName)) {
       return;
@@ -77,8 +97,11 @@ export class DatabaseService implements OnModuleDestroy {
   }
 
   isReady(): boolean {
-    const row = this.database.prepare("SELECT 1 as ready").get() as { ready: number } | undefined;
-    return row?.ready === 1;
+    const parseResult = readyRowSchema.safeParse(
+      this.database.prepare("SELECT 1 as ready").get()
+    );
+
+    return parseResult.success && parseResult.data.ready === 1;
   }
 
   onModuleDestroy(): void {

@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { randomBytes } from "node:crypto";
+import { z } from "zod";
 
-import type { BadgeSyncPayload } from "@programmers-badge/shared-types";
+import { badgeTierSchema, type BadgeSyncPayload } from "@programmers-badge/shared-types";
 
 import { DatabaseService } from "./database.service";
 
@@ -20,19 +21,37 @@ export interface BadgeProfileRecord {
   updatedAt: string;
 }
 
-interface BadgeProfileRow {
-  programmer_handle: string;
-  display_name: string;
-  public_slug: string;
-  solved_count: number;
-  solved_total: number;
-  skill_level: number;
-  ranking_score: number;
-  ranking_rank: number;
-  badge_tier: BadgeSyncPayload["badgeTier"];
-  source_synced_at: string;
-  created_at: string;
-  updated_at: string;
+const publicSlugRowSchema = z
+  .object({
+    public_slug: z.string(),
+  })
+  .passthrough();
+
+const badgeProfileRowSchema = z
+  .object({
+    programmer_handle: z.string(),
+    display_name: z.string(),
+    public_slug: z.string(),
+    solved_count: z.number(),
+    solved_total: z.number(),
+    skill_level: z.number(),
+    ranking_score: z.number(),
+    ranking_rank: z.number(),
+    badge_tier: badgeTierSchema,
+    source_synced_at: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  })
+  .passthrough();
+
+type BadgeProfileRow = z.infer<typeof badgeProfileRowSchema>;
+
+interface FindByProgrammerHandleInput {
+  programmerHandle: string;
+}
+
+interface FindByPublicSlugInput {
+  publicSlug: string;
 }
 
 @Injectable()
@@ -65,9 +84,13 @@ export class BadgeProfileRepository {
 
     while (true) {
       const candidateSlug = this.generatePublicSlug();
-      const existing = database
-        .prepare("SELECT public_slug FROM badge_profiles WHERE public_slug = ?")
-        .get(candidateSlug) as { public_slug: string } | undefined;
+      const existing = publicSlugRowSchema
+        .optional()
+        .parse(
+          database
+            .prepare("SELECT public_slug FROM badge_profiles WHERE public_slug = ?")
+            .get(candidateSlug)
+        );
 
       if (!existing) {
         return candidateSlug;
@@ -77,15 +100,9 @@ export class BadgeProfileRepository {
 
   upsert(payload: BadgeSyncPayload): BadgeProfileRecord {
     const database = this.databaseService.getConnection();
-    const existingRecord = database
-      .prepare(
-        [
-          "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
-          "FROM badge_profiles",
-          "WHERE programmer_handle = ?",
-        ].join(" ")
-      )
-      .get(payload.programmerHandle) as BadgeProfileRow | undefined;
+    const existingRecord = this.getByProgrammerHandle({
+      programmerHandle: payload.programmerHandle,
+    });
 
     const now = new Date().toISOString();
     const publicSlug = existingRecord?.public_slug ?? this.getUniquePublicSlug();
@@ -124,35 +141,57 @@ export class BadgeProfileRepository {
         now
       );
 
-    return this.findByProgrammerHandle(payload.programmerHandle)!;
+    const savedRecord = this.findByProgrammerHandle({
+      programmerHandle: payload.programmerHandle,
+    });
+
+    if (!savedRecord) {
+      throw new Error("Badge profile was not persisted.");
+    }
+
+    return savedRecord;
   }
 
-  findByProgrammerHandle(programmerHandle: string): BadgeProfileRecord | null {
-    const row = this.databaseService
-      .getConnection()
-      .prepare(
-        [
-          "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
-          "FROM badge_profiles",
-          "WHERE programmer_handle = ?",
-        ].join(" ")
-      )
-      .get(programmerHandle) as BadgeProfileRow | undefined;
+  private getByProgrammerHandle({
+    programmerHandle,
+  }: FindByProgrammerHandleInput): BadgeProfileRow | undefined {
+    return badgeProfileRowSchema
+      .optional()
+      .parse(
+        this.databaseService
+          .getConnection()
+          .prepare(
+            [
+              "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "FROM badge_profiles",
+              "WHERE programmer_handle = ?",
+            ].join(" ")
+          )
+          .get(programmerHandle)
+      );
+  }
+
+  findByProgrammerHandle(input: FindByProgrammerHandleInput): BadgeProfileRecord | null {
+    const row = this.getByProgrammerHandle(input);
 
     return row ? this.mapRow(row) : null;
   }
 
-  findByPublicSlug(publicSlug: string): BadgeProfileRecord | null {
-    const row = this.databaseService
-      .getConnection()
-      .prepare(
-        [
-          "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
-          "FROM badge_profiles",
-          "WHERE public_slug = ?",
-        ].join(" ")
-      )
-      .get(publicSlug) as BadgeProfileRow | undefined;
+  findByPublicSlug({ publicSlug }: FindByPublicSlugInput): BadgeProfileRecord | null {
+    const row = badgeProfileRowSchema
+      .optional()
+      .parse(
+        this.databaseService
+          .getConnection()
+          .prepare(
+            [
+              "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "FROM badge_profiles",
+              "WHERE public_slug = ?",
+            ].join(" ")
+          )
+          .get(publicSlug)
+      );
 
     return row ? this.mapRow(row) : null;
   }

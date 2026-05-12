@@ -48,7 +48,7 @@ describe("SyncService", () => {
       expect(response.displayName).toBe("Sync User");
       expect(response.rankingScore).toBe(5820);
 
-      const savedRecord = repository.findByProgrammerHandle("sync-user");
+      const savedRecord = repository.findByProgrammerHandle({ programmerHandle: "sync-user" });
       expect(savedRecord).not.toBeNull();
       expect(savedRecord?.displayName).toBe("Sync User");
       expect(savedRecord?.badgeTier).toBe("intermediate");

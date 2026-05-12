@@ -23,6 +23,15 @@ interface ApiRuntimeConfigShape {
   badgeOutputDirectory: string;
 }
 
+interface NormalizePublicBaseUrlInput {
+  configuredBaseUrl: string | undefined;
+  port: number;
+}
+
+interface NormalizePublicBadgePathPrefixInput {
+  configuredPathPrefix: string | undefined;
+}
+
 const normalizeOptionalEnvString = (value: unknown): unknown => {
   if (typeof value !== "string") {
     return value;
@@ -32,7 +41,10 @@ const normalizeOptionalEnvString = (value: unknown): unknown => {
   return trimmedValue.length > 0 ? trimmedValue : undefined;
 };
 
-const normalizePublicBaseUrl = (configuredBaseUrl: string | undefined, port: number): string => {
+const normalizePublicBaseUrl = ({
+  configuredBaseUrl,
+  port,
+}: NormalizePublicBaseUrlInput): string => {
   if (configuredBaseUrl) {
     return configuredBaseUrl.replace(/\/+$/, "");
   }
@@ -40,7 +52,9 @@ const normalizePublicBaseUrl = (configuredBaseUrl: string | undefined, port: num
   return `http://localhost:${port}`;
 };
 
-const normalizePublicBadgePathPrefix = (configuredPathPrefix: string | undefined): string => {
+const normalizePublicBadgePathPrefix = ({
+  configuredPathPrefix,
+}: NormalizePublicBadgePathPrefixInput): string => {
   const rawPathPrefix = configuredPathPrefix ?? DEFAULT_PUBLIC_BADGE_PATH_PREFIX;
   const pathPrefixWithLeadingSlash = rawPathPrefix.startsWith("/")
     ? rawPathPrefix
@@ -60,11 +74,13 @@ export const apiRuntimeConfigSchema = z
   })
   .transform((env): ApiRuntimeConfigShape => {
     const port = env.PORT ?? DEFAULT_PORT;
-    const publicBadgePathPrefix = normalizePublicBadgePathPrefix(env.PUBLIC_BADGE_PATH_PREFIX);
+    const publicBadgePathPrefix = normalizePublicBadgePathPrefix({
+      configuredPathPrefix: env.PUBLIC_BADGE_PATH_PREFIX,
+    });
 
     return {
       port,
-      publicBaseUrl: normalizePublicBaseUrl(env.PUBLIC_BASE_URL, port),
+      publicBaseUrl: normalizePublicBaseUrl({ configuredBaseUrl: env.PUBLIC_BASE_URL, port }),
       publicBadgePathPrefix,
       databasePath: env.DATABASE_PATH ?? DEFAULT_DATABASE_PATH,
       badgeOutputDirectory: env.BADGE_OUTPUT_DIR ?? DEFAULT_BADGE_OUTPUT_DIR,

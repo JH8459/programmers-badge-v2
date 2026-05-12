@@ -13,17 +13,32 @@ import { getBadgeOutputDirectory } from "./badge-runtime";
 
 type BadgeAssetVariant = "full" | "mini";
 
+interface BadgeFilePathInput {
+  slug: string;
+  variant: BadgeAssetVariant;
+}
+
+interface ReadPublicBadgeInput {
+  slug: string;
+  variant?: BadgeAssetVariant;
+}
+
+interface WritePublicBadgeInput {
+  record: BadgeProfileRecord;
+  variant?: BadgeAssetVariant;
+}
+
 @Injectable()
 export class BadgeAssetService {
-  private getBadgeFilePath(slug: string, variant: BadgeAssetVariant): string {
+  private getBadgeFilePath({ slug, variant }: BadgeFilePathInput): string {
     const fileName = variant === "mini" ? `${slug}-mini.svg` : `${slug}.svg`;
 
     return join(getBadgeOutputDirectory(), fileName);
   }
 
-  readPublicBadge(slug: string, variant: BadgeAssetVariant = "full"): string | null {
+  readPublicBadge({ slug, variant = "full" }: ReadPublicBadgeInput): string | null {
     try {
-      return readFileSync(this.getBadgeFilePath(slug, variant), "utf8");
+      return readFileSync(this.getBadgeFilePath({ slug, variant }), "utf8");
     } catch (error) {
       if (
         typeof error === "object" &&
@@ -38,7 +53,7 @@ export class BadgeAssetService {
     }
   }
 
-  writePublicBadge(record: BadgeProfileRecord, variant: BadgeAssetVariant = "full"): string {
+  writePublicBadge({ record, variant = "full" }: WritePublicBadgeInput): string {
     const renderModel = createProgrammersBadgeRenderModel({
       displayName: record.displayName,
       solvedCount: record.solvedCount,
@@ -47,8 +62,9 @@ export class BadgeAssetService {
       rankingScore: record.rankingScore,
       rankingRank: record.rankingRank,
     });
-    const badgeSvg = variant === "mini" ? renderMiniBadgeSvg(renderModel) : renderBadgeSvg(renderModel);
-    const badgeFilePath = this.getBadgeFilePath(record.publicSlug, variant);
+    const badgeSvg =
+      variant === "mini" ? renderMiniBadgeSvg(renderModel) : renderBadgeSvg(renderModel);
+    const badgeFilePath = this.getBadgeFilePath({ slug: record.publicSlug, variant });
 
     mkdirSync(dirname(badgeFilePath), { recursive: true });
 
