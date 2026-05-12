@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { parseProgrammersRecord, toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
 import { createIdleSyncState, type ExtensionSyncState } from "../shared/sync-state.js";
 import { EXTENSION_API_HOST, syncBadgePayload } from "./api-client.js";
@@ -25,6 +27,32 @@ type InjectedCollectionResult =
     }
   | Extract<CollectionResult, { ok: false }>;
 
+const injectedCollectionResultSchema = z.discriminatedUnion("ok", [
+  z
+    .object({
+      ok: z.literal(true),
+      record: z.unknown(),
+    })
+    .passthrough(),
+  z
+    .object({
+      ok: z.literal(false),
+      reason: z.enum(["not-logged-in", "request-failed"]),
+      message: z.string().min(1),
+    })
+    .passthrough(),
+]);
+
+const injectedCollectionResultListSchema = z
+  .array(
+    z
+      .object({
+        result: injectedCollectionResultSchema.optional(),
+      })
+      .passthrough()
+  )
+  .nonempty();
+
 export interface AutoSyncTrigger {
   tabId: number;
   fingerprint?: string;
@@ -34,6 +62,19 @@ interface AutoSyncDeduperOptions {
   cooldownMs?: number;
   maxEntries?: number;
   now?: () => number;
+}
+
+interface PruneAutoSyncEntriesInput {
+  currentTime: number;
+}
+
+interface CollectRecordFromTabInput {
+  tabId: number;
+}
+
+interface PerformSyncForResolvedTabInput {
+  tabId: number;
+  tabUrl: string | undefined;
 }
 
 export interface AutoSyncDeduper {
@@ -62,7 +103,7 @@ export const createAutoSyncDeduper = (options: AutoSyncDeduperOptions = {}): Aut
   const now = options.now ?? (() => Date.now());
   const lastTriggeredAtByKey = new Map<string, number>();
 
-  const prune = (currentTime: number): void => {
+  const prune = ({ currentTime }: PruneAutoSyncEntriesInput): void => {
     for (const [key, lastTriggeredAt] of lastTriggeredAtByKey) {
       if (currentTime - lastTriggeredAt >= cooldownMs) {
         lastTriggeredAtByKey.delete(key);
@@ -86,14 +127,14 @@ export const createAutoSyncDeduper = (options: AutoSyncDeduperOptions = {}): Aut
       const key = getAutoSyncDeduplicationKey(trigger);
       const lastTriggeredAt = lastTriggeredAtByKey.get(key);
 
-      prune(currentTime);
+      prune({ currentTime });
 
       if (typeof lastTriggeredAt === "number" && currentTime - lastTriggeredAt < cooldownMs) {
         return false;
       }
 
       lastTriggeredAtByKey.set(key, currentTime);
-      prune(currentTime);
+      prune({ currentTime });
       return true;
     },
   };
@@ -114,7 +155,25 @@ const isProgrammersUrl = (url: string | undefined): boolean => {
   }
 };
 
-const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> => {
+const parseInjectedCollectionResult = (input: unknown): InjectedCollectionResult => {
+  const parseResult = injectedCollectionResultListSchema.safeParse(input);
+
+  const firstResult = parseResult.success ? parseResult.data.at(0)?.result : undefined;
+
+  if (firstResult) {
+    return firstResult;
+  }
+
+  return {
+    ok: false,
+    reason: "request-failed",
+    message: "Programmers 기록 수집 결과를 확인하지 못했습니다.",
+  };
+};
+
+const collectRecordFromTab = async ({
+  tabId,
+}: CollectRecordFromTabInput): Promise<CollectionResult> => {
   const injectionResults = await chrome.scripting.executeScript({
     target: { tabId },
     world: "MAIN",
@@ -160,12 +219,7 @@ const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> =>
     },
   });
 
-  const injectedResult =
-    (injectionResults[0]?.result as InjectedCollectionResult | undefined) ?? {
-      ok: false,
-      reason: "request-failed",
-      message: "Programmers 기록 수집 결과를 확인하지 못했습니다.",
-    };
+  const injectedResult = parseInjectedCollectionResult(injectionResults);
 
   if (!injectedResult.ok) {
     return injectedResult;
@@ -186,15 +240,15 @@ const collectRecordFromTab = async (tabId: number): Promise<CollectionResult> =>
   }
 };
 
-const performSyncForResolvedTab = async (
-  tabId: number,
-  tabUrl: string | undefined
-): Promise<ExtensionSyncState> => {
+const performSyncForResolvedTab = async ({
+  tabId,
+  tabUrl,
+}: PerformSyncForResolvedTabInput): Promise<ExtensionSyncState> => {
   if (!isProgrammersUrl(tabUrl)) {
     return createNeedsProgrammersPageState();
   }
 
-  const collected = await collectRecordFromTab(tabId);
+  const collected = await collectRecordFromTab({ tabId });
 
   if (!collected.ok) {
     return {
@@ -205,7 +259,7 @@ const performSyncForResolvedTab = async (
   }
 
   try {
-    const payload = toBadgeSyncPayload(collected.record);
+    const payload = toBadgeSyncPayload({ input: collected.record });
     const syncResponse = await syncBadgePayload(payload);
 
     return {
@@ -232,7 +286,7 @@ export const performSyncForTab = async (tabId: number): Promise<ExtensionSyncSta
     return createNeedsProgrammersPageState();
   }
 
-  return performSyncForResolvedTab(tab.id, tab.url);
+  return performSyncForResolvedTab({ tabId: tab.id, tabUrl: tab.url });
 };
 
 export const performSyncForActiveTab = async (): Promise<ExtensionSyncState> => {
@@ -242,7 +296,7 @@ export const performSyncForActiveTab = async (): Promise<ExtensionSyncState> => 
     return createNeedsProgrammersPageState();
   }
 
-  return performSyncForResolvedTab(activeTab.id, activeTab.url);
+  return performSyncForResolvedTab({ tabId: activeTab.id, tabUrl: activeTab.url });
 };
 
 export { createIdleSyncState };

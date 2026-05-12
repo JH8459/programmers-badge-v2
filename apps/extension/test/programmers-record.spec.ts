@@ -9,15 +9,15 @@ import {
 describe("programmers record normalization", () => {
   it("maps v1-style record data into the sync payload", () => {
     expect(
-      toBadgeSyncPayload(
-        {
+      toBadgeSyncPayload({
+        input: {
           name: "  programmers-user  ",
           skillCheck: { level: 4 },
           ranking: { score: 15320, rank: 87 },
           codingTest: { solved: 212, total: 530 },
         },
-        "2026-04-19T10:00:00.000Z"
-      )
+        syncedAt: "2026-04-19T10:00:00.000Z",
+      })
     ).toEqual({
       programmerHandle: "programmers-user",
       displayName: "programmers-user",

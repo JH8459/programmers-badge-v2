@@ -192,7 +192,9 @@ export const createAutoSyncToastPresenter = (
       return { hostElement, toastElements };
     }
 
-    const existingHostElement = documentRef.getElementById(TOAST_HOST_ID) as HTMLDivElement | null;
+    const existingElement = documentRef.getElementById(TOAST_HOST_ID);
+    const existingHostElement =
+      existingElement instanceof HTMLDivElement ? existingElement : null;
     hostElement = existingHostElement ?? documentRef.createElement("div");
 
     if (!existingHostElement) {

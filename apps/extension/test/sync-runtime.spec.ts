@@ -101,7 +101,11 @@ describe("sync runtime", () => {
               const isolatedFunc = runInNewContext(`(${func.toString()})`, {
                 Error,
                 fetch: mockedFetch,
-              }) as (recordUrl: string) => Promise<unknown>;
+              });
+
+              if (typeof isolatedFunc !== "function") {
+                throw new TypeError("Injected function could not be evaluated.");
+              }
 
               return [
                 {

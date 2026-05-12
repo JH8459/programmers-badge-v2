@@ -38,16 +38,21 @@ export interface PopupViewModel {
   summaryItems: PopupSummaryItem[];
 }
 
+interface SummarySubtitleInput {
+  summaryTitle: string | undefined;
+  programmerHandle: string | undefined;
+}
+
 const normalizeSummaryIdentity = (value: string | undefined): string | undefined => {
   const normalizedValue = value?.trim().replace(/^@+/, "").toLocaleLowerCase();
 
   return normalizedValue || undefined;
 };
 
-const getSummarySubtitle = (
-  summaryTitle: string | undefined,
-  programmerHandle: string | undefined
-): string | undefined => {
+const getSummarySubtitle = ({
+  summaryTitle,
+  programmerHandle,
+}: SummarySubtitleInput): string | undefined => {
   if (!programmerHandle) {
     return undefined;
   }
@@ -81,10 +86,10 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         actionLabel: "다시 동기화",
         actionDisabled: false,
         summaryTitle: state.lastSync?.displayName,
-        summarySubtitle: getSummarySubtitle(
-          state.lastSync?.displayName,
-          state.lastSync?.programmerHandle
-        ),
+        summarySubtitle: getSummarySubtitle({
+          summaryTitle: state.lastSync?.displayName,
+          programmerHandle: state.lastSync?.programmerHandle,
+        }),
         badgePreviewOptions: state.lastSync
           ? [
               {

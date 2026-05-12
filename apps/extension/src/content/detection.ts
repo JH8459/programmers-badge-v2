@@ -35,6 +35,17 @@ export interface SolveSuccessSignal {
   summary: string;
 }
 
+interface SolveAttemptFingerprintInput {
+  url: string;
+  submissionAt: number;
+}
+
+interface DetectSolveSuccessSignalInput {
+  root: Element;
+  currentUrl: string;
+  submissionAt: number;
+}
+
 const normalizeText = (value: string | null | undefined): string =>
   value?.replace(/\s+/g, " ").trim() ?? "";
 
@@ -92,7 +103,10 @@ export const containsLikelySolveSuccessText = (text: string): boolean => {
   return SUCCESS_TEXT_PATTERNS.some((pattern) => pattern.test(normalizedText));
 };
 
-export const createSolveAttemptFingerprint = (url: string, submissionAt: number): string => {
+export const createSolveAttemptFingerprint = ({
+  url,
+  submissionAt,
+}: SolveAttemptFingerprintInput): string => {
   const problemId = getProblemIdFromUrl(url) ?? "unknown";
   return `solve-success:${problemId}:${submissionAt}`;
 };
@@ -120,11 +134,11 @@ const getCandidateElements = (root: Element): Element[] => {
   return Array.from(candidateElements);
 };
 
-export const detectSolveSuccessSignal = (
-  root: Element,
-  currentUrl: string,
-  submissionAt: number
-): SolveSuccessSignal | null => {
+export const detectSolveSuccessSignal = ({
+  root,
+  currentUrl,
+  submissionAt,
+}: DetectSolveSuccessSignalInput): SolveSuccessSignal | null => {
   for (const candidateElement of getCandidateElements(root)) {
     if (!isVisibleElement(candidateElement)) {
       continue;
@@ -136,7 +150,7 @@ export const detectSolveSuccessSignal = (
     }
 
     return {
-      fingerprint: createSolveAttemptFingerprint(currentUrl, submissionAt),
+      fingerprint: createSolveAttemptFingerprint({ url: currentUrl, submissionAt }),
       summary: truncateSummary(candidateText),
     };
   }

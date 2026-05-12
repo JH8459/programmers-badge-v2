@@ -34,10 +34,10 @@ describe("content auto-sync helpers", () => {
   it("dedupes the same success fingerprint during the local cooldown window", () => {
     let now = 2_000;
     const deduper = createContentTriggerDeduper({ cooldownMs: 5_000, now: () => now });
-    const fingerprint = createSolveAttemptFingerprint(
-      "https://school.programmers.co.kr/learn/courses/30/lessons/42586",
-      123456
-    );
+    const fingerprint = createSolveAttemptFingerprint({
+      url: "https://school.programmers.co.kr/learn/courses/30/lessons/42586",
+      submissionAt: 123456,
+    });
 
     expect(deduper.shouldTrigger(fingerprint)).toBe(true);
     expect(deduper.shouldTrigger(fingerprint)).toBe(false);
@@ -50,11 +50,11 @@ describe("content auto-sync helpers", () => {
   it("uses a stable fingerprint for the same solve attempt regardless of success copy", () => {
     const problemUrl = "https://school.programmers.co.kr/learn/courses/30/lessons/42586";
 
-    expect(createSolveAttemptFingerprint(problemUrl, 5000)).toBe(
-      createSolveAttemptFingerprint(problemUrl, 5000)
+    expect(createSolveAttemptFingerprint({ url: problemUrl, submissionAt: 5000 })).toBe(
+      createSolveAttemptFingerprint({ url: problemUrl, submissionAt: 5000 })
     );
-    expect(createSolveAttemptFingerprint(problemUrl, 5000)).not.toBe(
-      createSolveAttemptFingerprint(problemUrl, 6000)
+    expect(createSolveAttemptFingerprint({ url: problemUrl, submissionAt: 5000 })).not.toBe(
+      createSolveAttemptFingerprint({ url: problemUrl, submissionAt: 6000 })
     );
   });
 

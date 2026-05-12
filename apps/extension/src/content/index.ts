@@ -40,12 +40,11 @@ const getControlText = (element: Element | null): string => {
     return "";
   }
 
-  const htmlElement = element as HTMLElement;
   const textContent = [
-    htmlElement.innerText,
-    htmlElement.textContent,
-    htmlElement.getAttribute("aria-label"),
-    htmlElement.getAttribute("title"),
+    element instanceof HTMLElement ? element.innerText : "",
+    element.textContent,
+    element.getAttribute("aria-label"),
+    element.getAttribute("title"),
     element instanceof HTMLInputElement ? element.value : "",
   ]
     .filter(Boolean)
@@ -133,7 +132,11 @@ const scanPendingRoots = async (): Promise<void> => {
   pendingScanRoots.clear();
 
   for (const root of roots) {
-    const signal = detectSolveSuccessSignal(root, window.location.href, lastSubmissionAt);
+    const signal = detectSolveSuccessSignal({
+      root,
+      currentUrl: window.location.href,
+      submissionAt: lastSubmissionAt,
+    });
 
     if (!signal || !triggerDeduper.shouldTrigger(signal.fingerprint)) {
       continue;

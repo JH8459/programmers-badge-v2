@@ -32,7 +32,17 @@ export type ProgrammersRecord = z.infer<typeof programmersRecordSchema>;
 export const parseProgrammersRecord = (input: unknown): ProgrammersRecord =>
   programmersRecordSchema.parse(input);
 
-const toNonNegativeInteger = (value: number | undefined, fallback = 0): number => {
+interface NonNegativeIntegerInput {
+  value: number | undefined;
+  fallback?: number;
+}
+
+interface BadgeSyncPayloadInput {
+  input: ProgrammersRecord;
+  syncedAt?: string;
+}
+
+const toNonNegativeInteger = ({ value, fallback = 0 }: NonNegativeIntegerInput): number => {
   if (!Number.isFinite(value)) {
     return fallback;
   }
@@ -52,10 +62,10 @@ export const getBadgeTierFromSkillLevel = (skillLevel: number): BadgeTier => {
   return "starter";
 };
 
-export const toBadgeSyncPayload = (
-  input: ProgrammersRecord,
-  syncedAt = new Date().toISOString()
-): BadgeSyncPayload => {
+export const toBadgeSyncPayload = ({
+  input,
+  syncedAt = new Date().toISOString(),
+}: BadgeSyncPayloadInput): BadgeSyncPayload => {
   const record = parseProgrammersRecord(input);
   const displayName = record.name?.trim();
 
@@ -63,11 +73,17 @@ export const toBadgeSyncPayload = (
     throw new Error("Programmers 프로필 이름을 확인하지 못했습니다.");
   }
 
-  const solvedCount = toNonNegativeInteger(record.codingTest?.solved);
-  const solvedTotal = toNonNegativeInteger(record.codingTest?.total, solvedCount);
-  const skillLevel = toNonNegativeInteger(record.skillCheck?.level);
-  const rankingScore = toNonNegativeInteger(record.ranking?.score);
-  const rankingRank = Math.max(1, toNonNegativeInteger(record.ranking?.rank, 1));
+  const solvedCount = toNonNegativeInteger({ value: record.codingTest?.solved });
+  const solvedTotal = toNonNegativeInteger({
+    value: record.codingTest?.total,
+    fallback: solvedCount,
+  });
+  const skillLevel = toNonNegativeInteger({ value: record.skillCheck?.level });
+  const rankingScore = toNonNegativeInteger({ value: record.ranking?.score });
+  const rankingRank = Math.max(
+    1,
+    toNonNegativeInteger({ value: record.ranking?.rank, fallback: 1 })
+  );
 
   return parseBadgeSyncPayload({
     programmerHandle: displayName,

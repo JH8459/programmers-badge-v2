@@ -34,15 +34,23 @@ const runSync = async (
   return nextState;
 };
 
-const getAutoSyncTabId = (
-  message: AutoSyncTriggerMessage,
-  sender: chrome.runtime.MessageSender
-): number | null => message.tabId ?? sender.tab?.id ?? null;
+interface AutoSyncTabIdInput {
+  message: AutoSyncTriggerMessage;
+  sender: chrome.runtime.MessageSender;
+}
 
-const handleMessage = async (
-  message: ExtensionMessage,
-  sender: chrome.runtime.MessageSender
-): Promise<ExtensionSyncState> => {
+interface HandleMessageInput {
+  message: ExtensionMessage;
+  sender: chrome.runtime.MessageSender;
+}
+
+const getAutoSyncTabId = ({ message, sender }: AutoSyncTabIdInput): number | null =>
+  message.tabId ?? sender.tab?.id ?? null;
+
+const handleMessage = async ({
+  message,
+  sender,
+}: HandleMessageInput): Promise<ExtensionSyncState> => {
   if (message.type === "get-sync-state") {
     return getStoredSyncState();
   }
@@ -51,7 +59,7 @@ const handleMessage = async (
     return runSync(() => performSyncForActiveTab());
   }
 
-  const tabId = getAutoSyncTabId(message, sender);
+  const tabId = getAutoSyncTabId({ message, sender });
 
   if (!tabId) {
     const nextState: ExtensionSyncState = {
@@ -72,7 +80,7 @@ const handleMessage = async (
 };
 
 chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
-  void handleMessage(message, _sender)
+  void handleMessage({ message, sender: _sender })
     .then(sendResponse)
     .catch((error) => {
       const fallbackState: ExtensionSyncState = {
