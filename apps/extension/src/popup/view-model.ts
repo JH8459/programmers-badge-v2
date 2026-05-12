@@ -2,17 +2,27 @@ import type { ExtensionSyncState } from "../shared/sync-state.js";
 
 type PopupStatusTone = "neutral" | "info" | "success" | "danger";
 
+export type BadgePreviewVariant = "standard" | "mini";
+
 interface PopupSummaryItem {
   label: string;
   value: string;
 }
 
 interface PopupCopyItem {
-  key: "badge-url" | "mini-badge-url" | "markdown-snippet" | "mini-markdown-snippet";
+  key: "badge-url" | "markdown-snippet";
   label: string;
   buttonLabel: string;
   value: string;
   preview: string;
+}
+
+interface PopupBadgePreviewOption {
+  key: BadgePreviewVariant;
+  label: string;
+  imageUrl: string;
+  imageAlt: string;
+  copyItems: [PopupCopyItem, PopupCopyItem];
 }
 
 export interface PopupViewModel {
@@ -24,10 +34,8 @@ export interface PopupViewModel {
   actionDisabled: boolean;
   summaryTitle?: string;
   summarySubtitle?: string;
-  badgeImageUrl?: string;
-  badgeImageAlt?: string;
+  badgePreviewOptions: PopupBadgePreviewOption[];
   summaryItems: PopupSummaryItem[];
-  copyItems: PopupCopyItem[];
 }
 
 const normalizeSummaryIdentity = (value: string | undefined): string | undefined => {
@@ -61,8 +69,8 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         description: state.message,
         actionLabel: "동기화 중...",
         actionDisabled: true,
+        badgePreviewOptions: [],
         summaryItems: [],
-        copyItems: [],
       };
     case "success":
       return {
@@ -77,10 +85,58 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
           state.lastSync?.displayName,
           state.lastSync?.programmerHandle
         ),
-        badgeImageUrl: state.lastSync?.badgeUrl,
-        badgeImageAlt: state.lastSync?.displayName
-          ? `${state.lastSync.displayName} 배지 미리보기`
-          : "배지 미리보기",
+        badgePreviewOptions: state.lastSync
+          ? [
+              {
+                key: "standard",
+                label: "standard",
+                imageUrl: state.lastSync.badgeUrl,
+                imageAlt: state.lastSync.displayName
+                  ? `${state.lastSync.displayName} standard 배지 미리보기`
+                  : "Standard 배지 미리보기",
+                copyItems: [
+                  {
+                    key: "badge-url",
+                    label: "Badge URL",
+                    buttonLabel: "복사",
+                    value: state.lastSync.badgeUrl,
+                    preview: state.lastSync.badgeUrl,
+                  },
+                  {
+                    key: "markdown-snippet",
+                    label: "Markdown",
+                    buttonLabel: "복사",
+                    value: state.lastSync.markdownSnippet,
+                    preview: state.lastSync.markdownSnippet,
+                  },
+                ],
+              },
+              {
+                key: "mini",
+                label: "mini",
+                imageUrl: state.lastSync.miniBadgeUrl,
+                imageAlt: state.lastSync.displayName
+                  ? `${state.lastSync.displayName} mini 배지 미리보기`
+                  : "Mini 배지 미리보기",
+                copyItems: [
+                  {
+                    key: "badge-url",
+                    label: "Badge URL",
+                    buttonLabel: "복사",
+                    value: state.lastSync.miniBadgeUrl,
+                    preview: state.lastSync.miniBadgeUrl,
+                  },
+                  {
+                    key: "markdown-snippet",
+                    label: "Markdown",
+                    buttonLabel: "복사",
+                    value: state.lastSync.miniMarkdownSnippet,
+                    preview: state.lastSync.miniMarkdownSnippet,
+                  },
+                ],
+              },
+            ]
+          : [],
         summaryItems: state.lastSync
           ? [
               {
@@ -101,44 +157,6 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
               },
             ]
           : [],
-        copyItems: [
-          state.lastSync?.badgeUrl
-            ? {
-                key: "badge-url",
-                label: "Badge URL",
-                buttonLabel: "복사",
-                value: state.lastSync.badgeUrl,
-                preview: state.lastSync.badgeUrl,
-              }
-            : null,
-          state.lastSync?.markdownSnippet
-            ? {
-                key: "markdown-snippet",
-                label: "Markdown",
-                buttonLabel: "복사",
-                value: state.lastSync.markdownSnippet,
-                preview: state.lastSync.markdownSnippet,
-              }
-            : null,
-          state.lastSync?.miniBadgeUrl
-            ? {
-                key: "mini-badge-url",
-                label: "Mini Badge URL",
-                buttonLabel: "복사",
-                value: state.lastSync.miniBadgeUrl,
-                preview: state.lastSync.miniBadgeUrl,
-              }
-            : null,
-          state.lastSync?.miniMarkdownSnippet
-            ? {
-                key: "mini-markdown-snippet",
-                label: "Mini Markdown",
-                buttonLabel: "복사",
-                value: state.lastSync.miniMarkdownSnippet,
-                preview: state.lastSync.miniMarkdownSnippet,
-              }
-            : null,
-        ].filter((item): item is PopupCopyItem => item !== null),
       };
     case "needs-programmers-page":
       return {
@@ -148,8 +166,8 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         description: state.message,
         actionLabel: "다시 확인",
         actionDisabled: false,
+        badgePreviewOptions: [],
         summaryItems: [],
-        copyItems: [],
       };
     case "not-logged-in":
       return {
@@ -159,8 +177,8 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         description: state.message,
         actionLabel: "다시 확인",
         actionDisabled: false,
+        badgePreviewOptions: [],
         summaryItems: [],
-        copyItems: [],
       };
     case "error":
       return {
@@ -170,8 +188,8 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         description: state.message,
         actionLabel: "다시 시도",
         actionDisabled: false,
+        badgePreviewOptions: [],
         summaryItems: [],
-        copyItems: [],
       };
     default:
       return {
@@ -181,8 +199,8 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         description: "현재 탭의 배지 데이터를 가져옵니다.",
         actionLabel: "지금 동기화",
         actionDisabled: false,
+        badgePreviewOptions: [],
         summaryItems: [],
-        copyItems: [],
       };
   }
 };

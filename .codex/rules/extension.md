@@ -25,7 +25,7 @@
 ## Current Behavior Defaults
 
 - popup은 수동 sync 진입점과 마지막 sync 상태를 보여준다.
-- 성공 시 full/mini badge URL과 Markdown snippet 복사를 제공한다.
+- 성공 시 standard/mini badge preview를 선택할 수 있고, 복사 영역은 선택된 형식의 Badge URL/Markdown 2개 항목만 제공한다.
 - content script는 제출 시그널을 감지하면 dedupe와 cooldown을 거쳐 auto-sync를 요청한다.
 - background API client는 manifest `host_permissions`의 hosted API origin을 우선 사용하고, 없으면 hosted default URL로 fallback한다.
 - external Programmers record와 hosted sync response는 runtime에서 zod parse를 거친다.

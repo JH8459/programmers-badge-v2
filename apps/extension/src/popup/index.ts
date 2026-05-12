@@ -3,7 +3,7 @@ import {
   type ExtensionMessage,
   type ExtensionSyncState,
 } from "../shared/sync-state.js";
-import { getPopupViewModel } from "./view-model.js";
+import { getPopupViewModel, type BadgePreviewVariant } from "./view-model.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 
@@ -24,6 +24,7 @@ const sendMessage = async (message: ExtensionMessage): Promise<ExtensionSyncStat
   });
 
 let currentState = createIdleSyncState();
+let selectedPreviewVariant: BadgePreviewVariant = "standard";
 
 const escapeHtml = (value: string): string =>
   value
@@ -43,24 +44,50 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
 
 const render = (): void => {
   const viewModel = getPopupViewModel(currentState);
-  const badgePreviewMarkup = viewModel.badgeImageUrl
+  const selectedPreviewOption =
+    viewModel.badgePreviewOptions.find((option) => option.key === selectedPreviewVariant) ??
+    viewModel.badgePreviewOptions[0];
+  const selectedCopyItems = selectedPreviewOption?.copyItems ?? [];
+  const previewToggleMarkup =
+    viewModel.badgePreviewOptions.length > 1
+      ? `
+          <div class="preview-toggle-group" role="group" aria-label="배지 미리보기 형식">
+            ${viewModel.badgePreviewOptions
+              .map(
+                (option) => `
+                  <button
+                    type="button"
+                    class="preview-toggle-button"
+                    data-preview-variant="${option.key}"
+                    aria-pressed="${option.key === selectedPreviewOption?.key}"
+                  >
+                    ${escapeHtml(option.label)}
+                  </button>
+                `
+              )
+              .join("")}
+          </div>
+        `
+      : "";
+  const badgePreviewMarkup = selectedPreviewOption
     ? `
           <div class="badge-preview">
             <div class="badge-preview-header">
               <span class="badge-preview-label">Badge Preview</span>
+              ${previewToggleMarkup}
             </div>
-            <div class="badge-preview-frame">
+            <div class="badge-preview-frame" data-variant="${selectedPreviewOption.key}">
             <img
               class="badge-preview-image"
-              src="${escapeHtml(viewModel.badgeImageUrl)}"
-              alt="${escapeHtml(viewModel.badgeImageAlt ?? "배지 미리보기")}" 
+              src="${escapeHtml(selectedPreviewOption.imageUrl)}"
+              alt="${escapeHtml(selectedPreviewOption.imageAlt)}"
             />
           </div>
         </div>
       `
     : "";
   const summaryMarkup =
-    viewModel.summaryItems.length || viewModel.badgeImageUrl
+    viewModel.summaryItems.length || viewModel.badgePreviewOptions.length
       ? `
         <section class="panel">
           ${viewModel.summaryTitle ? `<p class="summary-title">${escapeHtml(viewModel.summaryTitle)}</p>` : ""}
@@ -81,14 +108,14 @@ const render = (): void => {
         </section>
       `
       : "";
-  const copyMarkup = viewModel.copyItems.length
+  const copyMarkup = selectedCopyItems.length
     ? `
         <section class="panel">
           <div class="panel-header">
             <span class="panel-title">복사</span>
           </div>
           <div class="copy-list">
-            ${viewModel.copyItems
+            ${selectedCopyItems
               .map(
                 (item) => `
                   <div class="copy-item">
@@ -128,10 +155,23 @@ const render = (): void => {
 
   root.querySelectorAll<HTMLButtonElement>("[data-copy-key]").forEach((buttonElement) => {
     buttonElement.addEventListener("click", () => {
-      const copyItem = viewModel.copyItems.find(
+      const copyItem = selectedCopyItems.find(
         (item) => item.key === buttonElement.dataset.copyKey
       );
       void copyToClipboard(copyItem?.value);
+    });
+  });
+
+  root.querySelectorAll<HTMLButtonElement>("[data-preview-variant]").forEach((buttonElement) => {
+    buttonElement.addEventListener("click", () => {
+      const nextPreviewVariant = buttonElement.dataset.previewVariant;
+
+      if (nextPreviewVariant !== "standard" && nextPreviewVariant !== "mini") {
+        return;
+      }
+
+      selectedPreviewVariant = nextPreviewVariant;
+      render();
     });
   });
 };
@@ -146,6 +186,7 @@ const runSync = async (): Promise<void> => {
 
   try {
     currentState = await sendMessage({ type: "start-sync" });
+    selectedPreviewVariant = "standard";
   } catch (error) {
     currentState = {
       status: "error",

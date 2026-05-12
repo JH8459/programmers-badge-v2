@@ -12,8 +12,8 @@ describe("getPopupViewModel", () => {
       description: "현재 탭의 배지 데이터를 가져옵니다.",
       actionLabel: "지금 동기화",
       actionDisabled: false,
+      badgePreviewOptions: [],
       summaryItems: [],
-      copyItems: [],
     });
   });
 
@@ -45,29 +45,73 @@ describe("getPopupViewModel", () => {
     expect(viewModel.title).toBe("배지 반영 완료");
     expect(viewModel.summaryTitle).toBe("Programmers User");
     expect(viewModel.summarySubtitle).toBe("@programmers-user");
-    expect(viewModel.badgeImageUrl).toBe(
-      "https://programmers-badge.jh8459.com/badge/abc123def456.svg"
-    );
-    expect(viewModel.badgeImageAlt).toBe("Programmers User 배지 미리보기");
+    expect(viewModel.badgePreviewOptions).toEqual([
+      {
+        key: "standard",
+        label: "standard",
+        imageUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        imageAlt: "Programmers User standard 배지 미리보기",
+        copyItems: [
+          {
+            key: "badge-url",
+            label: "Badge URL",
+            buttonLabel: "복사",
+            value: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+            preview: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+          },
+          {
+            key: "markdown-snippet",
+            label: "Markdown",
+            buttonLabel: "복사",
+            value:
+              "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+            preview:
+              "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+          },
+        ],
+      },
+      {
+        key: "mini",
+        label: "mini",
+        imageUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+        imageAlt: "Programmers User mini 배지 미리보기",
+        copyItems: [
+          {
+            key: "badge-url",
+            label: "Badge URL",
+            buttonLabel: "복사",
+            value: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+            preview: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+          },
+          {
+            key: "markdown-snippet",
+            label: "Markdown",
+            buttonLabel: "복사",
+            value:
+              "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+            preview:
+              "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+          },
+        ],
+      },
+    ]);
     expect(viewModel.summaryItems).toEqual([
       { label: "점수", value: "9,999점" },
       { label: "레벨", value: "Skill 3" },
       { label: "풀이", value: "100/300" },
       { label: "순위", value: "42위" },
     ]);
-    expect(viewModel.copyItems).toHaveLength(4);
-    expect(viewModel.copyItems[0]?.value).toContain("programmers-badge.jh8459.com");
-    expect(viewModel.copyItems.map((item) => item.label)).toEqual([
+    expect(viewModel.badgePreviewOptions[0]?.copyItems).toHaveLength(2);
+    expect(viewModel.badgePreviewOptions[0]?.copyItems[0]?.value).toContain(
+      "programmers-badge.jh8459.com"
+    );
+    expect(viewModel.badgePreviewOptions[0]?.copyItems.map((item) => item.label)).toEqual([
       "Badge URL",
       "Markdown",
-      "Mini Badge URL",
-      "Mini Markdown",
     ]);
-    expect(viewModel.copyItems.map((item) => item.buttonLabel)).toEqual([
-      "복사",
-      "복사",
-      "복사",
-      "복사",
+    expect(viewModel.badgePreviewOptions[1]?.copyItems.map((item) => item.label)).toEqual([
+      "Badge URL",
+      "Markdown",
     ]);
   });
 

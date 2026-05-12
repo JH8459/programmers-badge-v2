@@ -198,12 +198,50 @@ h1 {
 .badge-preview-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .badge-preview-label {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-accent);
+}
+
+.preview-toggle-group {
+  display: inline-flex;
+  gap: 2px;
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.preview-toggle-button {
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 5px var(--space-3);
+  background: transparent;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.preview-toggle-button[aria-pressed="true"] {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-accent);
+}
+
+.preview-toggle-button:hover {
+  color: var(--color-accent);
+}
+
+.preview-toggle-button[aria-pressed="true"]:hover {
+  color: var(--color-accent-contrast);
 }
 
 .badge-preview-frame {
@@ -218,13 +256,29 @@ h1 {
   overflow: hidden;
 }
 
+.badge-preview-frame[data-variant="standard"] {
+  min-height: 72px;
+}
+
+.badge-preview-frame[data-variant="mini"] {
+  min-height: 44px;
+}
+
 .badge-preview-image {
   display: block;
   width: 100%;
-  max-width: 184px;
   height: auto;
-  max-height: 42px;
   object-fit: contain;
+}
+
+.badge-preview-frame[data-variant="standard"] .badge-preview-image {
+  max-width: 220px;
+  max-height: 72px;
+}
+
+.badge-preview-frame[data-variant="mini"] .badge-preview-image {
+  max-width: 184px;
+  max-height: 28px;
 }
 
 .summary-grid {
