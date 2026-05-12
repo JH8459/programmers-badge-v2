@@ -78,6 +78,9 @@ importers:
       '@types/chrome':
         specifier: ^0.0.319
         version: 0.0.319
+      esbuild:
+        specifier: ^0.27.4
+        version: 0.27.4
 
   packages/badge-core: {}
 

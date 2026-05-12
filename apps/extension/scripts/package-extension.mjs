@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, rm } from "node:fs/promises";
+import { access, mkdir, readFile, readdir, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
@@ -124,6 +124,46 @@ const assertStoreAssets = async () => {
   }
 };
 
+const collectJavaScriptFiles = async (directoryPath) => {
+  const entries = await readdir(directoryPath, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const entryPath = resolve(directoryPath, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...(await collectJavaScriptFiles(entryPath)));
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.endsWith(".js")) {
+      files.push(entryPath);
+    }
+  }
+
+  return files;
+};
+
+const assertNoBareModuleImports = async () => {
+  const javaScriptFiles = await collectJavaScriptFiles(distDir);
+  const staticImportPattern = /from\s+["']([^"']+)["']/g;
+  const dynamicImportPattern = /import\s*\(\s*["']([^"']+)["']\s*\)/g;
+
+  for (const filePath of javaScriptFiles) {
+    const source = await readFile(filePath, "utf8");
+    const specifiers = [
+      ...source.matchAll(staticImportPattern),
+      ...source.matchAll(dynamicImportPattern),
+    ].map((match) => match[1]);
+
+    for (const specifier of specifiers) {
+      if (!specifier?.startsWith(".") && !specifier?.startsWith("/") && !specifier?.startsWith("chrome:")) {
+        throw new Error(`Extension bundle contains a bare module import: ${specifier} in ${filePath}`);
+      }
+    }
+  }
+};
+
 const assertManifest = async () => {
   const sourceManifest = await readJson(manifestPath);
   const distManifest = await readJson(distManifestPath);
@@ -172,6 +212,7 @@ const packageExtension = async () => {
   await assertFileExists(distManifestPath);
   await assertExtensionIcons();
   await assertStoreAssets();
+  await assertNoBareModuleImports();
 
   const manifest = await assertManifest();
   const archivePath = resolveArchivePath(manifest.version, options.output);
