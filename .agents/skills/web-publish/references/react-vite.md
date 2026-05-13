@@ -51,7 +51,7 @@ apps/web/
 
 ## UI 기준
 
-- dark background, neon green/cyan accent, badge/dashboard visual language를 유지한다.
+- dark background, navy/cyan accent, badge/dashboard visual language를 유지한다.
 - 페이지별 primary action을 하나 이상 명확히 둔다.
 - mobile width에서 headline, CTA, copy block이 먼저 읽히게 한다.
 - legal copy는 장식보다 가독성과 정확성을 우선한다.
