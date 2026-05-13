@@ -12,6 +12,7 @@
 - PR verify, master deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 - NAS deploy는 DockerHub image와 committed root `docker-compose.yml` sync 기준으로 운영한다.
 - API deploy environment는 `production`, extension package release environment는 `extension-release`를 사용한다.
+- public web UI는 아직 scaffold 전이며, 추가 시 `apps/web`에서 landing/guide/contact/privacy를 소유한다.
 
 ## Next Phase 1 - Runtime Strategy Hardening
 
@@ -30,6 +31,14 @@
 - public badge URL 운영 방식, slug 정책, caching policy를 정리한다.
 - privacy/data retention 기준을 문서화한다.
 - deployment, backup, restore, env strategy를 안정화한다.
+- `programmers-badge.jh8459.com` web UI와 `api.programmers-badge.jh8459.com` API host 분리를 적용한다.
+
+## Next Phase 4 - Public Web UI
+
+- `apps/web` Vite + React + TypeScript scaffold를 추가한다.
+- landing, guide, contact, privacy route를 구성한다.
+- web static deploy 또는 NAS reverse proxy 배포 전략을 확정한다.
+- extension hosted API URL과 Chrome Web Store 개인정보처리방침 URL을 domain split 기준으로 갱신한다.
 
 ## Deferred Until Explicit Need
 

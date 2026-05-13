@@ -8,6 +8,7 @@ Hosted badge product for sharing Programmers badge data through public badge URL
 apps/
   api/          NestJS backend
   extension/    Chrome extension (Manifest V3)
+  web/          React public web UI (planned)
 packages/
   badge-core/   pure TypeScript badge rendering/domain logic
   shared-types/ shared request/response contracts
@@ -33,6 +34,7 @@ packages/
 - `.codex/rules/architecture.md`
 - `.codex/rules/api.md`
 - `.codex/rules/extension.md`
+- `.codex/rules/web.md`
 - `.codex/rules/packages.md`
 - `.codex/rules/roadmap.md`
 - `.codex/rules/adrs/README.md`

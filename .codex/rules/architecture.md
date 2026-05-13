@@ -5,6 +5,7 @@
 ```text
 apps/api            NestJS backend
 apps/extension      Chrome extension (Manifest V3)
+apps/web            React public web UI
 packages/badge-core pure TypeScript badge rendering/domain logic
 packages/shared-types shared request/response contracts
 packages/config     shared lint/prettier/tsconfig config
@@ -26,6 +27,13 @@ packages/config     shared lint/prettier/tsconfig config
 - 로그인된 Programmers 세션을 활용해 sync payload를 준비한다.
 - 사용자 트리거 기반 sync와 full/mini badge copy flow를 제공한다.
 
+### `apps/web`
+
+- public landing, guide, contact, legal pages를 소유한다.
+- 사용자를 위한 설치/동기화/복사 안내와 Chrome Web Store 제출용 public 문서를 제공한다.
+- API 서버는 기존 `apps/api`를 사용하고, web app은 persistence나 extension-only 로직을 소유하지 않는다.
+- production UI 도메인은 `programmers-badge.jh8459.com`, API 도메인은 `api.programmers-badge.jh8459.com` 분리를 기본 방향으로 둔다.
+
 ### `packages/*`
 
 - shared package는 app 간 contract, rendering, config만 소유한다.
@@ -37,6 +45,7 @@ packages/config     shared lint/prettier/tsconfig config
 - `packages/*`는 `apps/*`를 import하지 않는다.
 - `apps/api`는 Chrome API를 import하지 않는다.
 - `apps/extension`은 persistence 구현체나 NestJS 전용 모듈을 import하지 않는다.
+- `apps/web`은 persistence 구현체, Chrome API, NestJS 전용 모듈을 import하지 않는다.
 - app 간 직접 import보다 shared package 경계를 우선한다.
 
 ## Data Flow Default
@@ -49,6 +58,7 @@ packages/config     shared lint/prettier/tsconfig config
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
 7. GitHub Actions가 API 이미지를 DockerHub에 push하고, committed deploy compose 파일과 `.env.deploy`를 NAS에 반영한 뒤 `production` environment로 production 배포를 갱신한다.
 8. GitHub Actions가 extension build 결과를 zip으로 묶어 `extension-release` environment 기준 Release asset으로 게시한다.
+9. Web UI가 추가되면 `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
 
 ## Current Monorepo Defaults
 
@@ -60,5 +70,6 @@ packages/config     shared lint/prettier/tsconfig config
 
 - `apps/api`에서 badge rendering 규칙을 중복 구현
 - `apps/extension`에서 backend persistence 규칙 복제
+- `apps/web`에서 backend persistence 규칙 또는 extension Chrome API 로직 복제
 - `packages/badge-core`에 I/O 또는 framework dependency 추가
 - package boundary를 깨는 cross-import
