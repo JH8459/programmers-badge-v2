@@ -1,5 +1,6 @@
 import "reflect-metadata";
 
+import { RequestMethod } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 
@@ -24,7 +25,9 @@ const bootstrap = async (): Promise<void> => {
       response.setHeader("Cache-Control", "public, no-cache, must-revalidate");
     },
   });
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix("api", {
+    exclude: [{ path: "privacy", method: RequestMethod.GET }],
+  });
   app.enableCors({
     origin(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
       if (isAllowedCorsOrigin(origin)) {

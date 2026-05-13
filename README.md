@@ -44,6 +44,7 @@ packages/
 
 - local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`
+- privacy policy page: `https://programmers-badge.jh8459.com/privacy`
 - extension package release flow: `.github/workflows/release-extension.yml`
 - extension local package: `pnpm package:extension`
 - Chrome Web Store listing assets: `apps/extension/store-assets`

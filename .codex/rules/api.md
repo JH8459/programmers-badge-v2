@@ -5,6 +5,7 @@
 `apps/api`는 NestJS backend로서 아래를 소유한다.
 
 - `/api/sync`, `/api/badge/:slug.svg`, `/api/badge/:slug/mini.svg`, `/api/health` endpoint
+- Chrome Web Store 제출용 `/privacy` public legal page
 - `/badge/:slug.svg`, `/badge/:slug-mini.svg` 정적 서빙 경로
 - payload validation과 normalization
 - SQLite persistence와 schema 관리
@@ -28,6 +29,7 @@
 
 - sync 응답은 `BadgeSyncResponse`를 반환한다.
 - public badge는 full SVG와 mini SVG를 제공한다.
+- `/privacy`는 global `/api` prefix 밖에서 HTML 개인정보처리방침 페이지를 제공한다.
 - health endpoint는 minimal readiness 확인용이다.
 - re-sync 시 같은 `programmerHandle`이면 기존 `publicSlug`를 유지한다.
 - sync 시 동일 slug의 full/mini SVG asset을 pre-render하여 갱신한다.
