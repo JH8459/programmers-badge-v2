@@ -16,6 +16,7 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - `.codex/rules/web.md`
 - domain/API 영향이 있으면 `.codex/rules/api.md`, `.codex/rules/extension.md`
 - 관련 작업 절차는 `.codex/instructions/workflow.md`
+- web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.yml`, `deploy/README.md`
 
 필요한 경우만 reference를 읽는다.
 
@@ -35,7 +36,8 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 5. UI 작업이면 `references/ui-quality.md`를 확인하고, generic AI template 패턴을 제거한다.
 6. copywriting은 한국어를 기본으로 하고, Chrome Web Store-facing legal copy는 기능/수집/보관/문의 정보를 과장 없이 적는다.
 7. 새 page는 desktop/mobile readability, primary action 노출, link target을 확인한다.
-8. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md`, deploy docs 중 stale surface만 갱신한다.
+8. web Docker/deploy 변경이면 web image build, DockerHub tag, deploy path filter, web-only service restart 기준을 확인한다.
+9. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md`, deploy docs 중 stale surface만 갱신한다.
 
 ## Guardrails
 
@@ -43,6 +45,7 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - `vite preview`를 production server로 쓰지 않는다.
 - 문의 form처럼 서버 저장이 필요한 기능은 API endpoint, validation, abuse 방지 기준을 먼저 설계한다.
 - public web page에 secret, token, raw session, 식별 가능한 사용자 샘플 데이터를 넣지 않는다.
+- web production deploy는 `deploy-web.yml`에서 web image만 push하고 `web` service만 재시작한다.
 - UI를 generic SaaS template처럼 만들지 말고 extension/store assets와 이어지는 dark neon badge/productivity 톤을 유지한다.
 - decorative label, 과한 그림자, 불필요한 pill badge, Unicode icon 같은 AI-generated UI 냄새가 강한 패턴을 피한다.
 

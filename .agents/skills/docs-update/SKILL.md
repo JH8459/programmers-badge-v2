@@ -40,6 +40,8 @@ description: Use when code, workflows, contracts, or repository structure change
 
 - `apps/api/**`, `Dockerfile`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-api.yml`
   - 우선 후보: `.codex/rules/api.md`, `deploy/README.md`, `README.md`
+- `apps/web/**`, `apps/extension/store-assets/**`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-web.yml`
+  - 우선 후보: `.codex/rules/web.md`, `deploy/README.md`, `README.md`
 - `apps/extension/**`, `apps/extension/manifest.json`, `.github/workflows/release-extension.yml`
   - 우선 후보: `.codex/rules/extension.md`, `README.md`
 - `packages/shared-types/**`, `packages/badge-core/**`

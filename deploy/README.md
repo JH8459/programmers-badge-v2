@@ -11,8 +11,14 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
   - PR 검증용
   - `pnpm verify`를 실행한다.
 - `.github/workflows/deploy-api.yml`
-  - `master` push 시 API/web/deploy 관련 변경을 골라서 실행한다.
-  - `pnpm verify` 후 API/web DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - `master` push 시 API/deploy 관련 변경을 골라서 실행한다.
+  - API package 검증 후 API DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - restart 대상은 `api` service만이다.
+  - GitHub environment는 `production`을 사용한다.
+- `.github/workflows/deploy-web.yml`
+  - `master` push 시 web/store-assets/deploy 관련 변경을 골라서 실행한다.
+  - web package 검증 후 web DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - restart 대상은 `web` service만이다.
   - GitHub environment는 `production`을 사용한다.
 - `.github/workflows/release-extension.yml`
   - `extension-v*` tag push 또는 수동 실행 시 extension zip 패키지를 GitHub Release asset으로 게시한다.
@@ -37,7 +43,7 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 
 ## Secret Guidance
 
-- `deploy-api.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
+- `deploy-api.yml`과 `deploy-web.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
 - password 인증은 빠르게 붙이기 쉽지만, 장기적으로는 deploy 전용 SSH key로 전환하는 편이 더 안전하다.
 - 현재 workflow는 root 계정 또는 docker 실행 권한이 있는 계정 기준을 전제로 한다.
 - `release-extension.yml`은 현재 GitHub Release asset 게시까지만 자동화한다. Chrome Web Store 게시 자동화는 별도 OAuth/API secret 구성이 필요하다.
@@ -83,7 +89,8 @@ Web reverse proxy:
 ## Deploy Artifact
 
 배포는 DockerHub `latest` API/web 이미지를 기준으로 수행한다.
-workflow는 각 이미지의 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull한다.
+API workflow는 API image만, web workflow는 web image만 `latest`와 `sha-<commit>`로 push한다.
+NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull하고, 변경된 service만 `up -d --no-deps`로 갱신한다.
 `sha-<commit>`는 추적과 수동 롤백용 보조 tag로만 유지한다.
 
 배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.

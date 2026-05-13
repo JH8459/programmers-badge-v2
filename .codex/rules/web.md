@@ -50,7 +50,7 @@
 ## Deployment And Domain Guardrails
 
 - DNS 변경은 Route 53 hosted zone record와 NAS/reverse proxy routing을 함께 확인한다.
-- production compose는 API image와 web image를 함께 pull하고, web은 `WEB_DOCKER_IMAGE`와 `WEB_PORT` env를 사용한다.
+- production compose는 API와 web service를 함께 정의하지만, web workflow는 web image만 pull하고 web service만 재시작한다.
 - `programmers-badge.jh8459.com`을 web으로 전환하면 기존 API/extension의 hosted API URL, CORS, Chrome `host_permissions`, `PUBLIC_BASE_URL`을 함께 갱신한다.
 - `api.programmers-badge.jh8459.com`로 API를 옮기면 `/badge/*.svg` public badge URL도 해당 API host 기준으로 제공한다.
 - `/privacy`를 web으로 이전하면 API의 임시 `/privacy` route 유지 여부를 별도로 결정한다.

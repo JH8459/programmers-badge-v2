@@ -55,6 +55,7 @@ API host에서는 아래 route를 유지한다.
 - Route 53에 `api` record 추가
 - NAS/reverse proxy host routing 추가
 - API `PUBLIC_BASE_URL=https://api.programmers-badge.jh8459.com`
+- `deploy-web.yml`이 web image만 배포하고 `web` service만 재시작하는지 확인
 - extension API base/manifest `host_permissions` 갱신
 - CORS allowlist에 필요한 web origin과 extension origin 확인
 - Chrome Web Store 개인정보처리방침 URL은 `https://programmers-badge.jh8459.com/privacy`
