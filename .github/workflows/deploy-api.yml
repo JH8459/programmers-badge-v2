@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy API And Web
 
 on:
   push:
@@ -11,6 +11,8 @@ on:
       - "docker-compose.yml"
       - "deploy/**"
       - "apps/api/**"
+      - "apps/web/**"
+      - "apps/extension/store-assets/**"
       - "packages/badge-core/**"
       - "packages/shared-types/**"
       - "packages/config/**"
@@ -32,6 +34,7 @@ env:
   NODE_VERSION: 22.13.0
   PNPM_VERSION: 10.28.2
   DOCKER_IMAGE_NAME: programmers-badge-api
+  DOCKER_WEB_IMAGE_NAME: programmers-badge-web
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -62,7 +65,7 @@ jobs:
         run: pnpm verify
 
   build:
-    name: Build and push API image
+    name: Build and push API and web images
     needs: verify
     runs-on: ubuntu-latest
 
@@ -77,8 +80,10 @@ jobs:
         id: image
         shell: bash
         run: |
-          image="${{ secrets.DOCKERHUB_USERNAME }}/${DOCKER_IMAGE_NAME}"
-          echo "image_name=${image}" >> "$GITHUB_OUTPUT"
+          api_image="${{ secrets.DOCKERHUB_USERNAME }}/${DOCKER_IMAGE_NAME}"
+          web_image="${{ secrets.DOCKERHUB_USERNAME }}/${DOCKER_WEB_IMAGE_NAME}"
+          echo "api_image_name=${api_image}" >> "$GITHUB_OUTPUT"
+          echo "web_image_name=${web_image}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
@@ -93,11 +98,28 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ steps.image.outputs.image_name }}:latest
-            ${{ steps.image.outputs.image_name }}:sha-${{ github.sha }}
+            ${{ steps.image.outputs.api_image_name }}:latest
+            ${{ steps.image.outputs.api_image_name }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.title=programmers-badge-api
             org.opencontainers.image.description=PROGRAMMERS-BADGE-V2 API image
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.image.outputs.web_image_name }}:latest
+            ${{ steps.image.outputs.web_image_name }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=programmers-badge-web
+            org.opencontainers.image.description=PROGRAMMERS-BADGE-V2 web image
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
@@ -126,14 +148,16 @@ jobs:
           DEPLOY_COMPOSE_B64: ${{ steps.compose.outputs.content }}
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
           API_PORT: ${{ secrets.NAS_API_PORT }}
+          WEB_PORT: ${{ secrets.NAS_WEB_PORT }}
           PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
+          WEB_DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_WEB_IMAGE_NAME }}:latest
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,DOCKER_IMAGE
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,DOCKER_IMAGE,WEB_DOCKER_IMAGE
           script: |
             set -eu
 
@@ -142,7 +166,9 @@ jobs:
 
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
+            WEB_DOCKER_IMAGE=${WEB_DOCKER_IMAGE}
             API_PORT=${API_PORT}
+            WEB_PORT=${WEB_PORT:-5020}
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
             EOF
 
@@ -151,6 +177,7 @@ jobs:
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
           API_PORT: ${{ secrets.NAS_API_PORT }}
+          WEB_PORT: ${{ secrets.NAS_WEB_PORT }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         with:
@@ -158,7 +185,7 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: NAS_DEPLOY_DIR,API_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
+          envs: NAS_DEPLOY_DIR,API_PORT,WEB_PORT,DOCKERHUB_USERNAME,DOCKERHUB_PASSWORD
           script: |
             set -eu
 
@@ -194,6 +221,7 @@ jobs:
             set -a
             . ./.env.deploy
             set +a
+            WEB_PORT="${WEB_PORT:-5020}"
 
             echo "${DOCKERHUB_PASSWORD}" | docker_cmd login -u "${DOCKERHUB_USERNAME}" --password-stdin
             compose_cmd -f "${COMPOSE_FILE}" pull
@@ -202,11 +230,20 @@ jobs:
             for attempt in $(seq 1 30); do
               if curl -fsS "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then
                 echo "Deployment health check passed"
-                exit 0
+                break
               fi
 
               sleep 2
             done
 
-            echo "Deployment health check failed" >&2
-            exit 1
+            if ! curl -fsS "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then
+              echo "API deployment health check failed" >&2
+              exit 1
+            fi
+
+            if ! curl -fsS "http://127.0.0.1:${WEB_PORT}/" >/dev/null; then
+              echo "Web deployment health check failed" >&2
+              exit 1
+            fi
+
+            echo "API and web deployment health checks passed"

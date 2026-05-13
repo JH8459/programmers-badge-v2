@@ -8,7 +8,7 @@ Hosted badge product for sharing Programmers badge data through public badge URL
 apps/
   api/          NestJS backend
   extension/    Chrome extension (Manifest V3)
-  web/          React public web UI (planned)
+  web/          React public web UI
 packages/
   badge-core/   pure TypeScript badge rendering/domain logic
   shared-types/ shared request/response contracts
@@ -19,7 +19,9 @@ packages/
 
 - `pnpm install`
 - `pnpm dev`
+- `pnpm dev:web`
 - `pnpm build`
+- `pnpm build:web`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`
@@ -47,6 +49,7 @@ packages/
 - local Docker flow: `docker-compose.local.yml`
 - NAS production flow: `deploy/README.md`
 - privacy policy page: `https://programmers-badge.jh8459.com/privacy`
+- web local container: `docker compose -f docker-compose.local.yml up -d --build web`
 - extension package release flow: `.github/workflows/release-extension.yml`
 - extension local package: `pnpm package:extension`
 - Chrome Web Store listing assets: `apps/extension/store-assets`
@@ -55,4 +58,10 @@ packages/
 
 ```bash
 docker compose -f docker-compose.local.yml up -d --build
+```
+
+## Local Web
+
+```bash
+pnpm dev:web
 ```

@@ -56,9 +56,9 @@ packages/config     shared lint/prettier/tsconfig config
 4. API가 persistence에 badge snapshot을 저장한다.
 5. API가 `badge-core`를 사용해 full/mini public badge SVG를 pre-render하여 shared volume에 저장한다.
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
-7. GitHub Actions가 API 이미지를 DockerHub에 push하고, committed deploy compose 파일과 `.env.deploy`를 NAS에 반영한 뒤 `production` environment로 production 배포를 갱신한다.
+7. GitHub Actions가 API/web 이미지를 DockerHub에 push하고, committed deploy compose 파일과 `.env.deploy`를 NAS에 반영한 뒤 `production` environment로 production 배포를 갱신한다.
 8. GitHub Actions가 extension build 결과를 zip으로 묶어 `extension-release` environment 기준 Release asset으로 게시한다.
-9. Web UI가 추가되면 `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
+9. `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
 
 ## Current Monorepo Defaults
 

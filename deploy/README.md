@@ -11,8 +11,8 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
   - PR 검증용
   - `pnpm verify`를 실행한다.
 - `.github/workflows/deploy-api.yml`
-  - `master` push 시 API 관련 변경만 골라서 실행한다.
-  - `pnpm verify` 후 DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - `master` push 시 API/web/deploy 관련 변경을 골라서 실행한다.
+  - `pnpm verify` 후 API/web DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
   - GitHub environment는 `production`을 사용한다.
 - `.github/workflows/release-extension.yml`
   - `extension-v*` tag push 또는 수동 실행 시 extension zip 패키지를 GitHub Release asset으로 게시한다.
@@ -32,6 +32,7 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `NAS_PASSWORD`: 배포에 사용할 NAS 계정 비밀번호
 - `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
 - `NAS_API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
+- `NAS_WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본 추천값은 `5020`
 - `PUBLIC_BASE_URL`: badge URL 생성에 사용할 public base URL
 
 ## Secret Guidance
@@ -55,23 +56,34 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 
 ## Synology Reverse Proxy
 
+API reverse proxy:
+
 - source protocol: `HTTPS`
-- source host: `programmers-badge.jh8459.com` 또는 실제 public domain
+- source host: `api.programmers-badge.jh8459.com` 또는 실제 API public domain
 - source port: `443`
 - destination protocol: `HTTP`
 - destination host: `127.0.0.1`
 - destination port: `5010`
 
-이 서비스는 루트 `/` 페이지를 따로 제공하지 않는다.
+Web reverse proxy:
+
+- source protocol: `HTTPS`
+- source host: `programmers-badge.jh8459.com` 또는 실제 web public domain
+- source port: `443`
+- destination protocol: `HTTP`
+- destination host: `127.0.0.1`
+- destination port: `5020`
+
 배포 확인은 아래 URL 기준으로 보는 편이 안전하다.
 
-- `https://<domain>/api/health`
-- `https://<domain>/badge/<slug>.svg`
+- `https://<api-domain>/api/health`
+- `https://<api-domain>/badge/<slug>.svg`
+- `https://<web-domain>/`
 
 ## Deploy Artifact
 
-배포는 DockerHub `latest` 이미지를 기준으로 수행한다.
-workflow는 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull한다.
+배포는 DockerHub `latest` API/web 이미지를 기준으로 수행한다.
+workflow는 각 이미지의 `latest`와 `sha-<commit>`를 함께 push하지만, NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull한다.
 `sha-<commit>`는 추적과 수동 롤백용 보조 tag로만 유지한다.
 
 배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.
@@ -88,11 +100,13 @@ cd <NAS_DEPLOY_DIR>
 cat .env.deploy
 docker compose --env-file .env.deploy -f docker-compose.yml ps
 curl -i http://127.0.0.1:5010/api/health
+curl -I http://127.0.0.1:5020/
 ```
 
 외부 확인:
 
 ```bash
-curl -i https://<domain>/api/health
-curl -I https://<domain>/badge/<slug>.svg
+curl -i https://<api-domain>/api/health
+curl -I https://<api-domain>/badge/<slug>.svg
+curl -I https://<web-domain>/
 ```

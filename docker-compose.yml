@@ -26,5 +26,18 @@ services:
       retries: 3
       start_period: 10s
 
+  web:
+    image: ${WEB_DOCKER_IMAGE:?WEB_DOCKER_IMAGE is required}
+    container_name: programmers-badge-web
+    ports:
+      - "${WEB_PORT:-5020}:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 volumes:
   badge-data:

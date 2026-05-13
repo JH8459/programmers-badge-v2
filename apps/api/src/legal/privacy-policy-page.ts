@@ -11,13 +11,13 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #07100d;
-        --panel: rgba(13, 28, 24, 0.82);
-        --panel-strong: rgba(18, 39, 34, 0.94);
-        --line: rgba(117, 255, 189, 0.18);
-        --text: #e7fff5;
-        --muted: #9eb8ad;
-        --accent: #28e58f;
+        --bg: #05091d;
+        --panel: rgba(8, 18, 54, 0.82);
+        --panel-strong: rgba(10, 22, 70, 0.94);
+        --line: rgba(127, 156, 255, 0.18);
+        --text: #f2f6ff;
+        --muted: #a9b7d7;
+        --accent: #7f9cff;
         --accent-2: #2ed8ff;
         --warn: #ffd34f;
       }
@@ -31,8 +31,8 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
         min-height: 100vh;
         background:
           radial-gradient(circle at 20% 0%, rgba(46, 216, 255, 0.18), transparent 32rem),
-          radial-gradient(circle at 78% 12%, rgba(40, 229, 143, 0.18), transparent 28rem),
-          linear-gradient(135deg, #040807 0%, var(--bg) 48%, #091713 100%);
+          radial-gradient(circle at 78% 12%, rgba(20, 39, 131, 0.32), transparent 28rem),
+          linear-gradient(135deg, #020512 0%, var(--bg) 48%, #06133c 100%);
         color: var(--text);
         font-family:
           "Pretendard",
@@ -56,7 +56,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
         border-radius: 32px;
         padding: clamp(32px, 6vw, 72px);
         background:
-          linear-gradient(145deg, rgba(17, 38, 33, 0.94), rgba(9, 18, 16, 0.88)),
+          linear-gradient(145deg, rgba(13, 27, 75, 0.94), rgba(3, 12, 38, 0.88)),
           repeating-linear-gradient(
             90deg,
             rgba(255, 255, 255, 0.03) 0,
@@ -73,7 +73,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
         width: 360px;
         height: 360px;
         border-radius: 999px;
-        background: rgba(40, 229, 143, 0.2);
+        background: rgba(20, 39, 131, 0.24);
         filter: blur(24px);
         content: "";
       }
@@ -83,7 +83,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
         gap: 10px;
         align-items: center;
         margin-bottom: 18px;
-        border: 1px solid rgba(40, 229, 143, 0.34);
+        border: 1px solid rgba(127, 156, 255, 0.34);
         border-radius: 999px;
         padding: 7px 13px;
         color: var(--accent);
@@ -149,7 +149,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
 
       h2 {
         margin-bottom: 14px;
-        color: #f4fff9;
+        color: #f6f9ff;
         font-size: 1.16rem;
         letter-spacing: -0.03em;
       }
@@ -184,13 +184,13 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
       .callout {
         border-color: rgba(255, 211, 79, 0.26);
         background:
-          linear-gradient(135deg, rgba(255, 211, 79, 0.1), rgba(40, 229, 143, 0.06)),
+          linear-gradient(135deg, rgba(255, 211, 79, 0.1), rgba(20, 39, 131, 0.08)),
           var(--panel-strong);
       }
 
       .footer {
         margin-top: 28px;
-        color: rgba(231, 255, 245, 0.58);
+        color: rgba(242, 246, 255, 0.58);
         font-size: 0.92rem;
         text-align: center;
       }
