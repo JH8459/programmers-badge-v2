@@ -37,8 +37,8 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `NAS_USER`: SSH 로그인 사용자
 - `NAS_PASSWORD`: 배포에 사용할 NAS 계정 비밀번호
 - `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
-- `NAS_API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
-- `NAS_WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본 추천값은 `5020`
+- `API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
+- `WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본 추천값은 `5020`
 - `PUBLIC_BASE_URL`: badge URL 생성에 사용할 public base URL
 
 ## Secret Guidance

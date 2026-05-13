@@ -127,8 +127,8 @@ jobs:
         env:
           DEPLOY_COMPOSE_B64: ${{ steps.compose.outputs.content }}
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          API_PORT: ${{ secrets.NAS_API_PORT }}
-          WEB_PORT: ${{ secrets.NAS_WEB_PORT }}
+          API_PORT: ${{ secrets.API_PORT }}
+          WEB_PORT: ${{ secrets.WEB_PORT }}
           PUBLIC_BASE_URL: ${{ secrets.PUBLIC_BASE_URL }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
           WEB_DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_WEB_IMAGE_NAME }}:latest
@@ -156,7 +156,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.5
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          WEB_PORT: ${{ secrets.NAS_WEB_PORT }}
+          WEB_PORT: ${{ secrets.WEB_PORT }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         with:
