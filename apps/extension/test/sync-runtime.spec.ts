@@ -3,7 +3,7 @@ import { runInNewContext } from "node:vm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/background/api-client", () => ({
-  EXTENSION_API_HOST: "programmers-badge.jh8459.com",
+  EXTENSION_API_HOST: "api.programmers-badge.jh8459.com",
   syncBadgePayload: vi.fn(),
 }));
 
@@ -45,12 +45,12 @@ describe("sync runtime", () => {
     mockedFetch.mockReset();
     mockedSyncBadgePayload.mockResolvedValue({
       slug: "abc123def456",
-      badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
-      miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+      badgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
+      miniBadgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
       markdownSnippet:
-        "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+        "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
       miniMarkdownSnippet:
-        "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+        "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
       programmerHandle: "programmers-user",
       displayName: "Programmers User",
       solvedCount: 123,
@@ -142,7 +142,7 @@ describe("sync runtime", () => {
       },
     });
     expect(nextState.status).toBe("success");
-    expect(nextState.message).toContain("programmers-badge.jh8459.com");
+    expect(nextState.message).toContain("api.programmers-badge.jh8459.com");
   });
 
   it("keeps the manual sync path working through the active tab query", async () => {

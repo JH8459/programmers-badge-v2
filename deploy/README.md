@@ -39,11 +39,13 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
 - `API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
 - `WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본 추천값은 `5020`
-- `PUBLIC_BASE_URL`: badge URL 생성에 사용할 public base URL
+
+Production workflow는 badge URL 생성을 위해 `PUBLIC_BASE_URL=https://api.programmers-badge.jh8459.com`을 `.env.deploy`에 기록한다.
 
 ## Secret Guidance
 
 - `deploy-api.yml`과 `deploy-web.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
+- `PUBLIC_BASE_URL`은 workflow에 고정된 production API host를 사용하므로 secret으로 관리하지 않는다.
 - password 인증은 빠르게 붙이기 쉽지만, 장기적으로는 deploy 전용 SSH key로 전환하는 편이 더 안전하다.
 - 현재 workflow는 root 계정 또는 docker 실행 권한이 있는 계정 기준을 전제로 한다.
 - `release-extension.yml`은 현재 GitHub Release asset 게시까지만 자동화한다. Chrome Web Store 게시 자동화는 별도 OAuth/API secret 구성이 필요하다.

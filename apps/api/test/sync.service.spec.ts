@@ -20,12 +20,14 @@ describe("SyncService", () => {
     const databasePath = createTempDatabasePath();
     const badgeOutputDirectory = createTempBadgeOutputDirectory();
     const originalBadgeOutputDirectory = process.env.BADGE_OUTPUT_DIR;
+    const originalPublicBaseUrl = process.env.PUBLIC_BASE_URL;
     const databaseService = new DatabaseService(databasePath);
     const repository = new BadgeProfileRepository(databaseService);
     const badgeAssetService = new BadgeAssetService();
     const service = new SyncService(repository, badgeAssetService);
 
     process.env.BADGE_OUTPUT_DIR = badgeOutputDirectory;
+    process.env.PUBLIC_BASE_URL = "https://api.programmers-badge.jh8459.com";
 
     try {
       const response = service.syncBadge({
@@ -41,8 +43,12 @@ describe("SyncService", () => {
       });
 
       expect(response.slug).toHaveLength(12);
-      expect(response.badgeUrl).toContain(`/badge/${response.slug}.svg`);
-      expect(response.miniBadgeUrl).toContain(`/badge/${response.slug}-mini.svg`);
+      expect(response.badgeUrl).toBe(
+        `https://api.programmers-badge.jh8459.com/badge/${response.slug}.svg`
+      );
+      expect(response.miniBadgeUrl).toBe(
+        `https://api.programmers-badge.jh8459.com/badge/${response.slug}-mini.svg`
+      );
       expect(response.markdownSnippet).toContain(response.badgeUrl);
       expect(response.miniMarkdownSnippet).toContain(response.miniBadgeUrl);
       expect(response.displayName).toBe("Sync User");
@@ -66,6 +72,7 @@ describe("SyncService", () => {
       expect(readFileSync(miniBadgeFilePath, "utf8")).toContain("programmers");
     } finally {
       process.env.BADGE_OUTPUT_DIR = originalBadgeOutputDirectory;
+      process.env.PUBLIC_BASE_URL = originalPublicBaseUrl;
       databaseService.onModuleDestroy();
       removeTempDatabase(databasePath);
       removeTempDirectory(badgeOutputDirectory);

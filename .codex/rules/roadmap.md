@@ -8,6 +8,7 @@
 - `apps/api` runtime env는 단일 zod config로 검증하고 bootstrap 전에 fail-fast 한다.
 - `apps/extension`은 manual sync, 제출 감지 기반 auto-sync, popup copy flow를 제공한다.
 - `apps/extension`은 page-context fetch와 extension-context validation을 분리해 `executeScript` boundary를 안전하게 유지한다.
+- `apps/extension`은 hosted API URL과 host permission을 `api.programmers-badge.jh8459.com` 기준으로 사용한다.
 - Docker Compose 기반 API/web 배포 베이스가 있다.
 - PR verify, master production deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 - NAS deploy는 DockerHub API/web image와 committed root `docker-compose.yml` sync 기준으로 운영하되, API/Web workflow를 분리해 service별로 갱신한다.
@@ -36,7 +37,7 @@
 ## Next Phase 4 - Public Web UI
 
 - NAS reverse proxy host routing을 확정한다.
-- extension hosted API URL과 Chrome Web Store 개인정보처리방침 URL을 domain split 기준으로 갱신한다.
+- Chrome Web Store 개인정보처리방침 URL을 domain split 기준으로 갱신한다.
 
 ## Deferred Until Explicit Need
 

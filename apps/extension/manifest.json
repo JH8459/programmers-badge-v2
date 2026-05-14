@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Sync Programmers badge data and prepare a hosted badge URL.",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
-  "host_permissions": ["https://programmers-badge.jh8459.com/*"],
+  "host_permissions": ["https://api.programmers-badge.jh8459.com/*"],
   "icons": {
     "16": "assets/icons/icon-16.png",
     "32": "assets/icons/icon-32.png",

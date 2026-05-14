@@ -224,7 +224,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
         <div class="meta" aria-label="policy metadata">
           <span class="pill">시행일: 2026년 5월 13일</span>
           <span class="pill">서비스: Chrome Extension + Hosted Badge API</span>
-          <span class="pill">도메인: programmers-badge.jh8459.com</span>
+          <span class="pill">도메인: api.programmers-badge.jh8459.com</span>
         </div>
       </article>
 
@@ -286,7 +286,7 @@ export const PRIVACY_POLICY_HTML = `<!doctype html>
           <p>
             확장 프로그램은 badge 동기화와 popup 표시를 위해 <strong>storage</strong>,
             <strong>activeTab</strong>, <strong>tabs</strong>, <strong>scripting</strong> 권한과
-            <strong>programmers-badge.jh8459.com</strong> 호스트 권한을 사용합니다. 이 권한은 사용자가
+            <strong>api.programmers-badge.jh8459.com</strong> 호스트 권한을 사용합니다. 이 권한은 사용자가
             동기화를 실행하거나 Programmers 문제 페이지에서 성공 신호를 감지해 badge 데이터를 갱신하는
             목적에 한정됩니다.
           </p>

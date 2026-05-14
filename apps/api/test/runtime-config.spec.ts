@@ -19,14 +19,14 @@ describe("readApiRuntimeConfig", () => {
     expect(
       readApiRuntimeConfig({
         PORT: " 4100 ",
-        PUBLIC_BASE_URL: " https://programmers-badge.jh8459.com/ ",
+        PUBLIC_BASE_URL: " https://api.programmers-badge.jh8459.com/ ",
         PUBLIC_BADGE_PATH_PREFIX: " public-badge/ ",
         DATABASE_PATH: " /tmp/programmers-badge.sqlite ",
         BADGE_OUTPUT_DIR: " /tmp/programmers-badge-assets ",
       })
     ).toEqual({
       port: 4100,
-      publicBaseUrl: "https://programmers-badge.jh8459.com",
+      publicBaseUrl: "https://api.programmers-badge.jh8459.com",
       publicBadgePathPrefix: "/public-badge",
       databasePath: "/tmp/programmers-badge.sqlite",
       badgeOutputDirectory: "/tmp/programmers-badge-assets",

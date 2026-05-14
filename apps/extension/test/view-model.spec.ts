@@ -23,12 +23,12 @@ describe("getPopupViewModel", () => {
       message: "동기화가 완료되었습니다.",
       lastSync: {
         slug: "abc123def456",
-        badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
-        miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+        badgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
+        miniBadgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         markdownSnippet:
-          "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+          "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
-          "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+          "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
         programmerHandle: "programmers-user",
         displayName: "Programmers User",
         solvedCount: 100,
@@ -49,48 +49,48 @@ describe("getPopupViewModel", () => {
       {
         key: "standard",
         label: "standard",
-        imageUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+        imageUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
         imageAlt: "Programmers User standard 배지 미리보기",
         copyItems: [
           {
             key: "badge-url",
             label: "Badge URL",
             buttonLabel: "복사",
-            value: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
-            preview: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
+            value: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
+            preview: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
           },
           {
             key: "markdown-snippet",
             label: "Markdown",
             buttonLabel: "복사",
             value:
-              "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+              "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
             preview:
-              "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+              "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
           },
         ],
       },
       {
         key: "mini",
         label: "mini",
-        imageUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+        imageUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         imageAlt: "Programmers User mini 배지 미리보기",
         copyItems: [
           {
             key: "badge-url",
             label: "Badge URL",
             buttonLabel: "복사",
-            value: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
-            preview: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+            value: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+            preview: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
           },
           {
             key: "markdown-snippet",
             label: "Markdown",
             buttonLabel: "복사",
             value:
-              "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+              "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
             preview:
-              "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+              "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
           },
         ],
       },
@@ -103,7 +103,7 @@ describe("getPopupViewModel", () => {
     ]);
     expect(viewModel.badgePreviewOptions[0]?.copyItems).toHaveLength(2);
     expect(viewModel.badgePreviewOptions[0]?.copyItems[0]?.value).toContain(
-      "programmers-badge.jh8459.com"
+      "api.programmers-badge.jh8459.com"
     );
     expect(viewModel.badgePreviewOptions[0]?.copyItems.map((item) => item.label)).toEqual([
       "Badge URL",
@@ -121,12 +121,12 @@ describe("getPopupViewModel", () => {
       message: "동기화가 완료되었습니다.",
       lastSync: {
         slug: "abc123def456",
-        badgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456.svg",
-        miniBadgeUrl: "https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
+        badgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
+        miniBadgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
         markdownSnippet:
-          "![Programmers Badge](https://programmers-badge.jh8459.com/badge/abc123def456.svg)",
+          "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
-          "![Programmers Mini Badge](https://programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
+          "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
         programmerHandle: "JH8459",
         displayName: "JH8459",
         solvedCount: 100,

@@ -44,6 +44,13 @@ describe("api client runtime config and response validation", () => {
     expect(EXTENSION_API_HOST).toBe("programmers-badge.example.com");
   });
 
+  it("falls back to the production API host when manifest permissions are unavailable", async () => {
+    const { EXTENSION_API_BASE_URL, EXTENSION_API_HOST } = await import("../src/background/api-client");
+
+    expect(EXTENSION_API_BASE_URL).toBe("https://api.programmers-badge.jh8459.com");
+    expect(EXTENSION_API_HOST).toBe("api.programmers-badge.jh8459.com");
+  });
+
   it("rejects invalid API response payloads", async () => {
     const { syncBadgePayload } = await import("../src/background/api-client");
 

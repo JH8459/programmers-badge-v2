@@ -4,7 +4,7 @@ import {
   type BadgeSyncResponse,
 } from "@programmers-badge/shared-types";
 
-const DEFAULT_EXTENSION_API_BASE_URL = "https://programmers-badge.jh8459.com";
+const DEFAULT_EXTENSION_API_BASE_URL = "https://api.programmers-badge.jh8459.com";
 
 const isOriginHostPermission = (value: string): boolean => /^https?:\/\/[^*]+\/\*$/.test(value);
 

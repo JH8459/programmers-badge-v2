@@ -14,7 +14,7 @@
 
 - Manifest V3를 사용한다.
 - 현재 permission은 `storage`, `activeTab`, `tabs`, `scripting`이다.
-- 현재 `host_permissions`는 `https://programmers-badge.jh8459.com/*`만 허용한다.
+- 현재 `host_permissions`는 `https://api.programmers-badge.jh8459.com/*`만 허용한다.
 - extension runtime icon은 `apps/extension/assets/icons`에 두고 build 시 `dist/assets/icons`로 복사한다.
 - extension runtime JS는 `esbuild`로 번들링해서 bare package import가 Chrome runtime에 남지 않게 한다.
 - Chrome Web Store listing 이미지는 `apps/extension/store-assets`에 두며 extension ZIP에는 포함하지 않는다.
