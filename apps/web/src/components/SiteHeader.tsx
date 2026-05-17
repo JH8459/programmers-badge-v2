@@ -5,7 +5,6 @@ import appIcon from "../assets/app-icon.png";
 
 const navItems = [
   { href: "/", label: "Overview" },
-  { href: "/guide", label: "Guide" },
   { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
 ];

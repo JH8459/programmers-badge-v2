@@ -11,7 +11,6 @@
 ## Routing Defaults
 
 - `/`: landing page
-- `/guide`: extension 설치, sync, badge 복사 사용 방법
 - `/contact`: 문의하기와 support channel 안내
 - `/privacy`: Chrome Web Store 제출용 개인정보처리방침
 - `/terms`는 명시적 필요가 생길 때 추가한다.

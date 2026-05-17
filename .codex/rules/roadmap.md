@@ -13,7 +13,7 @@
 - PR verify, master production deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
 - NAS deploy는 DockerHub API/web image와 committed root `docker-compose.yml` sync 기준으로 운영하되, API/Web workflow를 분리해 service별로 갱신한다.
 - API deploy environment는 `production`, extension package release environment는 `extension-release`를 사용한다.
-- `apps/web`은 Vite + React + TypeScript 기반 public web UI scaffold와 Nginx runtime image, landing/guide/contact/privacy route를 제공한다.
+- `apps/web`은 Vite + React + TypeScript 기반 public web UI scaffold와 Nginx runtime image, landing/contact/privacy route를 제공한다.
 
 ## Next Phase 1 - Runtime Strategy Hardening
 

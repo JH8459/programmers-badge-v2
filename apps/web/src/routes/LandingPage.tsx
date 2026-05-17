@@ -4,7 +4,7 @@ import flowImageThree from "../assets/landing/flow-copy-badge.png";
 import flowImageOne from "../assets/landing/flow-install-extension.png";
 import flowImageTwo from "../assets/landing/flow-sync-record.png";
 import { BadgePreview } from "../components/BadgePreview";
-import { guideSteps, siteLinks } from "../data/site";
+import { flowSteps, siteLinks } from "../data/site";
 
 type ApiHealthStatus = "idle" | "checking" | "healthy" | "warning" | "error";
 
@@ -78,9 +78,6 @@ export function LandingPage() {
             수집하거나 저장하지 않습니다.
           </p>
           <div className="hero-actions">
-            <a className="button button-primary" href="/guide">
-              사용 방법 보기
-            </a>
             <button className="button button-secondary" type="button" onClick={checkApiHealth}>
               API 상태 확인
             </button>
@@ -108,7 +105,7 @@ export function LandingPage() {
           </p>
         </div>
         <div className="step-grid">
-          {guideSteps.map((step, index) => (
+          {flowSteps.map((step, index) => (
             <article className="step-card" key={step.title}>
               <img className="step-visual" src={flowImages[index]} alt="" aria-hidden="true" />
               <span className="step-number">{String(index + 1).padStart(2, "0")}</span>

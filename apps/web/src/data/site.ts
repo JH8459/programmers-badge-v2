@@ -1,12 +1,11 @@
 export const siteLinks = {
   apiHealth: "https://api.programmers-badge.jh8459.com/api/health",
-  badgeExample: "https://api.programmers-badge.jh8459.com/badge/{slug}.svg",
   chromeStore: "#",
   githubIssues: "https://github.com/JH8459/programmers-badge-v2/issues",
   programmersLesson: "https://school.programmers.co.kr/learn/courses",
 };
 
-export const guideSteps = [
+export const flowSteps = [
   {
     title: "확장 프로그램 설치",
     description:
