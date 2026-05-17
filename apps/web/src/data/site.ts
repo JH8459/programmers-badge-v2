@@ -10,19 +10,19 @@ export const guideSteps = [
   {
     title: "확장 프로그램 설치",
     description:
-      "Chrome 확장 프로그램을 설치한 뒤 Programmers에 로그인된 브라우저 세션을 유지합니다.",
+      "크롬 확장 프로그램을 설치한 뒤 프로그래머스에 로그인된 브라우저 세션을 유지합니다.",
     meta: "Chrome Extension",
   },
   {
     title: "풀이 기록 동기화",
     description:
-      "문제 풀이 페이지에서 자동 동기화가 실행되거나 popup에서 직접 sync를 실행합니다.",
+      "문제 풀이 페이지에서 자동 동기화가 실행되거나 직접 동기화를 실행합니다.",
     meta: "Manual / Auto Sync",
   },
   {
     title: "Badge URL 복사",
     description:
-      "standard 또는 mini badge를 선택하고 Badge URL이나 Markdown snippet을 README에 붙여 넣습니다.",
+      "표준 혹은 미니 버전의 배지를 선택하고 하단의 URL을 복사하여 활용합니다.",
     meta: "Standard / Mini",
   },
 ];

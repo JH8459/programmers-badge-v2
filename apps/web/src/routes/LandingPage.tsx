@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+import flowImageThree from "../assets/landing/flow-copy-badge.png";
+import flowImageOne from "../assets/landing/flow-install-extension.png";
+import flowImageTwo from "../assets/landing/flow-sync-record.png";
 import { BadgePreview } from "../components/BadgePreview";
 import { guideSteps, siteLinks } from "../data/site";
 
@@ -14,8 +17,10 @@ interface ApiHealthState {
 const initialApiHealthState: ApiHealthState = {
   status: "idle",
   label: "상태 확인 전",
-  description: "API 상태 확인을 누르면 health endpoint 응답을 검사합니다.",
+  description: "현재 서비스 상태를 확인할 수 있습니다.",
 };
+
+const flowImages = [flowImageOne, flowImageTwo, flowImageThree] as const;
 
 export function LandingPage() {
   const [apiHealthState, setApiHealthState] = useState<ApiHealthState>(initialApiHealthState);
@@ -24,7 +29,7 @@ export function LandingPage() {
     setApiHealthState({
       status: "checking",
       label: "확인 중",
-      description: "health endpoint 응답을 기다리고 있습니다.",
+      description: "현재 서비스 상태를 확인하고 있습니다.",
     });
 
     try {
@@ -36,7 +41,7 @@ export function LandingPage() {
         setApiHealthState({
           status: "warning",
           label: `응답 확인 필요 (${response.status})`,
-          description: "API가 응답했지만 정상 상태 코드가 아닙니다.",
+          description: "현재 서비스 응답 상태를 확인해야 합니다.",
         });
         return;
       }
@@ -48,21 +53,21 @@ export function LandingPage() {
         status: isHealthy ? "healthy" : "warning",
         label: isHealthy ? "정상" : "응답 확인 필요",
         description: isHealthy
-          ? "API와 database health check가 정상입니다."
-          : "API는 응답했지만 health payload의 일부 상태를 확인해야 합니다.",
+          ? "현재 서비스가 정상적으로 운영중입니다."
+          : "현재 서비스 일부 상태를 확인해야 합니다.",
       });
     } catch {
       setApiHealthState({
         status: "error",
         label: "연결 실패",
-        description: "API health endpoint에 연결하지 못했습니다.",
+        description: "현재 서비스 상태를 확인하지 못했습니다.",
       });
     }
   };
 
   return (
     <main>
-      <section className="hero-layout">
+      <section className="hero-section">
         <div className="hero-copy">
           <span className="section-kicker">Hosted Badge for Programmers</span>
           <h1>프로그래머스 풀이 기록을 토대로 프로필 배지를 생성합니다.</h1>
@@ -88,17 +93,24 @@ export function LandingPage() {
             </div>
           </div>
         </div>
-        <BadgePreview />
+        <aside className="hero-preview" aria-label="service preview">
+          <BadgePreview />
+        </aside>
       </section>
 
       <section className="flow-section">
         <div>
           <span className="section-kicker">Flow</span>
-          <h2>설치부터 README 반영까지 세 단계입니다.</h2>
+          <h2>손 쉽게 사용 가능합니다.</h2>
+          <p className="flow-description">
+            크롬 확장 프로그램 설치 후 프로그래머스 문제 풀이 기록을 동기화하고, 생성된 배지
+            URL을 자유롭게 활용하세요.
+          </p>
         </div>
         <div className="step-grid">
           {guideSteps.map((step, index) => (
             <article className="step-card" key={step.title}>
+              <img className="step-visual" src={flowImages[index]} alt="" aria-hidden="true" />
               <span className="step-number">{String(index + 1).padStart(2, "0")}</span>
               <strong>{step.title}</strong>
               <p>{step.description}</p>
