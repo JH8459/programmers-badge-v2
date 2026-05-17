@@ -16,7 +16,7 @@ description: Use when code, workflows, contracts, or repository structure change
 - `.codex/rules/architecture.md`
 - `.codex/instructions/workflow.md`
 - `.codex/instructions/memory.md`
-- 필요하면 작업 범위별 `api.md`, `extension.md`, `packages.md`
+- 필요하면 작업 범위별 `api.md`, `api/*.md`, `extension.md`, `extension/*.md`, `web.md`, `web/*.md`, `packages.md`
 
 그리고 현재 diff를 아래 기준으로 확인한다.
 
@@ -39,11 +39,11 @@ description: Use when code, workflows, contracts, or repository structure change
 ## Diff Mapping
 
 - `apps/api/**`, `Dockerfile`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-api.yml`
-  - 우선 후보: `.codex/rules/api.md`, `deploy/README.md`, `README.md`
+  - 우선 후보: `.codex/rules/api.md`, `.codex/rules/api/*.md`, `deploy/README.md`, `README.md`
 - `apps/web/**`, `apps/extension/store-assets/**`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-web.yml`
-  - 우선 후보: `.codex/rules/web.md`, `deploy/README.md`, `README.md`
+  - 우선 후보: `.codex/rules/web.md`, `.codex/rules/web/*.md`, `deploy/README.md`, `README.md`
 - `apps/extension/**`, `apps/extension/manifest.json`, `.github/workflows/release-extension.yml`
-  - 우선 후보: `.codex/rules/extension.md`, `README.md`
+  - 우선 후보: `.codex/rules/extension.md`, `.codex/rules/extension/*.md`, `README.md`
 - `packages/shared-types/**`, `packages/badge-core/**`
   - 우선 후보: `.codex/rules/packages.md`
   - runtime behavior까지 바뀌면 관련 app rule도 같이 본다

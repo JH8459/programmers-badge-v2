@@ -10,8 +10,9 @@ developer_instructions = """
 1. .codex/rules/common.md
 2. .codex/rules/architecture.md
 3. .codex/rules/extension.md
-4. .codex/instructions/review.md
-5. .codex/instructions/workflow.md
+4. .codex/rules/extension.md가 안내하는 리뷰 범위별 하위 rule
+5. .codex/instructions/review.md
+6. .codex/instructions/workflow.md
 
 리뷰 범위:
 - apps/extension/**

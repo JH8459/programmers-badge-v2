@@ -4,7 +4,7 @@
 
 - 먼저 `.codex/README.md`를 읽고, 그 다음 관련 `rules`와 `instructions`를 읽는다.
 - 작업 시작 전에 `.codex/memory/user-preferences.md`와 `.codex/memory/recurring-mistakes.md`를 확인한다.
-- API 작업이면 `api.md`, extension 작업이면 `extension.md`, shared package 작업이면 `packages.md`를 함께 읽는다.
+- API 작업이면 `api.md`와 필요한 `api/*.md`, extension 작업이면 `extension.md`와 필요한 `extension/*.md`, shared package 작업이면 `packages.md`를 함께 읽는다.
 - 변경은 최소 범위로 유지하고 관련 없는 리팩터링은 피한다.
 - 가능하면 `In scope`, `Out of scope`, `Acceptance criteria`, `Validation`을 함께 적는다.
 - reviewer 호출 시점을 고정하지 않고 조절해야 하면 repo-local `$senior-review-flow` skill을 사용한다.

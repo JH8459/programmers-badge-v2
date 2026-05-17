@@ -35,8 +35,17 @@ packages/
 - `.codex/rules/common.md`
 - `.codex/rules/architecture.md`
 - `.codex/rules/api.md`
+- `.codex/rules/api/runtime.md`
+- `.codex/rules/api/contracts.md`
+- `.codex/rules/api/badge-delivery.md`
 - `.codex/rules/extension.md`
+- `.codex/rules/extension/runtime.md`
+- `.codex/rules/extension/sync-flow.md`
+- `.codex/rules/extension/release-assets.md`
 - `.codex/rules/web.md`
+- `.codex/rules/web/ui.md`
+- `.codex/rules/web/assets.md`
+- `.codex/rules/web/publishing.md`
 - `.codex/rules/packages.md`
 - `.codex/rules/roadmap.md`
 - `.codex/rules/adrs/README.md`

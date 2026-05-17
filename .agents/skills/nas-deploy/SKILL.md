@@ -23,6 +23,7 @@ description: Use when the user wants to prepare, validate, or update this reposi
 - `.codex/rules/common.md`
 - `.codex/rules/architecture.md`
 - `.codex/rules/api.md`
+- `.codex/rules/api/runtime.md`
 - `.codex/instructions/workflow.md`
 - `deploy/README.md`
 - `.github/workflows/deploy-api.yml`

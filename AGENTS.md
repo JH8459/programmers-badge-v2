@@ -11,6 +11,9 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 3. `.codex/rules/architecture.md`
 4. `.codex/memory/user-preferences.md`, `.codex/memory/recurring-mistakes.md`
 5. 작업 범위에 맞는 `.codex/rules/api.md`, `.codex/rules/extension.md`, `.codex/rules/web.md`, `.codex/rules/packages.md`
+   - api 작업은 `.codex/rules/api.md`를 entrypoint로 읽고, 필요한 `.codex/rules/api/*.md` 하위 rule을 추가로 읽는다.
+   - extension 작업은 `.codex/rules/extension.md`를 entrypoint로 읽고, 필요한 `.codex/rules/extension/*.md` 하위 rule을 추가로 읽는다.
+   - web 작업은 `.codex/rules/web.md`를 entrypoint로 읽고, 필요한 `.codex/rules/web/*.md` 하위 rule을 추가로 읽는다.
 6. 관련 `.codex/instructions/*.md`
 7. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
 8. repo-local skill을 쓰거나 수정하면 관련 `.agents/skills/*/SKILL.md`
@@ -21,9 +24,18 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.codex/README.md`: 전체 읽기 순서와 문서 지도
 - `.codex/rules/common.md`: 공통 제품/범위/guardrail
 - `.codex/rules/architecture.md`: monorepo 구조와 boundary
-- `.codex/rules/api.md`: `apps/api` 전용 규칙
-- `.codex/rules/extension.md`: `apps/extension` 전용 규칙
-- `.codex/rules/web.md`: `apps/web` 전용 규칙
+- `.codex/rules/api.md`: `apps/api` 전용 entrypoint
+- `.codex/rules/api/runtime.md`: API runtime/deploy 규칙
+- `.codex/rules/api/contracts.md`: API endpoint/contract/validation 규칙
+- `.codex/rules/api/badge-delivery.md`: API persistence/badge delivery 규칙
+- `.codex/rules/extension.md`: `apps/extension` 전용 entrypoint
+- `.codex/rules/extension/runtime.md`: extension runtime/permission 규칙
+- `.codex/rules/extension/sync-flow.md`: extension sync flow 규칙
+- `.codex/rules/extension/release-assets.md`: extension release/asset 규칙
+- `.codex/rules/web.md`: `apps/web` 전용 entrypoint
+- `.codex/rules/web/ui.md`: web UI/layout/copy 규칙
+- `.codex/rules/web/assets.md`: web landing asset 규칙
+- `.codex/rules/web/publishing.md`: web route/domain/deploy/legal publishing 규칙
 - `.codex/rules/packages.md`: `packages/*` 전용 규칙
 - `.codex/rules/roadmap.md`: 현재 상태와 다음 단계
 - `.codex/rules/adrs/README.md`: ADR 위치

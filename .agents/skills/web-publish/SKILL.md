@@ -14,7 +14,8 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - `.codex/rules/common.md`
 - `.codex/rules/architecture.md`
 - `.codex/rules/web.md`
-- domain/API 영향이 있으면 `.codex/rules/api.md`, `.codex/rules/extension.md`
+- `.codex/rules/web.md`가 안내하는 작업 범위별 하위 rule
+- domain/API 영향이 있으면 `.codex/rules/api.md`, `.codex/rules/extension.md`와 각 entrypoint가 안내하는 하위 rule
 - 관련 작업 절차는 `.codex/instructions/workflow.md`
 - web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.yml`, `deploy/README.md`
 
@@ -27,27 +28,22 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 ## Workflow
 
 1. 변경 목적을 `landing`, `guide`, `contact`, `privacy/legal`, `domain/deploy`, `shared UI` 중 하나 이상으로 분류한다.
-2. route ownership을 먼저 정한다.
+2. `.codex/rules/web.md`의 Read By Scope 기준에 따라 필요한 하위 rule을 읽는다.
+3. route ownership을 먼저 정한다.
    - public UI route는 `apps/web`
    - API와 `/badge/*.svg`는 `apps/api`
    - extension popup/background UX는 `apps/extension`
-3. API origin 또는 badge URL이 바뀌면 extension `host_permissions`, runtime API client, CORS, `PUBLIC_BASE_URL`, deploy docs를 함께 점검한다.
-4. UI 구현은 Vite + React + TypeScript 기본값을 우선한다.
-5. UI 작업이면 `references/ui-quality.md`를 확인하고, generic AI template 패턴을 제거한다.
-6. copywriting은 한국어를 기본으로 하고, Chrome Web Store-facing legal copy는 기능/수집/보관/문의 정보를 과장 없이 적는다.
-7. 새 page는 desktop/mobile readability, primary action 노출, link target을 확인한다.
-8. web Docker/deploy 변경이면 web image build, DockerHub tag, deploy path filter, web-only service restart 기준을 확인한다.
-9. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md`, deploy docs 중 stale surface만 갱신한다.
+4. API origin 또는 badge URL이 바뀌면 API, extension, deploy docs 영향 범위를 함께 점검한다.
+5. UI 작업이면 `references/ui-quality.md`를 보조 자료로 확인한다.
+6. web Docker/deploy 변경이면 web image build, DockerHub tag, deploy path filter, web-only service restart 기준을 확인한다.
+7. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md`, deploy docs 중 stale surface만 갱신한다.
 
 ## Guardrails
 
-- `apps/web`에서 API persistence 구현체나 Chrome API를 import하지 않는다.
-- `vite preview`를 production server로 쓰지 않는다.
-- 문의 form처럼 서버 저장이 필요한 기능은 API endpoint, validation, abuse 방지 기준을 먼저 설계한다.
-- public web page에 secret, token, raw session, 식별 가능한 사용자 샘플 데이터를 넣지 않는다.
-- web production deploy는 `deploy-web.yml`에서 web image만 push하고 `web` service만 재시작한다.
-- UI와 landing asset 세부 기준은 `.codex/rules/web.md`를 source-of-truth로 따른다.
-- decorative label, 과한 그림자, 불필요한 pill badge, Unicode icon 같은 AI-generated UI 냄새가 강한 패턴을 피한다.
+- 이 skill에는 세부 web 정책을 중복 정의하지 않는다.
+- web 세부 기준은 `.codex/rules/web.md`와 작업 범위별 하위 rule을 source-of-truth로 따른다.
+- rule과 skill이 충돌하면 rule을 우선하고, stale한 skill 문구를 갱신한다.
+- `references/*`는 구현 보조 자료이며 `.codex/rules/*`를 대체하지 않는다.
 
 ## Validation
 

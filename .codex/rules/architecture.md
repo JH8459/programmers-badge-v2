@@ -1,5 +1,8 @@
 # Architecture Rule
 
+이 문서는 monorepo 전체의 책임 경계, dependency boundary, 기본 data flow를 정의한다.
+app별 runtime, deploy, UI, permission 같은 세부 정책은 각 app rule entrypoint와 하위 rule을 따른다.
+
 ## System Shape
 
 ```text

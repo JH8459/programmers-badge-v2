@@ -1,8 +1,11 @@
 # API Rule
 
+`apps/api`는 NestJS backend를 소유한다.
+이 파일은 API rule의 entrypoint이고, 상세 기준은 작업 범위에 맞는 하위 문서를 읽는다.
+
 ## Ownership
 
-`apps/api`는 NestJS backend로서 아래를 소유한다.
+`apps/api`는 아래 surface를 소유한다.
 
 - `/api/sync`, `/api/badge/:slug.svg`, `/api/badge/:slug/mini.svg`, `/api/health` endpoint
 - Chrome Web Store 제출용 `/privacy` public legal page
@@ -11,41 +14,13 @@
 - SQLite persistence와 schema 관리
 - pre-rendered SVG asset 생성과 public badge URL 조합
 
-## Runtime Defaults
+## Read By Scope
 
-- global prefix는 `/api`다.
-- 기본 `PORT`는 `3000`이다.
-- `PUBLIC_BASE_URL`이 없으면 public badge URL은 `http://localhost:${PORT}` 기준으로 생성한다.
-- `PUBLIC_BADGE_PATH_PREFIX`가 없으면 public badge URL path는 `/badge`를 사용한다.
-- `DATABASE_PATH`가 없으면 기본 SQLite 파일은 `data/programmers-badge.sqlite`다.
-- `BADGE_OUTPUT_DIR`가 없으면 기본 SVG 출력 디렉토리는 `data/badges`다.
-- Docker Compose runtime은 `/data/programmers-badge.sqlite`를 사용한다.
-- Docker Compose public entrypoint는 API 단일 컨테이너 `:3000`을 사용한다.
-- NAS production runtime은 root `docker-compose.yml` 파일과 `.env.deploy`를 기준으로 DockerHub 이미지를 pull한다.
-- NAS host port 기본 추천값은 `5010`이다.
-- runtime env는 단일 zod config로 읽고 bootstrap 전에 fail-fast 한다.
+- runtime env, Docker, NAS deploy, health check 작업: `.codex/rules/api/runtime.md`
+- endpoint, request/response, validation, CORS 작업: `.codex/rules/api/contracts.md`
+- persistence, public slug, SVG asset, badge static serving 작업: `.codex/rules/api/badge-delivery.md`
 
-## Current Behavior Defaults
-
-- sync 응답은 `BadgeSyncResponse`를 반환한다.
-- public badge는 full SVG와 mini SVG를 제공한다.
-- `/privacy`는 global `/api` prefix 밖에서 HTML 개인정보처리방침 페이지를 제공한다.
-- health endpoint는 minimal readiness 확인용이다.
-- re-sync 시 같은 `programmerHandle`이면 기존 `publicSlug`를 유지한다.
-- sync 시 동일 slug의 full/mini SVG asset을 pre-render하여 갱신한다.
-- `/badge/*.svg`는 Nest/Express static middleware로 정적 서빙한다.
-- persistence schema 변경은 현재 additive migration 패턴을 우선한다.
-- API production deploy는 `API verify -> API DockerHub push -> deploy compose sync -> .env.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 두고, GitHub environment는 `production`을 사용한다.
-- 현재 API deploy workflow는 root `docker-compose.yml` 파일을 NAS에 동기화하고, `.env.deploy`에 API/web image와 port env를 함께 기록한 뒤 API image만 pull하고 `api` service만 재시작한다.
-
-## Validation And Security
-
-- 입력 검증은 서버에서 수행하고 client 입력을 신뢰하지 않는다.
-- API contract runtime validation은 `packages/shared-types`의 zod schema를 기본값으로 사용한다.
-- HTTP boundary에서는 Nest pipe로 zod parse 결과를 받고, normalization은 shared schema 기준을 따른다.
-- `PORT`, `PUBLIC_BASE_URL`, `PUBLIC_BADGE_PATH_PREFIX`, `DATABASE_PATH`, `BADGE_OUTPUT_DIR`는 app-local runtime config zod schema로 검증한다.
-- public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
-- CORS 변경 시 localhost 개발 흐름과 extension origin 허용 범위를 함께 검토한다.
+여러 범위를 동시에 바꾸면 관련 하위 문서를 모두 읽는다.
 
 ## Guardrails
 
@@ -55,10 +30,8 @@
 - badge asset I/O는 API가 소유하되, 렌더링 자체는 `badge-core`에 유지한다.
 - env, URL, slug 정책을 바꾸면 API 응답, extension 소비부, 문서를 함께 갱신한다.
 
-## When Editing
+## Validation
 
-- public response shape를 바꾸면 `packages/shared-types`, extension copy flow, 관련 테스트를 함께 갱신한다.
-- sync payload나 response 검증 규칙을 바꾸면 API app-local validator보다 `packages/shared-types` schema를 먼저 갱신한다.
-- runtime env 규칙을 바꾸면 default 값, invalid env 실패 케이스, deploy 문서를 함께 갱신한다.
-- badge SVG 규칙을 바꾸면 `packages/badge-core`로 이동 가능한지 먼저 검토한다.
-- persistence/schema를 바꾸면 기존 DB 호환성과 re-sync semantics를 먼저 확인한다.
+- API code 변경 시 영향 범위에 맞게 lint, typecheck, test, build를 확인한다.
+- runtime env 규칙을 바꾸면 default 값과 invalid env 실패 케이스를 확인한다.
+- public badge 변경이면 status code, response 형식, 민감 정보 노출 여부를 함께 확인한다.
