@@ -7,6 +7,11 @@ describe("isAllowedCorsOrigin", () => {
     expect(isAllowedCorsOrigin(undefined)).toBe(true);
     expect(isAllowedCorsOrigin("http://localhost:3000")).toBe(true);
     expect(isAllowedCorsOrigin("http://127.0.0.1:3000")).toBe(true);
+    expect(isAllowedCorsOrigin("http://localhost:5020")).toBe(true);
+    expect(isAllowedCorsOrigin("http://127.0.0.1:5020")).toBe(true);
+    expect(isAllowedCorsOrigin("http://localhost:5173")).toBe(true);
+    expect(isAllowedCorsOrigin("http://127.0.0.1:5173")).toBe(true);
+    expect(isAllowedCorsOrigin("https://programmers-badge.jh8459.com")).toBe(true);
     expect(isAllowedCorsOrigin("chrome-extension://abcdefghijklmnop")).toBe(true);
   });
 

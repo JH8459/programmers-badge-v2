@@ -1,11 +1,19 @@
-const LOCALHOST_ORIGINS = new Set(["http://localhost:3000", "http://127.0.0.1:3000"]);
+const ALLOWED_WEB_ORIGINS = new Set([
+  "https://programmers-badge.jh8459.com",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5020",
+  "http://127.0.0.1:5020",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
 
 export const isAllowedCorsOrigin = (origin: string | undefined): boolean => {
   if (!origin) {
     return true;
   }
 
-  if (LOCALHOST_ORIGINS.has(origin)) {
+  if (ALLOWED_WEB_ORIGINS.has(origin)) {
     return true;
   }
 
