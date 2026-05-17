@@ -225,11 +225,14 @@ code {
 .flow-section,
 .contact-section,
 .contact-panel,
+.terms-hero,
+.terms-index,
+.terms-document,
 .page-intro,
 .code-panel,
 .support-item,
 .notice-panel,
-.privacy-item {
+.terms-clause {
   border: 1px solid var(--line);
   background: var(--panel);
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.24);
@@ -431,7 +434,7 @@ p {
 }
 
 .step-grid,
-.privacy-list {
+.terms-documents {
   display: grid;
   gap: 14px;
 }
@@ -465,7 +468,7 @@ p {
 
 .step-card strong,
 .support-item h2,
-.privacy-item h2,
+.terms-document h2,
 .notice-panel h2 {
   display: block;
   margin-bottom: 10px;
@@ -514,6 +517,53 @@ p {
   background:
     linear-gradient(180deg, rgba(13, 27, 75, 0.88), rgba(3, 12, 38, 0.9)),
     var(--panel);
+}
+
+.terms-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+  gap: clamp(20px, 4vw, 42px);
+  align-items: center;
+  border-radius: var(--radius-xl);
+  padding: clamp(28px, 5vw, 56px);
+  background:
+    linear-gradient(180deg, rgba(13, 27, 75, 0.88), rgba(3, 12, 38, 0.9)),
+    var(--panel);
+}
+
+.terms-copy {
+  min-width: 0;
+}
+
+.terms-copy p {
+  max-width: 720px;
+  margin-top: 22px;
+  font-size: 1.04rem;
+}
+
+.terms-index {
+  display: grid;
+  gap: 10px;
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: none;
+}
+
+.terms-index span {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.terms-index a {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 13px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.92rem;
+  font-weight: 800;
 }
 
 .contact-copy {
@@ -569,14 +619,79 @@ p {
   padding: 28px;
 }
 
-.privacy-item {
+.terms-documents {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.terms-document {
+  overflow: clip;
   border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(13, 27, 75, 0.76), rgba(3, 12, 38, 0.9)),
+    var(--panel);
+}
+
+.terms-document header {
   padding: 24px;
 }
 
-.privacy-list {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 18px;
+.terms-document h2 {
+  color: var(--text);
+}
+
+.terms-document header p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.terms-scroll {
+  display: grid;
+  gap: 22px;
+  max-height: 430px;
+  overflow-y: auto;
+  margin: 0 14px 14px;
+  border: 1px solid #d9e2f1;
+  border-radius: 4px;
+  padding: 24px;
+  background: #ffffff;
+  scrollbar-color: rgba(20, 39, 131, 0.45) rgba(9, 20, 47, 0.08);
+}
+
+.terms-clause {
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 22px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.terms-clause + .terms-clause {
+  border-top: 1px solid #e2e8f4;
+  padding-top: 22px;
+}
+
+.terms-clause h3 {
+  margin: 0 0 10px;
+  color: #09142f;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.terms-clause p {
+  color: #354158;
+  font-size: 0.95rem;
+  line-height: 1.78;
+}
+
+.terms-document footer {
+  padding: 0 18px 18px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-align: right;
 }
 
 .notice-panel a {
@@ -590,7 +705,8 @@ p {
   .hero-section,
   .flow-section,
   .contact-section,
-  .privacy-list {
+  .terms-hero,
+  .terms-documents {
     grid-template-columns: 1fr;
   }
 
@@ -664,6 +780,7 @@ p {
   .hero-copy,
   .hero-section,
   .contact-section,
+  .terms-hero,
   .page-intro,
   .flow-section,
   .code-panel,
