@@ -3,7 +3,7 @@
 이 디렉토리는 NAS production 배포 문서를 둔다.
 compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 두 개를 기준으로 관리한다.
 - `docker-compose.yml`: NAS production deploy 기본 파일
-- `docker-compose.local.yml`: 로컬 개발/검증용 파일
+- `docker-compose.local.yml`: 로컬 개발/검증용 파일. API와 web service는 source bind mount와 dev server/watch mode로 실행하며 host port는 NAS 기본값과 같은 `5010`/`5020`을 사용한다.
 
 ## Workflow Split
 

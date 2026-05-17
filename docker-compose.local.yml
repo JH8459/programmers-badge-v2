@@ -3,16 +3,21 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: build
     container_name: programmers-badge-api
+    command: ["pnpm", "--filter", "@programmers-badge/api", "dev"]
     environment:
       PORT: 3000
       DATABASE_PATH: /data/programmers-badge.sqlite
       BADGE_OUTPUT_DIR: /data/badges
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:5010}
       PUBLIC_BADGE_PATH_PREFIX: /badge
     ports:
-      - "3000:3000"
+      - "5010:3000"
     volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/badge-core/src:/app/packages/badge-core/src
+      - ./packages/shared-types/src:/app/packages/shared-types/src
       - badge-data:/data
     restart: unless-stopped
     healthcheck:
@@ -32,12 +37,24 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+      target: build
     container_name: programmers-badge-web
+    command: ["pnpm", "--filter", "@programmers-badge/web", "dev"]
     ports:
-      - "5173:80"
+      - "5020:5173"
+    volumes:
+      - ./apps/web/index.html:/app/apps/web/index.html
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/extension/store-assets:/app/apps/extension/store-assets:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:5173/').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3
