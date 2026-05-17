@@ -34,6 +34,8 @@
 - 프로젝트 전역 accent는 favicon 계열 navy/blue를 기본으로 사용하고, green은 명시적인 success/status 의미가 있을 때만 제한적으로 사용한다.
 - public UI는 반복적인 AI template, 의미 없는 장식 문구, 과한 shadow/glow를 피한다.
 - header/navigation은 과한 pill shape나 organic blob button을 피하고, 낮은 radius와 명확한 edge를 가진 product topbar로 구성한다.
+- landing overview hero는 description과 product preview를 하나의 section 안에 묶고, preview가 copy보다 과하게 커지지 않도록 보조 visual 비중으로 둔다.
+- landing 전용 bitmap asset은 `apps/web/src/assets/landing` 아래에 의미가 드러나는 ASCII 파일명으로 둔다.
 - 문구는 한국어를 기본으로 두고, Chrome Web Store 제출에 필요한 legal/policy copy는 명확하고 과장 없이 작성한다.
 - 정적/문서성 page를 우선하고, 서버 런타임이 필요한 기능은 명시적 필요가 생길 때 API endpoint로 분리한다.
 - 문의하기는 초기에는 GitHub Issues 또는 mailto link로 시작하고, 저장형 contact form은 API endpoint와 abuse 방지 기준을 먼저 정한 뒤 추가한다.

@@ -46,7 +46,7 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - 문의 form처럼 서버 저장이 필요한 기능은 API endpoint, validation, abuse 방지 기준을 먼저 설계한다.
 - public web page에 secret, token, raw session, 식별 가능한 사용자 샘플 데이터를 넣지 않는다.
 - web production deploy는 `deploy-web.yml`에서 web image만 push하고 `web` service만 재시작한다.
-- UI를 generic SaaS template처럼 만들지 말고 extension/store assets와 이어지는 dark neon badge/productivity 톤을 유지한다.
+- UI와 landing asset 세부 기준은 `.codex/rules/web.md`를 source-of-truth로 따른다.
 - decorative label, 과한 그림자, 불필요한 pill badge, Unicode icon 같은 AI-generated UI 냄새가 강한 패턴을 피한다.
 
 ## Validation
