@@ -4,8 +4,8 @@
 
 - sync 응답은 `BadgeSyncResponse`를 반환한다.
 - public badge는 full SVG와 mini SVG를 제공한다.
-- `/privacy`는 global `/api` prefix 밖에서 HTML 개인정보처리방침 페이지를 제공한다.
 - health endpoint는 minimal readiness 확인용이다.
+- public legal/privacy page는 web이 소유하며 API는 `/privacy`를 서빙하지 않는다.
 
 ## Validation And Security
 

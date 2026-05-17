@@ -8,7 +8,6 @@
 `apps/api`는 아래 surface를 소유한다.
 
 - `/api/sync`, `/api/badge/:slug.svg`, `/api/badge/:slug/mini.svg`, `/api/health` endpoint
-- Chrome Web Store 제출용 `/privacy` public legal page
 - `/badge/:slug.svg`, `/badge/:slug-mini.svg` 정적 서빙 경로
 - payload validation과 normalization
 - SQLite persistence와 schema 관리

@@ -29,7 +29,6 @@
 - production compose는 API와 web service를 함께 정의하지만, web workflow는 web image만 pull하고 web service만 재시작한다.
 - production host routing을 바꾸면 API/extension의 hosted API URL, CORS, Chrome `host_permissions`, `PUBLIC_BASE_URL`을 함께 검증한다.
 - `/badge/*.svg` public badge URL은 `api.programmers-badge.jh8459.com` API host 기준으로 제공한다.
-- `/privacy`를 web으로 이전하면 API의 임시 `/privacy` route 유지 여부를 별도로 결정한다.
 
 ## Validation
 
