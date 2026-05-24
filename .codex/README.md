@@ -31,7 +31,7 @@
 - `.codex/rules/extension/release-assets.md`: extension icon, store listing asset, zip packaging, release workflow 기준
 - `.codex/rules/web.md`: `apps/web` 전용 entrypoint, 하위 web rule 읽기 기준
 - `.codex/rules/web/ui.md`: web UI, layout, component, copy tone 기준
-- `.codex/rules/web/assets.md`: landing image, screenshot, generated bitmap asset 기준
+- `.codex/rules/web/assets.md`: favicon, public static asset, landing image, screenshot, generated bitmap asset 기준
 - `.codex/rules/web/publishing.md`: web route, domain, deploy, privacy/legal publishing 기준
 - `.codex/rules/packages.md`: `packages/*` 전용 규칙, contract/rendering/config boundary와 shared zod schema 기준
 - `.codex/rules/roadmap.md`: 현재 상태와 다음 단계

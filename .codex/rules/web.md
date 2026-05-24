@@ -16,7 +16,7 @@
 ## Read By Scope
 
 - UI, layout, component, copy tone 작업: `.codex/rules/web/ui.md`
-- landing image, screenshot, generated bitmap asset 작업: `.codex/rules/web/assets.md`
+- favicon, public static asset, landing image, screenshot, generated bitmap asset 작업: `.codex/rules/web/assets.md`
 - route, domain, deploy, privacy/legal publishing 작업: `.codex/rules/web/publishing.md`
 
 여러 범위를 동시에 바꾸면 관련 하위 문서를 모두 읽는다.
