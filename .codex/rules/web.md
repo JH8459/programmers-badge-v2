@@ -18,6 +18,7 @@
 - UI, layout, component, copy tone 작업: `.codex/rules/web/ui.md`
 - favicon, public static asset, landing image, screenshot, generated bitmap asset 작업: `.codex/rules/web/assets.md`
 - route, domain, deploy, privacy/legal publishing 작업: `.codex/rules/web/publishing.md`
+- GitHub Actions deploy workflow, environment, secret 작업: `.codex/rules/deployment.md`
 
 여러 범위를 동시에 바꾸면 관련 하위 문서를 모두 읽는다.
 
@@ -33,4 +34,4 @@
 
 - web code 변경 시 최소 `pnpm --filter @programmers-badge/web lint`, `typecheck`, `build`를 확인한다.
 - route나 copy 변경 시 작은 viewport에서 primary action, readability, link target을 확인한다.
-- API origin 변경이 포함되면 API, extension, deploy docs를 함께 검증한다.
+- API origin 변경이 포함되면 API, extension, `.codex/rules/deployment.md`를 함께 검증한다.

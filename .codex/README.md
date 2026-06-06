@@ -13,14 +13,16 @@
    - api 작업은 `.codex/rules/api.md`를 entrypoint로 읽고, 필요한 `.codex/rules/api/*.md` 하위 rule을 추가로 읽는다.
    - extension 작업은 `.codex/rules/extension.md`를 entrypoint로 읽고, 필요한 `.codex/rules/extension/*.md` 하위 rule을 추가로 읽는다.
    - web 작업은 `.codex/rules/web.md`를 entrypoint로 읽고, 필요한 `.codex/rules/web/*.md` 하위 rule을 추가로 읽는다.
-5. 관련 `.codex/instructions/*.md`
-6. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
-7. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
+5. 배포/릴리스 workflow를 다루면 `.codex/rules/deployment.md`
+6. 관련 `.codex/instructions/*.md`
+7. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
+8. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
 
 ## Directory Map
 
 - `.codex/rules/common.md`: 제품 목표, MVP 범위, 공통 guardrail, repo/runtime 기본값
 - `.codex/rules/architecture.md`: monorepo 구조, 책임, dependency boundary, 기본 data flow
+- `.codex/rules/deployment.md`: GitHub Actions deploy/release workflow, environment, secret ownership, NAS production 운영 기준
 - `.codex/rules/api.md`: `apps/api` 전용 entrypoint, 하위 API rule 읽기 기준
 - `.codex/rules/api/runtime.md`: API runtime env, Docker, NAS deploy, health check 기준
 - `.codex/rules/api/contracts.md`: API endpoint, request/response, validation, CORS 기준
@@ -28,7 +30,7 @@
 - `.codex/rules/extension.md`: `apps/extension` 전용 entrypoint, 하위 extension rule 읽기 기준
 - `.codex/rules/extension/runtime.md`: extension manifest, permissions, Chrome API, runtime bundling 기준
 - `.codex/rules/extension/sync-flow.md`: extension popup, background, content script, sync flow 기준
-- `.codex/rules/extension/release-assets.md`: extension icon, store listing asset, zip packaging, release workflow 기준
+- `.codex/rules/extension/release-assets.md`: extension icon, store listing asset, zip packaging 기준
 - `.codex/rules/web.md`: `apps/web` 전용 entrypoint, 하위 web rule 읽기 기준
 - `.codex/rules/web/ui.md`: web UI, layout, component, copy tone 기준
 - `.codex/rules/web/assets.md`: favicon, public static asset, landing image, screenshot, generated bitmap asset 기준
@@ -57,4 +59,5 @@
 - API와 extension을 함께 바꾸면 두 개별 규칙을 모두 읽고 contract 영향 여부를 확인한다.
 - Web과 API/extension을 함께 바꾸면 domain, CORS, public URL, shared contract 영향 여부를 함께 확인한다.
 - 구조나 workflow를 바꾸는 작업이면 `memory/*`도 먼저 읽고, 새 선호나 반복 실수가 생겼는지 확인한다.
+- GitHub Actions deploy/release, environment, secret ownership, NAS deploy 절차를 바꾸면 `deployment` rule과 관련 app rule을 함께 읽는다.
 - repo-local skill을 직접 만들거나 수정하면 해당 `.agents/skills/*/SKILL.md`와 `agents/openai.yaml`을 함께 본다.

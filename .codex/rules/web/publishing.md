@@ -27,8 +27,7 @@
 - 정적/문서성 page를 우선하고, 서버 런타임이 필요한 기능은 명시적 필요가 생길 때 API endpoint로 분리한다.
 - 문의하기는 초기에는 GitHub Issues 또는 mailto link로 시작하고, 저장형 contact form은 API endpoint와 abuse 방지 기준을 먼저 정한 뒤 추가한다.
 - DNS 변경은 Route 53 hosted zone record와 NAS/reverse proxy routing을 함께 확인한다.
-- production web compose는 `docker-compose.web.yml`에서 web service만 정의하고, web workflow는 web image와 `.env.web.deploy`만 갱신한 뒤 web service만 재시작한다.
-- API-only, docs-only, root lockfile-only 변경은 web 자동 production deploy trigger에서 제외한다.
+- web production deploy workflow, environment, secret ownership은 `.codex/rules/deployment.md`를 따른다.
 - production host routing을 바꾸면 API/extension의 hosted API URL, CORS, Chrome `host_permissions`, `PUBLIC_BASE_URL`을 함께 검증한다.
 - `/badge/*.svg` public badge URL은 `api.programmers-badge.jh8459.com` API host 기준으로 제공한다.
 

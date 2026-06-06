@@ -1,0 +1,4 @@
+interface:
+  display_name: "Critical Review"
+  short_description: "Find high-risk diff issues with file-line evidence"
+  default_prompt: "Use $critical-review to run the critical risk/regression review lane on the current diff with file-line evidence."

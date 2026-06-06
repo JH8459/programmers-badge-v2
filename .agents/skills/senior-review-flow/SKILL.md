@@ -1,6 +1,6 @@
 ---
 name: senior-review-flow
-description: Use when the user wants a coding task to include this repository's custom senior reviewer agents at a configurable checkpoint. Supports review_timing values after-plan, after-implementation, after-validation, before-commit, multi-pass, and manual, plus review_scope values auto, api, extension, and both. Do not use for pure review-only requests or doc-only tasks unless the user explicitly asks for senior reviewer agents.
+description: Use when the user wants a coding task to include this repository's custom senior reviewer agents at a configurable checkpoint. Supports review_timing values after-plan, after-implementation, after-validation, before-commit, multi-pass, and manual, plus review_scope values auto, api, extension, and both. Do not use for generic pure review-only requests or doc-only tasks; use $review-workflow for generic review requests, and use this skill only when the user explicitly asks for senior reviewer agents or configurable reviewer checkpoints.
 ---
 
 # Senior Review Flow
@@ -10,6 +10,9 @@ description: Use when the user wants a coding task to include this repository's 
 
 - `api_senior_code_review`
 - `extension_senior_code_review`
+
+일반적인 "리뷰 해줘" 요청은 `$review-workflow`를 진입점으로 사용한다.
+이 skill은 구현 작업 중 checkpoint에 senior reviewer를 붙일 때 사용한다.
 
 ## Required context
 
@@ -88,7 +91,7 @@ description: Use when the user wants a coding task to include this repository's 
 
 ## Workflow
 
-1. 작업이 code task인지 확인한다. pure review-only 요청이면 이 skill 대신 바로 reviewer를 사용한다.
+1. 작업이 code task인지 확인한다. generic pure review-only 요청이면 `$review-workflow`를 사용하고, 사용자가 senior reviewer agent를 명시한 경우에만 reviewer를 직접 호출한다.
 2. `review_timing`과 `review_scope`를 프롬프트에서 읽고, 없으면 기본값을 사용한다.
 3. `review_scope=auto`면 변경 범위 또는 계획 기준으로 reviewer를 고른다.
 4. 지정된 checkpoint에 도달하면 필요한 reviewer agent를 호출한다.

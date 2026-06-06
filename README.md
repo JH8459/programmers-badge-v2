@@ -37,6 +37,7 @@ packages/
 - `.codex/README.md`
 - `.codex/rules/common.md`
 - `.codex/rules/architecture.md`
+- `.codex/rules/deployment.md`
 - `.codex/rules/api.md`
 - `.codex/rules/api/runtime.md`
 - `.codex/rules/api/contracts.md`
@@ -59,10 +60,10 @@ packages/
 ## Deployment
 
 - local Docker flow: `docker-compose.local.yml`
-- NAS production flow: `deploy/README.md`
+- deployment and NAS production: `.codex/rules/deployment.md`
 - privacy policy page: `https://programmers-badge.jh8459.com/privacy`
 - web local container: `docker compose -f docker-compose.local.yml up -d --build web`
-- extension package release flow: `.github/workflows/release-extension.yml`
+- extension package release workflow: `.github/workflows/release-extension.yml`
 - extension local package: `pnpm package:extension`
 - Chrome Web Store listing assets: `apps/extension/store-assets`
 

@@ -14,16 +14,18 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
    - api 작업은 `.codex/rules/api.md`를 entrypoint로 읽고, 필요한 `.codex/rules/api/*.md` 하위 rule을 추가로 읽는다.
    - extension 작업은 `.codex/rules/extension.md`를 entrypoint로 읽고, 필요한 `.codex/rules/extension/*.md` 하위 rule을 추가로 읽는다.
    - web 작업은 `.codex/rules/web.md`를 entrypoint로 읽고, 필요한 `.codex/rules/web/*.md` 하위 rule을 추가로 읽는다.
-6. 관련 `.codex/instructions/*.md`
-7. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
-8. repo-local skill을 쓰거나 수정하면 관련 `.agents/skills/*/SKILL.md`
-9. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
+6. 배포/릴리스 workflow를 다루면 `.codex/rules/deployment.md`
+7. 관련 `.codex/instructions/*.md`
+8. reviewer나 custom subagent를 쓰면 `.codex/agents/README.md`
+9. repo-local skill을 쓰거나 수정하면 관련 `.agents/skills/*/SKILL.md`
+10. 필요 시 `.codex/rules/roadmap.md`, `.codex/rules/adrs/README.md`
 
 ## Path Index
 
 - `.codex/README.md`: 전체 읽기 순서와 문서 지도
 - `.codex/rules/common.md`: 공통 제품/범위/guardrail
 - `.codex/rules/architecture.md`: monorepo 구조와 boundary
+- `.codex/rules/deployment.md`: GitHub Actions deploy/release workflow, environment, secret ownership, NAS production 운영 규칙
 - `.codex/rules/api.md`: `apps/api` 전용 entrypoint
 - `.codex/rules/api/runtime.md`: API runtime/deploy 규칙
 - `.codex/rules/api/contracts.md`: API endpoint/contract/validation 규칙
@@ -31,7 +33,7 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.codex/rules/extension.md`: `apps/extension` 전용 entrypoint
 - `.codex/rules/extension/runtime.md`: extension runtime/permission 규칙
 - `.codex/rules/extension/sync-flow.md`: extension sync flow 규칙
-- `.codex/rules/extension/release-assets.md`: extension release/asset 규칙
+- `.codex/rules/extension/release-assets.md`: extension asset/zip packaging 규칙
 - `.codex/rules/web.md`: `apps/web` 전용 entrypoint
 - `.codex/rules/web/ui.md`: web UI/layout/copy 규칙
 - `.codex/rules/web/assets.md`: web landing asset 규칙
@@ -50,6 +52,8 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.codex/agents/api-senior-code-review.toml`: API senior reviewer 정의
 - `.codex/agents/extension-senior-code-review.toml`: extension senior reviewer 정의
 - `.agents/skills/senior-review-flow/SKILL.md`: reviewer 호출 시점 제어 skill
+- `.agents/skills/review-workflow/SKILL.md`: senior/critical lens 종합 리뷰 skill
+- `.agents/skills/critical-review/SKILL.md`: 비판적 diff/PR 리뷰 skill
 - `.agents/skills/nas-deploy/SKILL.md`: API DockerHub to NAS deploy workflow skill
 - `.agents/skills/commit/SKILL.md`: commit splitting, staging, push planning skill
 - `.agents/skills/pr-workflow/SKILL.md`: PR 작성 전 커밋 분리, 메시지, PR 템플릿 workflow skill

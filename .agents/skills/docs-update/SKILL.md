@@ -1,6 +1,6 @@
 ---
 name: docs-update
-description: Use when code, workflows, contracts, or repository structure changed and the documentation may now be stale. Compare the current diff against source-of-truth docs such as README, .codex rules or instructions, deploy docs, AGENTS path indexes, and skill docs, then update only the docs affected by the diff. Do not use for broad documentation rewrites disconnected from real code changes.
+description: Use when code, workflows, contracts, or repository structure changed and the documentation may now be stale. Compare the current diff against source-of-truth docs such as README, .codex rules or instructions, AGENTS path indexes, and skill docs, then update only the docs affected by the diff. Do not use for broad documentation rewrites disconnected from real code changes.
 ---
 
 # Docs Update
@@ -32,18 +32,17 @@ description: Use when code, workflows, contracts, or repository structure change
 - `.codex/rules/*`
 - `.codex/instructions/*`
 - `.codex/memory/*`
-- `deploy/README.md`
 - `.agents/skills/*/SKILL.md`
 - `.agents/skills/*/agents/openai.yaml`
 
 ## Diff Mapping
 
-- `apps/api/**`, `Dockerfile`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-api.yml`
-  - 우선 후보: `.codex/rules/api.md`, `.codex/rules/api/*.md`, `deploy/README.md`, `README.md`
-- `apps/web/**`, `apps/extension/store-assets/**`, `docker-compose*.yml`, `deploy/**`, `.github/workflows/deploy-web.yml`
-  - 우선 후보: `.codex/rules/web.md`, `.codex/rules/web/*.md`, `deploy/README.md`, `README.md`
+- `apps/api/**`, `Dockerfile`, `docker-compose*.yml`, `.github/workflows/deploy-api.yml`
+  - 우선 후보: `.codex/rules/api.md`, `.codex/rules/api/*.md`, `.codex/rules/deployment.md`, `README.md`
+- `apps/web/**`, `apps/extension/store-assets/**`, `docker-compose*.yml`, `.github/workflows/deploy-web.yml`
+  - 우선 후보: `.codex/rules/web.md`, `.codex/rules/web/*.md`, `.codex/rules/deployment.md`, `README.md`
 - `apps/extension/**`, `apps/extension/manifest.json`, `.github/workflows/release-extension.yml`
-  - 우선 후보: `.codex/rules/extension.md`, `.codex/rules/extension/*.md`, `README.md`
+  - 우선 후보: `.codex/rules/extension.md`, `.codex/rules/extension/*.md`, `.codex/rules/deployment.md`, `README.md`
 - `packages/shared-types/**`, `packages/badge-core/**`
   - 우선 후보: `.codex/rules/packages.md`
   - runtime behavior까지 바뀌면 관련 app rule도 같이 본다
@@ -57,7 +56,7 @@ description: Use when code, workflows, contracts, or repository structure change
 1. diff를 읽고 behavior change와 documentation change를 구분한다.
 2. 어떤 문서가 source-of-truth인지 먼저 결정한다.
    - 규칙과 절차는 `.codex/*`
-   - 운영 문서는 `deploy/README.md`
+   - deploy/release 운영 기준은 `.codex/rules/deployment.md`
    - 개요 문서는 `README.md`
    - 경로 안내는 `AGENTS.md`
 3. source-of-truth를 먼저 갱신한다.
@@ -95,5 +94,5 @@ Update the source-of-truth files first, then align README and AGENTS only where 
 
 ```text
 Use $docs-update after this api and deploy workflow change.
-Check whether .codex rules, deploy/README.md, and any skill docs are now stale.
+Check whether .codex rules and any skill docs are now stale.
 ```

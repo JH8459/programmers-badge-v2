@@ -23,7 +23,7 @@ packages/config     shared lint/prettier/tsconfig config
 - 내부 구조는 domain aggregate별 Nest module과 `@nestjs/cqrs` bus를 기준으로 `presenter/http -> application/use-case/http -> application/{command,query} -> infra` 흐름을 따른다.
 - sync 시 저장된 badge data를 `packages/badge-core`에 전달해 full/mini pre-rendered SVG asset을 생성한다.
 - Nest/Express static serving으로 `/badge/*.svg`를 정적으로 서빙한다.
-- production artifact는 API Docker image로 관리하고, NAS는 DockerHub image pull과 committed API deploy compose sync 후 API service만 재시작한다.
+- production artifact는 API Docker image로 관리하고, deploy workflow 기준은 `.codex/rules/deployment.md`를 따른다.
 
 ### `apps/extension`
 
@@ -36,7 +36,7 @@ packages/config     shared lint/prettier/tsconfig config
 - public landing, guide, contact, legal pages를 소유한다.
 - 사용자를 위한 설치/동기화/복사 안내와 Chrome Web Store 제출용 public 문서를 제공한다.
 - API 서버는 기존 `apps/api`를 사용하고, web app은 persistence나 extension-only 로직을 소유하지 않는다.
-- production artifact는 web Docker image로 관리하고, NAS는 DockerHub image pull과 committed web deploy compose sync 후 web service만 재시작한다.
+- production artifact는 web Docker image로 관리하고, deploy workflow 기준은 `.codex/rules/deployment.md`를 따른다.
 - production UI 도메인은 `programmers-badge.jh8459.com`, API 도메인은 `api.programmers-badge.jh8459.com` 분리를 기본 방향으로 둔다.
 
 ### `packages/*`
@@ -61,10 +61,8 @@ packages/config     shared lint/prettier/tsconfig config
 4. API가 persistence에 badge snapshot을 저장한다.
 5. API가 `badge-core`를 사용해 full/mini public badge SVG를 pre-render하여 shared volume에 저장한다.
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
-7. GitHub Actions가 API runtime/image 변경 시 API 이미지만 DockerHub에 push하고, `docker-compose.api.yml`과 `.env.api.deploy`를 NAS에 반영한 뒤 API service만 갱신한다.
-8. GitHub Actions가 web runtime/image 변경 시 web 이미지만 DockerHub에 push하고, `docker-compose.web.yml`과 `.env.web.deploy`를 NAS에 반영한 뒤 web service만 갱신한다.
-9. GitHub Actions가 extension build 결과를 zip으로 묶어 `extension-release` environment 기준 Release asset으로 게시한다.
-10. `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
+7. deploy/release workflow, environment, secret ownership은 `.codex/rules/deployment.md`를 따른다.
+8. `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
 
 ## Current Monorepo Defaults
 

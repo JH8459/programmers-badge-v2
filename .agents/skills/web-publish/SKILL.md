@@ -17,7 +17,7 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - `.codex/rules/web.md`가 안내하는 작업 범위별 하위 rule
 - domain/API 영향이 있으면 `.codex/rules/api.md`, `.codex/rules/extension.md`와 각 entrypoint가 안내하는 하위 rule
 - 관련 작업 절차는 `.codex/instructions/workflow.md`
-- web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.web.yml`, `deploy/README.md`
+- web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.web.yml`, `.codex/rules/deployment.md`
 
 필요한 경우만 reference를 읽는다.
 
@@ -33,10 +33,10 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
    - public UI route는 `apps/web`
    - API와 `/badge/*.svg`는 `apps/api`
    - extension popup/background UX는 `apps/extension`
-4. API origin 또는 badge URL이 바뀌면 API, extension, deploy docs 영향 범위를 함께 점검한다.
+4. API origin 또는 badge URL이 바뀌면 API, extension, deployment rule 영향 범위를 함께 점검한다.
 5. UI 작업이면 `references/ui-quality.md`를 보조 자료로 확인한다.
 6. web Docker/deploy 변경이면 web image build, DockerHub tag, deploy path filter, web-only service restart 기준을 확인한다.
-7. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md`, deploy docs 중 stale surface만 갱신한다.
+7. docs-update가 필요하면 `.codex/rules/*`, `README.md`, `AGENTS.md` 중 stale surface만 갱신한다.
 
 ## Guardrails
 
