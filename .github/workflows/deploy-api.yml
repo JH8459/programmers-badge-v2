@@ -6,18 +6,22 @@ on:
       - master
     paths:
       - ".github/workflows/deploy-api.yml"
-      - ".github/release.yml"
       - "Dockerfile"
-      - "docker-compose.yml"
-      - "deploy/**"
-      - "apps/api/**"
-      - "packages/badge-core/**"
-      - "packages/shared-types/**"
-      - "packages/config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "turbo.json"
+      - "docker-compose.api.yml"
+      - "apps/api/package.json"
+      - "apps/api/tsconfig*.json"
+      - "apps/api/src/**"
+      - "!apps/api/src/**/*.spec.ts"
+      - "!apps/api/src/**/*.e2e-spec.ts"
+      - "packages/badge-core/package.json"
+      - "packages/badge-core/tsconfig*.json"
+      - "packages/badge-core/src/**"
+      - "!packages/badge-core/src/**/*.spec.ts"
+      - "packages/shared-types/package.json"
+      - "packages/shared-types/tsconfig*.json"
+      - "packages/shared-types/src/**"
+      - "!packages/shared-types/src/**/*.spec.ts"
+      - "packages/config/tsconfig/**"
       - "tsconfig.base.json"
   workflow_dispatch:
 
@@ -32,7 +36,6 @@ env:
   NODE_VERSION: 22.13.0
   PNPM_VERSION: 10.28.2
   DOCKER_IMAGE_NAME: programmers-badge-api
-  DOCKER_WEB_IMAGE_NAME: programmers-badge-web
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -120,7 +123,6 @@ jobs:
       name: production
     env:
       API_PORT: ${{ vars.API_PORT || '5010' }}
-      WEB_PORT: ${{ vars.WEB_PORT || '5020' }}
       PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
       ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
       ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
@@ -134,7 +136,7 @@ jobs:
         id: compose
         shell: bash
         run: |
-          echo "content=$(base64 < docker-compose.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
+          echo "content=$(base64 < docker-compose.api.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
 
       - name: Sync deploy files on NAS
         uses: appleboy/ssh-action@v1.2.5
@@ -142,7 +144,6 @@ jobs:
           DEPLOY_COMPOSE_B64: ${{ steps.compose.outputs.content }}
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
           API_PORT: ${{ env.API_PORT }}
-          WEB_PORT: ${{ env.WEB_PORT }}
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
           ALLOWED_WEB_ORIGINS: ${{ env.ALLOWED_WEB_ORIGINS }}
           ALLOW_LOCALHOST_ORIGINS: ${{ env.ALLOW_LOCALHOST_ORIGINS }}
@@ -150,31 +151,27 @@ jobs:
           SWAGGER_USERNAME: ${{ secrets.SWAGGER_USERNAME }}
           SWAGGER_PASSWORD: ${{ secrets.SWAGGER_PASSWORD }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-          WEB_DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_WEB_IMAGE_NAME }}:latest
         with:
           host: ${{ secrets.NAS_HOST }}
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,ENABLE_SWAGGER,SWAGGER_USERNAME,SWAGGER_PASSWORD,DOCKER_IMAGE,WEB_DOCKER_IMAGE
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,ENABLE_SWAGGER,SWAGGER_USERNAME,SWAGGER_PASSWORD,DOCKER_IMAGE
           script: |
             set -eu
 
             mkdir -p "${NAS_DEPLOY_DIR}"
-            printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.yml"
+            printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.api.yml"
 
             API_PORT="${API_PORT:-5010}"
-            WEB_PORT="${WEB_PORT:-5020}"
             PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://api.programmers-badge.jh8459.com}"
             ALLOWED_WEB_ORIGINS="${ALLOWED_WEB_ORIGINS:-https://programmers-badge.jh8459.com}"
             ALLOW_LOCALHOST_ORIGINS="${ALLOW_LOCALHOST_ORIGINS:-false}"
             ENABLE_SWAGGER="${ENABLE_SWAGGER:-true}"
 
-            cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
+            cat <<EOF > "${NAS_DEPLOY_DIR}/.env.api.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
-            WEB_DOCKER_IMAGE=${WEB_DOCKER_IMAGE}
             API_PORT=${API_PORT}
-            WEB_PORT=${WEB_PORT}
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
             ALLOWED_WEB_ORIGINS=${ALLOWED_WEB_ORIGINS}
             ALLOW_LOCALHOST_ORIGINS=${ALLOW_LOCALHOST_ORIGINS}
@@ -207,7 +204,7 @@ jobs:
             fi
 
             COMPOSE_STANDALONE="/usr/local/bin/docker-compose"
-            COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.yml"
+            COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.api.yml"
 
             if [ -z "${DOCKER_BIN}" ]; then
               echo "docker binary not found on NAS" >&2
@@ -229,7 +226,7 @@ jobs:
             }
 
             set -a
-            . ./.env.deploy
+            . ./.env.api.deploy
             set +a
             API_PORT="${API_PORT:-5010}"
 

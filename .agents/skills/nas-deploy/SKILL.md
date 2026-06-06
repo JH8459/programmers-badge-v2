@@ -12,7 +12,7 @@ description: Use when the user wants to prepare, validate, or update this reposi
 - local validation
 - API DockerHub image build and push
 - GitHub Actions API `production` deploy job
-- NAS에 `docker-compose.yml`, `.env.deploy` 동기화
+- NAS에 `docker-compose.api.yml`, `.env.api.deploy` 동기화
 - API container restart
 - `/api/health` 확인
 
@@ -27,7 +27,7 @@ description: Use when the user wants to prepare, validate, or update this reposi
 - `.codex/instructions/workflow.md`
 - `deploy/README.md`
 - `.github/workflows/deploy-api.yml`
-- `docker-compose.yml`
+- `docker-compose.api.yml`
 - `Dockerfile`
 
 ## When To Use
@@ -42,25 +42,26 @@ description: Use when the user wants to prepare, validate, or update this reposi
 
 1. diff를 먼저 분류한다.
    - API code change인지, image build change인지, compose or env change인지, workflow change인지 나눈다.
-   - `apps/api/**`, `packages/badge-core/**`, `packages/shared-types/**`, `Dockerfile`, `docker-compose.yml`, `deploy/**`, `.github/workflows/deploy-api.yml` 영향 여부를 본다.
+   - `apps/api/src/**`, `apps/api/package.json`, `packages/badge-core/src/**`, `packages/shared-types/src/**`, `Dockerfile`, `docker-compose.api.yml`, `.github/workflows/deploy-api.yml` 영향 여부를 본다.
+   - API test-only, docs-only, root lockfile-only 변경은 자동 production deploy trigger 대상이 아니다.
    - web-only 변경은 `deploy-web.yml`과 web-publish 기준으로 분리하고, API deploy로 묶지 않는다.
 2. 현재 deploy chain과의 정합성을 확인한다.
    - API Docker image name, `DOCKER_IMAGE`, `API_PORT`, `PUBLIC_BASE_URL`가 서로 맞는지 본다.
-   - shared production compose를 쓰므로 `.env.deploy`의 `WEB_DOCKER_IMAGE`, `WEB_PORT`를 깨뜨리지 않는지 본다.
-   - `docker-compose.yml`의 env key와 workflow가 NAS에 쓰는 `.env.deploy` key가 같은지 본다.
+   - API production compose는 web service를 포함하지 않고, web image/env key를 API workflow에 섞지 않는다.
+   - `docker-compose.api.yml`의 env key와 workflow가 NAS에 쓰는 `.env.api.deploy` key가 같은지 본다.
    - health check 경로가 `/api/health` 기준으로 유지되는지 본다.
 3. preflight validation 범위를 정한다.
    - 기본값은 `pnpm verify`다.
-   - `Dockerfile`, `docker-compose.yml`, runtime env가 바뀌면 가능하면 local container build 또는 compose smoke test까지 본다.
+   - `Dockerfile`, `docker-compose.api.yml`, runtime env가 바뀌면 가능하면 local container build 또는 compose smoke test까지 본다.
    - 실행하지 못한 검증은 이유를 남긴다.
 4. GitHub Actions deploy workflow를 점검한다.
-   - path filters가 현재 변경 범위를 놓치지 않는지 본다.
+   - path filters가 API runtime/image 변경만 자동 deploy로 잡고 test-only, docs-only, root lockfile-only 변경을 제외하는지 본다.
    - DockerHub push tag가 `latest`, `sha-${github.sha}` 둘 다 유지되는지 본다.
    - API workflow는 `api` service만 pull/restart하고, web service를 같이 재시작하지 않는지 본다.
    - `production` environment와 secret 가정이 현재 문서와 맞는지 본다.
 5. NAS 운영 가정을 점검한다.
    - NAS에 필요한 바이너리 `docker`, `docker compose` 또는 `/usr/local/bin/docker-compose`, `curl` 가정을 유지하는지 본다.
-   - deploy 디렉터리에 `docker-compose.yml`, `.env.deploy`만 동기화된다는 현재 모델을 유지하는지 본다.
+   - deploy 디렉터리에 `docker-compose.api.yml`, `.env.api.deploy`만 동기화된다는 현재 모델을 유지하는지 본다.
 6. 배포 후 확인 절차를 정리한다.
    - NAS 내부 `curl http://127.0.0.1:<API_PORT>/api/health`
    - 외부 `https://<domain>/api/health`

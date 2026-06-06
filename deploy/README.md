@@ -1,8 +1,9 @@
 # Deployment
 
 이 디렉토리는 NAS production 배포 문서를 둔다.
-compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 두 개를 기준으로 관리한다.
-- `docker-compose.yml`: NAS production deploy 기본 파일
+compose 파일은 repo root의 production service별 compose와 local compose를 기준으로 관리한다.
+- `docker-compose.api.yml`: NAS production API deploy 파일
+- `docker-compose.web.yml`: NAS production web deploy 파일
 - `docker-compose.local.yml`: 로컬 개발/검증용 파일. API와 web service는 source bind mount와 dev server/watch mode로 실행하며 host port 기본값은 NAS 기본값과 같은 `5010`/`5020`이다. 필요하면 shell env로 `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, `ENABLE_SWAGGER`, `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`, `COMPOSE_PROJECT_NAME`을 override한다.
 
 ## Workflow Split
@@ -12,13 +13,15 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
   - lint, build validation, unit test, e2e test, API coverage job을 분리해 실행한다.
   - API coverage는 `apps/api/src` 전체 statements/branches/functions/lines 100%가 아니면 실패한다.
 - `.github/workflows/deploy-api.yml`
-  - `master` push 시 API/deploy 관련 변경을 골라서 실행한다.
-  - API package lint/typecheck/unit/e2e/coverage/build 검증 후 API DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - `master` push 시 API runtime/image 관련 변경을 골라서 실행한다.
+  - API test-only, docs-only, root lockfile-only 변경은 자동 production deploy trigger에서 제외한다.
+  - API package lint/typecheck/unit/e2e/coverage/build 검증 후 API DockerHub push, `docker-compose.api.yml` sync, `.env.api.deploy` 갱신, NAS SSH deploy를 수행한다.
   - restart 대상은 `api` service만이다.
   - GitHub environment는 `production`을 사용한다.
 - `.github/workflows/deploy-web.yml`
-  - `master` push 시 web/store-assets/deploy 관련 변경을 골라서 실행한다.
-  - web package 검증 후 web DockerHub push, deploy compose sync, `.env.deploy` 갱신, NAS SSH deploy를 수행한다.
+  - `master` push 시 web runtime/image 관련 변경을 골라서 실행한다.
+  - API-only, docs-only, root lockfile-only 변경은 자동 production deploy trigger에서 제외한다.
+  - web package 검증 후 web DockerHub push, `docker-compose.web.yml` sync, `.env.web.deploy` 갱신, NAS SSH deploy를 수행한다.
   - restart 대상은 `web` service만이다.
   - GitHub environment는 `production`을 사용한다.
 - `.github/workflows/release-extension.yml`
@@ -37,7 +40,7 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `NAS_PORT`: SSH 포트
 - `NAS_USER`: SSH 로그인 사용자
 - `NAS_PASSWORD`: 배포에 사용할 NAS 계정 비밀번호
-- `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
+- `NAS_DEPLOY_DIR`: NAS에 배포용 service별 compose와 env 파일을 둘 디렉터리
 - `SWAGGER_USERNAME`: production Swagger Basic Auth username
 - `SWAGGER_PASSWORD`: production Swagger Basic Auth password
 
@@ -52,7 +55,9 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `ALLOW_LOCALHOST_ORIGINS`: localhost 동적 포트 CORS 허용 여부, production 기본값 `false`
 - `ENABLE_SWAGGER`: Swagger UI/OpenAPI JSON 노출 여부, production 기본값 `true`
 
-Production workflow는 GitHub Actions variables와 workflow 기본값을 조합해 `.env.deploy`를 생성한다.
+Production workflow는 GitHub Actions variables와 workflow 기본값을 조합해 service별 env 파일을 생성한다.
+root `package.json`, `pnpm-lock.yaml`, `turbo.json`, `deploy/**` 문서 변경은 service별 자동 production deploy trigger에 포함하지 않는다.
+이런 변경이 실제 production image 재생성이 필요한 경우에는 해당 workflow를 `workflow_dispatch`로 수동 실행한다.
 
 ## Secret Guidance
 
@@ -105,13 +110,21 @@ Web reverse proxy:
 
 배포는 DockerHub `latest` API/web 이미지를 기준으로 수행한다.
 API workflow는 API image만, web workflow는 web image만 `latest`와 `sha-<commit>`로 push한다.
-NAS는 `docker-compose.yml`에서 참조하는 `latest`만 pull하고, 변경된 service만 `up -d --no-deps`로 갱신한다.
+NAS는 service별 compose 파일에서 참조하는 `latest`만 pull하고, 변경된 service만 `up -d --no-deps`로 갱신한다.
 `sha-<commit>`는 추적과 수동 롤백용 보조 tag로만 유지한다.
 
-배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.
+API 배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.
 
-- `docker-compose.yml`
-- `.env.deploy`
+- `docker-compose.api.yml`
+- `.env.api.deploy`
+
+Web 배포 시 NAS로 동기화되는 파일은 아래 두 파일이다.
+
+- `docker-compose.web.yml`
+- `.env.web.deploy`
+
+기존 공용 `docker-compose.yml`, `.env.deploy`는 service별 workflow 전환 후 사용하지 않는다.
+양쪽 service가 새 workflow로 한 번 이상 배포된 뒤에는 NAS deploy 디렉터리에서 제거해도 된다.
 
 ## Post-Deploy Check
 
@@ -119,8 +132,10 @@ NAS 내부 확인:
 
 ```bash
 cd <NAS_DEPLOY_DIR>
-cat .env.deploy
-docker compose --env-file .env.deploy -f docker-compose.yml ps
+cat .env.api.deploy
+cat .env.web.deploy
+docker compose --env-file .env.api.deploy -f docker-compose.api.yml ps
+docker compose --env-file .env.web.deploy -f docker-compose.web.yml ps
 curl -i http://127.0.0.1:5010/api/health
 curl -I http://127.0.0.1:5020/
 ```

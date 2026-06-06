@@ -13,21 +13,22 @@
 - `ENABLE_SWAGGER`는 Swagger UI/OpenAPI JSON 노출 여부다. app-local runtime 기본값은 `false`이고, production/local compose 기본 주입값은 `true`다.
 - Swagger가 활성화되면 UI는 `/api/docs`, OpenAPI JSON은 `/api/docs-json`에서 제공한다.
 - Swagger가 활성화되면 `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`가 필수이며 HTTP Basic Auth로 보호한다.
-- Production deploy의 Swagger credential은 GitHub `production` environment secrets로 관리하고 `.env.deploy`에만 주입한다.
+- Production deploy의 Swagger credential은 GitHub `production` environment secrets로 관리하고 `.env.api.deploy`에만 주입한다.
 - Docker Compose runtime은 `/data/programmers-badge.sqlite`를 사용한다.
 - Docker Compose public entrypoint는 API 단일 컨테이너 `:3000`을 사용한다.
-- NAS production runtime은 root `docker-compose.yml` 파일과 `.env.deploy`를 기준으로 DockerHub 이미지를 pull한다.
+- NAS production API runtime은 root `docker-compose.api.yml` 파일과 `.env.api.deploy`를 기준으로 DockerHub 이미지를 pull한다.
 - NAS host port 기본 추천값은 `5010`이다.
 - runtime env는 단일 zod config로 읽고 bootstrap 전에 fail-fast 한다.
 - local API dev runner는 decorator metadata 기반 Nest DI가 동작하도록 Nest CLI watch를 사용한다.
 
 ## Deploy Defaults
 
-- API production deploy는 `API verify -> API DockerHub push -> deploy compose sync -> .env.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 두고, GitHub environment는 `production`을 사용한다.
-- 현재 API deploy workflow는 root `docker-compose.yml` 파일을 NAS에 동기화하고, `.env.deploy`에 API/web image와 port env를 함께 기록한 뒤 API image만 pull하고 `api` service만 재시작한다.
+- API production deploy는 `API verify -> API DockerHub push -> API compose sync -> .env.api.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 두고, GitHub environment는 `production`을 사용한다.
+- 현재 API deploy workflow는 root `docker-compose.api.yml` 파일을 NAS에 동기화하고, `.env.api.deploy`에 API image와 API runtime env만 기록한 뒤 API image만 pull하고 `api` service만 재시작한다.
+- API test-only, docs-only, root lockfile-only 변경은 자동 production deploy trigger에서 제외한다.
 
 ## When Editing
 
 - runtime env 규칙을 바꾸면 default 값, invalid env 실패 케이스, deploy 문서를 함께 갱신한다.
-- Dockerfile, compose, deploy workflow를 바꾸면 NAS port, image tag, `.env.deploy` key 정합성을 함께 확인한다.
+- Dockerfile, compose, deploy workflow를 바꾸면 NAS port, image tag, `.env.api.deploy` key 정합성을 함께 확인한다.
 - health check 경로는 `/api/health` 기준으로 유지한다.
