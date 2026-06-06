@@ -25,6 +25,9 @@ packages/
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm test`
+- `pnpm test:e2e`
+- `pnpm test:e2el`
+- `pnpm test:api-coverage`
 - `pnpm verify`
 - `pnpm package:extension`
 
@@ -89,4 +92,4 @@ pnpm dev:web
 
 ## Local Dynamic Ports
 
-`docker-compose.local.yml` supports `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, and `COMPOSE_PROJECT_NAME` environment overrides for running isolated local stacks.
+`docker-compose.local.yml` supports `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, `ENABLE_SWAGGER`, `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`, and `COMPOSE_PROJECT_NAME` environment overrides for running isolated local stacks.
