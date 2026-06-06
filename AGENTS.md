@@ -52,5 +52,6 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.agents/skills/senior-review-flow/SKILL.md`: reviewer 호출 시점 제어 skill
 - `.agents/skills/nas-deploy/SKILL.md`: API DockerHub to NAS deploy workflow skill
 - `.agents/skills/commit/SKILL.md`: commit splitting, staging, push planning skill
+- `.agents/skills/pr-workflow/SKILL.md`: PR 작성 전 커밋 분리, 메시지, PR 템플릿 workflow skill
 - `.agents/skills/docs-update/SKILL.md`: diff 기반 docs update skill
 - `.agents/skills/web-publish/SKILL.md`: public web UI/page publishing skill
