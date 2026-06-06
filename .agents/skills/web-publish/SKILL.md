@@ -17,7 +17,7 @@ description: Use when creating, refactoring, or publishing public web UI/pages f
 - `.codex/rules/web.md`가 안내하는 작업 범위별 하위 rule
 - domain/API 영향이 있으면 `.codex/rules/api.md`, `.codex/rules/extension.md`와 각 entrypoint가 안내하는 하위 rule
 - 관련 작업 절차는 `.codex/instructions/workflow.md`
-- web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.yml`, `deploy/README.md`
+- web deploy 영향이 있으면 `.github/workflows/deploy-web.yml`, `docker-compose.web.yml`, `deploy/README.md`
 
 필요한 경우만 reference를 읽는다.
 
