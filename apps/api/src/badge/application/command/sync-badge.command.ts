@@ -1,3 +1,4 @@
+import { Inject } from "@nestjs/common";
 import { Command, CommandHandler, type ICommandHandler } from "@nestjs/cqrs";
 
 import {
@@ -18,7 +19,10 @@ export class SyncBadgeCommand extends Command<BadgeProfileRecord> {
 
 @CommandHandler(SyncBadgeCommand)
 export class SyncBadgeCommandHandler implements ICommandHandler<SyncBadgeCommand> {
-  constructor(private readonly badgeProfileRepository: BadgeProfileRepository) {}
+  constructor(
+    @Inject(BadgeProfileRepository)
+    private readonly badgeProfileRepository: BadgeProfileRepository
+  ) {}
 
   async execute(command: SyncBadgeCommand): Promise<BadgeProfileRecord> {
     const normalizedPayload = parseBadgeSyncPayload(command.props.payload);

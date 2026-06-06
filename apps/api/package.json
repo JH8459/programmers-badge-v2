@@ -7,8 +7,11 @@
     "@nestjs/core": "^11.0.20",
     "@nestjs/cqrs": "^11.0.3",
     "@nestjs/platform-express": "^11.0.20",
+    "@nestjs/swagger": "^11.4.4",
     "@programmers-badge/badge-core": "workspace:*",
     "@programmers-badge/shared-types": "workspace:*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.4.3"
@@ -17,9 +20,12 @@
     "dev": "pnpm --filter @programmers-badge/shared-types build && pnpm --filter @programmers-badge/badge-core build && nest start --watch",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
-    "lint": "eslint src test --max-warnings 0",
+    "lint": "eslint src test vitest.config.ts vitest.e2e.config.ts vitest.coverage.config.ts --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --config vitest.config.ts",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "test:e2el": "vitest run --config vitest.e2e.config.ts",
+    "test:coverage": "vitest run --config vitest.coverage.config.ts --coverage"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21"

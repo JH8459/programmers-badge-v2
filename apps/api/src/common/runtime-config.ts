@@ -15,6 +15,14 @@ interface ApiRuntimeEnvInput {
   BADGE_OUTPUT_DIR?: string;
   ALLOWED_WEB_ORIGINS?: string;
   ALLOW_LOCALHOST_ORIGINS?: string;
+  ENABLE_SWAGGER?: string;
+  SWAGGER_USERNAME?: string;
+  SWAGGER_PASSWORD?: string;
+}
+
+export interface SwaggerAuthConfig {
+  username: string;
+  password: string;
 }
 
 interface ApiRuntimeConfigShape {
@@ -25,6 +33,8 @@ interface ApiRuntimeConfigShape {
   badgeOutputDirectory: string;
   allowedWebOrigins: string[];
   allowLocalhostOrigins: boolean;
+  swaggerEnabled: boolean;
+  swaggerAuth: SwaggerAuthConfig | null;
 }
 
 interface NormalizePublicBaseUrlInput {
@@ -81,6 +91,11 @@ const booleanEnvSchema = z
   .preprocess(normalizeOptionalEnvString, z.enum(["true", "false", "1", "0"]).optional())
   .transform((value) => value === "true" || value === "1");
 
+const optionalNonEmptyEnvStringSchema = z.preprocess(
+  normalizeOptionalEnvString,
+  z.string().trim().min(1).optional()
+);
+
 const originSchema = z.string().url().refine((origin) => {
   const parsedOrigin = new URL(origin);
 
@@ -97,12 +112,42 @@ export const apiRuntimeConfigSchema = z
     BADGE_OUTPUT_DIR: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
     ALLOWED_WEB_ORIGINS: z.preprocess(normalizeOptionalEnvString, z.string().optional()),
     ALLOW_LOCALHOST_ORIGINS: booleanEnvSchema,
+    ENABLE_SWAGGER: booleanEnvSchema,
+    SWAGGER_USERNAME: optionalNonEmptyEnvStringSchema,
+    SWAGGER_PASSWORD: optionalNonEmptyEnvStringSchema,
+  })
+  .superRefine((env, context) => {
+    if (!env.ENABLE_SWAGGER) {
+      return;
+    }
+
+    if (!env.SWAGGER_USERNAME) {
+      context.addIssue({
+        code: "custom",
+        path: ["SWAGGER_USERNAME"],
+        message: "SWAGGER_USERNAME is required when ENABLE_SWAGGER is true.",
+      });
+    }
+
+    if (!env.SWAGGER_PASSWORD) {
+      context.addIssue({
+        code: "custom",
+        path: ["SWAGGER_PASSWORD"],
+        message: "SWAGGER_PASSWORD is required when ENABLE_SWAGGER is true.",
+      });
+    }
   })
   .transform((env): ApiRuntimeConfigShape => {
     const port = env.PORT ?? DEFAULT_PORT;
     const publicBadgePathPrefix = normalizePublicBadgePathPrefix({
       configuredPathPrefix: env.PUBLIC_BADGE_PATH_PREFIX,
     });
+    const swaggerAuth = env.ENABLE_SWAGGER
+      ? {
+          username: env.SWAGGER_USERNAME as string,
+          password: env.SWAGGER_PASSWORD as string,
+        }
+      : null;
 
     return {
       port,
@@ -114,6 +159,8 @@ export const apiRuntimeConfigSchema = z
         configuredOrigins: env.ALLOWED_WEB_ORIGINS,
       }),
       allowLocalhostOrigins: env.ALLOW_LOCALHOST_ORIGINS,
+      swaggerEnabled: env.ENABLE_SWAGGER,
+      swaggerAuth,
     };
   })
   .refine(
@@ -137,6 +184,9 @@ export const readApiRuntimeConfig = (env: NodeJS.ProcessEnv = process.env): ApiR
     BADGE_OUTPUT_DIR: env.BADGE_OUTPUT_DIR,
     ALLOWED_WEB_ORIGINS: env.ALLOWED_WEB_ORIGINS,
     ALLOW_LOCALHOST_ORIGINS: env.ALLOW_LOCALHOST_ORIGINS,
+    ENABLE_SWAGGER: env.ENABLE_SWAGGER,
+    SWAGGER_USERNAME: env.SWAGGER_USERNAME,
+    SWAGGER_PASSWORD: env.SWAGGER_PASSWORD,
   };
   const parseResult = apiRuntimeConfigSchema.safeParse(input);
 

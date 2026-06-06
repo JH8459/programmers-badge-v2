@@ -5,5 +5,5 @@
     "outDir": "dist"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["test/**/*", "**/*.spec.ts"]
+  "exclude": ["test/**/*", "**/*.spec.ts", "**/*.e2e-spec.ts"]
 }

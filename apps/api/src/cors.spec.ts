@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isAllowedCorsOrigin } from "../src/cors";
+import { isAllowedCorsOrigin } from "./cors";
 
 describe("isAllowedCorsOrigin", () => {
   it("allows configured web origins and extension origins", () => {
@@ -34,6 +34,7 @@ describe("isAllowedCorsOrigin", () => {
     expect(isAllowedCorsOrigin({ origin: "http://127.0.0.1:5588", runtimeConfig })).toBe(true);
     expect(isAllowedCorsOrigin({ origin: "https://localhost:5588", runtimeConfig })).toBe(false);
     expect(isAllowedCorsOrigin({ origin: "http://192.168.0.2:5588", runtimeConfig })).toBe(false);
+    expect(isAllowedCorsOrigin({ origin: "not-a-url", runtimeConfig })).toBe(false);
   });
 
   it("rejects unrelated web origins", () => {

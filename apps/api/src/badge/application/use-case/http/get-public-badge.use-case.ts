@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
 
 import { GetPublicBadgeQuery } from "../../query/get-public-badge.query";
@@ -8,14 +8,16 @@ import type { BadgeProfileRecord } from "../../../infra/badge-profile.repository
 @Injectable()
 export class GetPublicBadgeUseCase {
   constructor(
+    @Inject(QueryBus)
     private readonly queryBus: QueryBus,
+    @Inject(BadgeAssetService)
     private readonly badgeAssetService: BadgeAssetService
   ) {}
 
   async execute({ slug, variant = "full" }: GetPublicBadgeUseCaseProps): Promise<string> {
     const cachedBadgeSvg = this.badgeAssetService.readPublicBadge({ slug, variant });
 
-    if (cachedBadgeSvg) {
+    if (cachedBadgeSvg !== null) {
       return cachedBadgeSvg;
     }
 

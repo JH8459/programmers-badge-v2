@@ -10,6 +10,10 @@
 - `BADGE_OUTPUT_DIR`가 없으면 기본 SVG 출력 디렉토리는 `data/badges`다.
 - `ALLOWED_WEB_ORIGINS`는 comma-separated web origin list다.
 - `ALLOW_LOCALHOST_ORIGINS`는 local dev server용 localhost origin 허용 여부이며 production 기본값은 `false`다.
+- `ENABLE_SWAGGER`는 Swagger UI/OpenAPI JSON 노출 여부다. app-local runtime 기본값은 `false`이고, production/local compose 기본 주입값은 `true`다.
+- Swagger가 활성화되면 UI는 `/api/docs`, OpenAPI JSON은 `/api/docs-json`에서 제공한다.
+- Swagger가 활성화되면 `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`가 필수이며 HTTP Basic Auth로 보호한다.
+- Production deploy의 Swagger credential은 GitHub `production` environment secrets로 관리하고 `.env.deploy`에만 주입한다.
 - Docker Compose runtime은 `/data/programmers-badge.sqlite`를 사용한다.
 - Docker Compose public entrypoint는 API 단일 컨테이너 `:3000`을 사용한다.
 - NAS production runtime은 root `docker-compose.yml` 파일과 `.env.deploy`를 기준으로 DockerHub 이미지를 pull한다.

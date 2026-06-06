@@ -26,7 +26,7 @@
 - unknown boundary에서 `class-validator`의 `isDefined()`처럼 `undefined`와 `null`만 막아야 하면 `packages/shared-types`의 `definedValueSchema`를 사용한다.
 - 빈 배열 검증은 `class-validator`의 `arrayNotEmpty()` 대신 `z.array(...).nonempty()` 또는 `packages/shared-types`의 `createNonEmptyArraySchema(...)`를 사용한다.
 - 빈 문자열 또는 공백 문자열 검증은 `z.string().trim().min(1)`을 사용한다.
-- 기본 목표 스크립트: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm verify`
+- 기본 목표 스크립트: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm test:e2el`, `pnpm test:api-coverage`, `pnpm verify`
 - repo에 없는 명령은 지어내지 않는다.
 
 ## MVP In Scope

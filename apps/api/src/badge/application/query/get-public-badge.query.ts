@@ -1,3 +1,4 @@
+import { Inject } from "@nestjs/common";
 import { Query, QueryHandler, type IQueryHandler } from "@nestjs/cqrs";
 
 import {
@@ -13,7 +14,10 @@ export class GetPublicBadgeQuery extends Query<BadgeProfileRecord | null> {
 
 @QueryHandler(GetPublicBadgeQuery)
 export class GetPublicBadgeQueryHandler implements IQueryHandler<GetPublicBadgeQuery> {
-  constructor(private readonly badgeProfileRepository: BadgeProfileRepository) {}
+  constructor(
+    @Inject(BadgeProfileRepository)
+    private readonly badgeProfileRepository: BadgeProfileRepository
+  ) {}
 
   async execute(query: GetPublicBadgeQuery): Promise<BadgeProfileRecord | null> {
     return this.badgeProfileRepository.findByPublicSlug({
