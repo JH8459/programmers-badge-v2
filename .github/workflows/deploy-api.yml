@@ -33,12 +33,6 @@ env:
   PNPM_VERSION: 10.28.2
   DOCKER_IMAGE_NAME: programmers-badge-api
   DOCKER_WEB_IMAGE_NAME: programmers-badge-web
-  API_PORT: ${{ vars.API_PORT || '5010' }}
-  WEB_PORT: ${{ vars.WEB_PORT || '5020' }}
-  PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
-  ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
-  ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
-  ENABLE_SWAGGER: ${{ vars.ENABLE_SWAGGER || 'true' }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -124,6 +118,13 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
+    env:
+      API_PORT: ${{ vars.API_PORT || '5010' }}
+      WEB_PORT: ${{ vars.WEB_PORT || '5020' }}
+      PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
+      ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
+      ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
+      ENABLE_SWAGGER: ${{ vars.ENABLE_SWAGGER || 'true' }}
 
     steps:
       - name: Checkout repository
