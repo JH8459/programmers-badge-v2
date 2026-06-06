@@ -1,6 +1,6 @@
 ---
 name: pr-workflow
-description: Use when preparing this repository's changes for pull request review, including splitting commits by work unit, writing Korean commit messages without emojis, pushing a branch, drafting a PR from the repository template, and enforcing no-emoji PR titles. Trigger when the user asks in Korean or English for PR prep, commit/push/PR workflow, PR title/body drafting, or reviewable commit organization, including requests like "PR 작성해줘", "PR 만들어줘", "커밋 분리하고 PR 올려줘", "push 하고 PR 작성해줘", or "PR 제목/본문 작성해줘".
+description: Use when preparing this repository's changes for pull request review, including validating slash-free short kebab-case branch names, splitting commits by work unit, writing Korean commit messages without emojis, pushing a branch, drafting a PR from the repository template, and enforcing no-emoji PR titles. Trigger when the user asks in Korean or English for PR prep, commit/push/PR workflow, PR title/body drafting, branch naming, or reviewable commit organization, including requests like "PR 작성해줘", "PR 만들어줘", "커밋 분리하고 PR 올려줘", "push 하고 PR 작성해줘", or "PR 제목/본문 작성해줘".
 ---
 
 # PR Workflow
@@ -23,6 +23,38 @@ description: Use when preparing this repository's changes for pull request revie
 - `git diff --name-only`
 - staged change가 있으면 `git diff --cached --name-only`
 - 현재 브랜치: `git branch --show-current`
+
+## Branch Naming
+
+브랜치명은 PR에 올라갈 작업 내용을 예측해서 짧은 kebab-case로 만든다.
+
+규칙:
+
+- lowercase letter, number, hyphen만 사용한다.
+- `JH8459`와 `/`는 브랜치명 어디에도 쓰지 않는다.
+- 권장 길이는 2-4개 단어다.
+- 브랜치명이 현재 작업 내용을 설명하지 못하면 더 짧고 구체적인 이름을 제안한다.
+
+예시:
+
+```text
+branch-rules
+pr-workflow
+api-cors
+web-guide
+badge-sync
+```
+
+금지:
+
+```text
+JH8459-branch-rules
+JH8459/branch-rules
+feature/api-cors
+fix/web-guide
+```
+
+push 또는 PR 생성 전에 현재 브랜치가 규칙을 어기면 진행하지 않는다. 사용자에게 위반 이유와 추천 브랜치명을 보고하고, 사용자가 명시적으로 요청할 때만 branch rename이나 새 브랜치 생성을 수행한다.
 
 ## Work Unit Split
 
@@ -98,7 +130,7 @@ chore(dev): Conductor 실행 설정을 local compose로 연결
 3. 한 커밋 단위로만 stage한다.
 4. 각 커밋에 맞는 검증을 실행한다.
 5. commit message는 한글 요약과 no-emoji 규칙을 적용한다.
-6. push 전에 최종 `git status --short`와 브랜치를 확인한다.
+6. push 전에 최종 `git status --short`와 브랜치를 확인하고, 브랜치명 규칙 위반이 있으면 push와 PR 생성을 중단한다.
 7. 사용자가 push를 요청했을 때만 push한다.
 8. PR 작성 전에 `.github/PULL_REQUEST_TEMPLATE.md`를 읽고 본문을 그 양식으로 채운다.
 
