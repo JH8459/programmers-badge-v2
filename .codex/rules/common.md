@@ -22,7 +22,10 @@
 - Node.js: `>=22.0.0`
 - shared runtime contract validation 기본값은 `zod`다.
 - 외부 입력, storage, DB row, browser API 결과처럼 runtime shape가 불확실한 값은 `as` 타입 단언보다 zod parse 또는 명시적 타입가드를 우선한다.
-- nullable/optional, 빈 문자열, 빈 배열 검증은 TypeScript 타입만으로 처리하지 않고 runtime boundary에서는 zod의 `.nullable()`, `.optional()`, `.nullish()`, `.min(1)`, `.nonempty()` 등을 사용해 의도를 드러낸다.
+- required 값은 zod base schema를 기본으로 검증하고, 허용 의도가 있을 때만 `.optional()`, `.nullable()`, `.nullish()`를 붙인다.
+- unknown boundary에서 `class-validator`의 `isDefined()`처럼 `undefined`와 `null`만 막아야 하면 `packages/shared-types`의 `definedValueSchema`를 사용한다.
+- 빈 배열 검증은 `class-validator`의 `arrayNotEmpty()` 대신 `z.array(...).nonempty()` 또는 `packages/shared-types`의 `createNonEmptyArraySchema(...)`를 사용한다.
+- 빈 문자열 또는 공백 문자열 검증은 `z.string().trim().min(1)`을 사용한다.
 - 기본 목표 스크립트: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm verify`
 - repo에 없는 명령은 지어내지 않는다.
 

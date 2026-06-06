@@ -1,4 +1,4 @@
-import { readApiRuntimeConfig } from "../common/runtime-config";
+import { readApiRuntimeConfig } from "../../common/runtime-config";
 
 export const getPublicBaseUrl = (): string => {
   return readApiRuntimeConfig().publicBaseUrl;

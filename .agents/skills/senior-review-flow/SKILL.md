@@ -98,7 +98,7 @@ description: Use when the user wants a coding task to include this repository's 
 
 ## Reviewer invocation rules
 
-- API reviewer를 호출할 때는 validation, normalization, public exposure, persistence, missing tests를 보라고 지정한다.
+- API reviewer를 호출할 때는 CQRS layer boundary, validation, normalization, public exposure, persistence, missing tests를 보라고 지정한다.
 - Extension reviewer를 호출할 때는 permissions, manifest/runtime messaging, auto-sync safety, popup state flow, missing tests를 보라고 지정한다.
 - 둘 다 호출하면 결과를 섞지 말고 reviewer 이름별로 정리한다.
 - reviewer는 read-only이므로 파일 수정은 메인 작업 스레드에서만 수행한다.
@@ -118,6 +118,7 @@ review_scope: auto
 
 apps/api의 sync payload validation을 수정해줘.
 구현 후 적절한 senior reviewer를 호출해서 findings를 반영해줘.
+API reviewer에게 controller/use-case/command/query/infra boundary도 함께 보라고 해줘.
 ```
 
 ```text

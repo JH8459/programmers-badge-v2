@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 
-import { DatabaseService } from "../persistence/database.service";
+import { DatabaseService } from "../badge/infra/database.service";
 
 @Injectable()
 export class HealthService {

@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 
-import { PersistenceModule } from "../persistence/persistence.module";
+import { BadgePersistenceModule } from "../badge/infra/badge-persistence.module";
 
 import { HealthController } from "./health.controller";
 import { HealthService } from "./health.service";
 
 @Module({
-  imports: [PersistenceModule],
+  imports: [BadgePersistenceModule],
   controllers: [HealthController],
   providers: [HealthService],
 })

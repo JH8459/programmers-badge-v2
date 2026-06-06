@@ -20,6 +20,7 @@ packages/config     shared lint/prettier/tsconfig config
 
 - sync endpoint와 public badge endpoint를 제공한다.
 - persistence, badge asset storage adapter, env/runtime wiring을 소유한다.
+- 내부 구조는 domain aggregate별 Nest module과 `@nestjs/cqrs` bus를 기준으로 `presenter/http -> application/use-case/http -> application/{command,query} -> infra` 흐름을 따른다.
 - sync 시 저장된 badge data를 `packages/badge-core`에 전달해 full/mini pre-rendered SVG asset을 생성한다.
 - Nest/Express static serving으로 `/badge/*.svg`를 정적으로 서빙한다.
 - production artifact는 API Docker image로 관리하고, NAS는 DockerHub image pull과 committed deploy compose sync 후 API service만 재시작한다.

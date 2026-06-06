@@ -1,12 +1,17 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { BadgeAssetService } from "../src/badge/badge-asset.service";
+import type { CommandBus } from "@nestjs/cqrs";
 import { describe, expect, it } from "vitest";
 
-import { BadgeProfileRepository } from "../src/persistence/badge-profile.repository";
-import { DatabaseService } from "../src/persistence/database.service";
-import { SyncService } from "../src/sync/sync.service";
+import {
+  SyncBadgeCommand,
+  SyncBadgeCommandHandler,
+} from "../src/badge/application/command/sync-badge.command";
+import { SyncBadgeUseCase } from "../src/badge/application/use-case/http/sync-badge.use-case";
+import { BadgeAssetService } from "../src/badge/infra/badge-asset.service";
+import { BadgeProfileRepository } from "../src/badge/infra/badge-profile.repository";
+import { DatabaseService } from "../src/badge/infra/database.service";
 
 import {
   createTempBadgeOutputDirectory,
@@ -15,8 +20,8 @@ import {
   removeTempDirectory,
 } from "./test-helpers";
 
-describe("SyncService", () => {
-  it("upserts badge data and returns a public badge response", () => {
+describe("SyncBadgeUseCase", () => {
+  it("upserts badge data and returns a public badge response", async () => {
     const databasePath = createTempDatabasePath();
     const badgeOutputDirectory = createTempBadgeOutputDirectory();
     const originalBadgeOutputDirectory = process.env.BADGE_OUTPUT_DIR;
@@ -24,22 +29,28 @@ describe("SyncService", () => {
     const databaseService = new DatabaseService(databasePath);
     const repository = new BadgeProfileRepository(databaseService);
     const badgeAssetService = new BadgeAssetService();
-    const service = new SyncService(repository, badgeAssetService);
+    const commandHandler = new SyncBadgeCommandHandler(repository);
+    const commandBus = {
+      execute: (command: SyncBadgeCommand) => commandHandler.execute(command),
+    } as unknown as CommandBus;
+    const useCase = new SyncBadgeUseCase(commandBus, badgeAssetService);
 
     process.env.BADGE_OUTPUT_DIR = badgeOutputDirectory;
     process.env.PUBLIC_BASE_URL = "https://api.programmers-badge.jh8459.com";
 
     try {
-      const response = service.syncBadge({
-        programmerHandle: "  sync-user  ",
-        displayName: "  Sync User  ",
-        solvedCount: 32,
-        solvedTotal: 120,
-        skillLevel: 3,
-        rankingScore: 5820,
-        rankingRank: 17,
-        badgeTier: "intermediate",
-        syncedAt: "2026-04-07T01:02:03.000Z",
+      const response = await useCase.execute({
+        payload: {
+          programmerHandle: "  sync-user  ",
+          displayName: "  Sync User  ",
+          solvedCount: 32,
+          solvedTotal: 120,
+          skillLevel: 3,
+          rankingScore: 5820,
+          rankingRank: 17,
+          badgeTier: "intermediate",
+          syncedAt: "2026-04-07T01:02:03.000Z",
+        },
       });
 
       expect(response.slug).toHaveLength(12);

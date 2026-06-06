@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 
-import { readApiRuntimeConfig } from "../common/runtime-config";
+import { readApiRuntimeConfig } from "../../common/runtime-config";
 import { BadgeProfileRepository } from "./badge-profile.repository";
 import { DatabaseService, DATABASE_PATH_TOKEN } from "./database.service";
 
@@ -15,4 +15,4 @@ import { DatabaseService, DATABASE_PATH_TOKEN } from "./database.service";
   ],
   exports: [DatabaseService, BadgeProfileRepository],
 })
-export class PersistenceModule {}
+export class BadgePersistenceModule {}

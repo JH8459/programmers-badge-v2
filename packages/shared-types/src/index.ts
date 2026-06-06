@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const definedValueSchema = z.unknown().refine(
+  (value) => value !== undefined && value !== null,
+  { message: "Required value must be defined." }
+);
+
+export const createNonEmptyArraySchema = <ElementSchema extends z.ZodType>(
+  elementSchema: ElementSchema
+) => z.array(elementSchema).nonempty();
+
 export const badgeFormatSchema = z.enum(["svg", "markdown"]);
 export const badgeTierSchema = z.enum(["starter", "intermediate", "advanced"]);
 

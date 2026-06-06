@@ -1,12 +1,17 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-import { BadgeAssetService } from "../src/badge/badge-asset.service";
+import type { QueryBus } from "@nestjs/cqrs";
 import { describe, expect, it } from "vitest";
 
-import { BadgeService } from "../src/badge/badge.service";
-import { BadgeProfileRepository } from "../src/persistence/badge-profile.repository";
-import { DatabaseService } from "../src/persistence/database.service";
+import {
+  GetPublicBadgeQuery,
+  GetPublicBadgeQueryHandler,
+} from "../src/badge/application/query/get-public-badge.query";
+import { GetPublicBadgeUseCase } from "../src/badge/application/use-case/http/get-public-badge.use-case";
+import { BadgeAssetService } from "../src/badge/infra/badge-asset.service";
+import { BadgeProfileRepository } from "../src/badge/infra/badge-profile.repository";
+import { DatabaseService } from "../src/badge/infra/database.service";
 
 import {
   createTempBadgeOutputDirectory,
@@ -15,8 +20,8 @@ import {
   removeTempDirectory,
 } from "./test-helpers";
 
-describe("BadgeService", () => {
-  it("renders a persisted public badge svg", () => {
+describe("GetPublicBadgeUseCase", () => {
+  it("renders a persisted public badge svg", async () => {
     const databasePath = createTempDatabasePath();
     const badgeOutputDirectory = createTempBadgeOutputDirectory();
     const originalBadgeOutputDirectory = process.env.BADGE_OUTPUT_DIR;
@@ -39,9 +44,13 @@ describe("BadgeService", () => {
     process.env.BADGE_OUTPUT_DIR = badgeOutputDirectory;
 
     try {
-      const service = new BadgeService(repository, badgeAssetService);
-      const svg = service.renderPublicBadge(record.publicSlug);
-      const miniSvg = service.renderPublicMiniBadge(record.publicSlug);
+      const queryHandler = new GetPublicBadgeQueryHandler(repository);
+      const queryBus = {
+        execute: (query: GetPublicBadgeQuery) => queryHandler.execute(query),
+      } as unknown as QueryBus;
+      const useCase = new GetPublicBadgeUseCase(queryBus, badgeAssetService);
+      const svg = await useCase.execute({ slug: record.publicSlug });
+      const miniSvg = await useCase.execute({ slug: record.publicSlug, variant: "mini" });
 
       expect(svg).toContain("<svg");
       expect(svg).toContain('width="350px"');
