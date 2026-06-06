@@ -14,6 +14,9 @@ services:
       PUBLIC_BADGE_PATH_PREFIX: /badge
       ALLOWED_WEB_ORIGINS: ${ALLOWED_WEB_ORIGINS:-}
       ALLOW_LOCALHOST_ORIGINS: ${ALLOW_LOCALHOST_ORIGINS:-true}
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-true}
+      SWAGGER_USERNAME: ${SWAGGER_USERNAME:-local-swagger}
+      SWAGGER_PASSWORD: ${SWAGGER_PASSWORD:-local-swagger}
     ports:
       - "${API_PORT:-5010}:3000"
     volumes:

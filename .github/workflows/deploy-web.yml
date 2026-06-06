@@ -35,6 +35,7 @@ env:
   PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
   ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
   ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
+  ENABLE_SWAGGER: ${{ vars.ENABLE_SWAGGER || 'true' }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -139,6 +140,9 @@ jobs:
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
           ALLOWED_WEB_ORIGINS: ${{ env.ALLOWED_WEB_ORIGINS }}
           ALLOW_LOCALHOST_ORIGINS: ${{ env.ALLOW_LOCALHOST_ORIGINS }}
+          ENABLE_SWAGGER: ${{ env.ENABLE_SWAGGER }}
+          SWAGGER_USERNAME: ${{ secrets.SWAGGER_USERNAME }}
+          SWAGGER_PASSWORD: ${{ secrets.SWAGGER_PASSWORD }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
           WEB_DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_WEB_IMAGE_NAME }}:latest
         with:
@@ -146,7 +150,7 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,DOCKER_IMAGE,WEB_DOCKER_IMAGE
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,ENABLE_SWAGGER,SWAGGER_USERNAME,SWAGGER_PASSWORD,DOCKER_IMAGE,WEB_DOCKER_IMAGE
           script: |
             set -eu
 
@@ -158,6 +162,7 @@ jobs:
             PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://api.programmers-badge.jh8459.com}"
             ALLOWED_WEB_ORIGINS="${ALLOWED_WEB_ORIGINS:-https://programmers-badge.jh8459.com}"
             ALLOW_LOCALHOST_ORIGINS="${ALLOW_LOCALHOST_ORIGINS:-false}"
+            ENABLE_SWAGGER="${ENABLE_SWAGGER:-true}"
 
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
@@ -167,6 +172,9 @@ jobs:
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
             ALLOWED_WEB_ORIGINS=${ALLOWED_WEB_ORIGINS}
             ALLOW_LOCALHOST_ORIGINS=${ALLOW_LOCALHOST_ORIGINS}
+            ENABLE_SWAGGER=${ENABLE_SWAGGER}
+            SWAGGER_USERNAME=${SWAGGER_USERNAME}
+            SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
             EOF
 
       - name: Pull and restart web container
