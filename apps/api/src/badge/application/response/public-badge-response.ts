@@ -5,8 +5,8 @@ import {
   type PublicBadgeResponse,
 } from "@programmers-badge/shared-types";
 
-import type { BadgeProfileRecord } from "../persistence/badge-profile.repository";
-import { getPublicBadgePathPrefix, getPublicBaseUrl } from "./badge-runtime";
+import type { BadgeProfileRecord } from "../../infra/badge-profile.repository";
+import { getPublicBadgePathPrefix, getPublicBaseUrl } from "../../infra/badge-runtime";
 
 export const buildPublicBadgeResponse = (slug: string): PublicBadgeResponse => {
   const badgeUrl = `${getPublicBaseUrl()}${getPublicBadgePathPrefix()}/${slug}.svg`;

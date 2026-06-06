@@ -8,10 +8,10 @@ import {
   renderMiniBadgeSvg,
 } from "@programmers-badge/badge-core";
 
-import type { BadgeProfileRecord } from "../persistence/badge-profile.repository";
+import type { BadgeProfileRecord } from "./badge-profile.repository";
 import { getBadgeOutputDirectory } from "./badge-runtime";
 
-type BadgeAssetVariant = "full" | "mini";
+export type BadgeAssetVariant = "full" | "mini";
 
 interface BadgeFilePathInput {
   slug: string;

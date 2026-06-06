@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { DatabaseService } from "../src/badge/infra/database.service";
 import { HealthService } from "../src/health/health.service";
-import { DatabaseService } from "../src/persistence/database.service";
 
 import { createTempDatabasePath, removeTempDatabase } from "./test-helpers";
 

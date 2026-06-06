@@ -4,7 +4,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { z } from "zod";
 
-import { readApiRuntimeConfig } from "../common/runtime-config";
+import { readApiRuntimeConfig } from "../../common/runtime-config";
 
 export const DATABASE_PATH_TOKEN = Symbol("DATABASE_PATH_TOKEN");
 

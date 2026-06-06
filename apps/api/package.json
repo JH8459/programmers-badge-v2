@@ -5,6 +5,7 @@
   "dependencies": {
     "@nestjs/common": "^11.0.20",
     "@nestjs/core": "^11.0.20",
+    "@nestjs/cqrs": "^11.0.3",
     "@nestjs/platform-express": "^11.0.20",
     "@programmers-badge/badge-core": "workspace:*",
     "@programmers-badge/shared-types": "workspace:*",
