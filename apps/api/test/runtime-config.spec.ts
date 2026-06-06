@@ -12,6 +12,20 @@ describe("readApiRuntimeConfig", () => {
       publicBadgePathPrefix: "/badge",
       databasePath: resolve(process.cwd(), "data", "programmers-badge.sqlite"),
       badgeOutputDirectory: resolve(process.cwd(), "data/badges"),
+      allowedWebOrigins: [],
+      allowLocalhostOrigins: false,
+    });
+  });
+
+  it("treats unset optional env values as absent", () => {
+    expect(
+      readApiRuntimeConfig({
+        ALLOWED_WEB_ORIGINS: undefined,
+        ALLOW_LOCALHOST_ORIGINS: undefined,
+      })
+    ).toMatchObject({
+      allowedWebOrigins: [],
+      allowLocalhostOrigins: false,
     });
   });
 
@@ -23,6 +37,9 @@ describe("readApiRuntimeConfig", () => {
         PUBLIC_BADGE_PATH_PREFIX: " public-badge/ ",
         DATABASE_PATH: " /tmp/programmers-badge.sqlite ",
         BADGE_OUTPUT_DIR: " /tmp/programmers-badge-assets ",
+        ALLOWED_WEB_ORIGINS:
+          " https://programmers-badge.jh8459.com/ , http://localhost:5020/ ",
+        ALLOW_LOCALHOST_ORIGINS: "true",
       })
     ).toEqual({
       port: 4100,
@@ -30,6 +47,8 @@ describe("readApiRuntimeConfig", () => {
       publicBadgePathPrefix: "/public-badge",
       databasePath: "/tmp/programmers-badge.sqlite",
       badgeOutputDirectory: "/tmp/programmers-badge-assets",
+      allowedWebOrigins: ["https://programmers-badge.jh8459.com", "http://localhost:5020"],
+      allowLocalhostOrigins: true,
     });
   });
 
@@ -38,6 +57,8 @@ describe("readApiRuntimeConfig", () => {
       readApiRuntimeConfig({
         PORT: "abc",
         PUBLIC_BADGE_PATH_PREFIX: "/",
+        ALLOWED_WEB_ORIGINS: "not-a-url",
+        ALLOW_LOCALHOST_ORIGINS: "maybe",
       })
     ).toThrowError(/API runtime environment is invalid/);
   });

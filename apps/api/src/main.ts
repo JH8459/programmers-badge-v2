@@ -27,7 +27,7 @@ const bootstrap = async (): Promise<void> => {
   app.setGlobalPrefix("api");
   app.enableCors({
     origin(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
-      if (isAllowedCorsOrigin(origin)) {
+      if (isAllowedCorsOrigin({ origin, runtimeConfig })) {
         callback(null, true);
         return;
       }

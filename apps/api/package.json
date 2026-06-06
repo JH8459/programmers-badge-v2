@@ -13,11 +13,14 @@
     "zod": "^4.4.3"
   },
   "scripts": {
-    "dev": "pnpm --filter @programmers-badge/shared-types build && pnpm --filter @programmers-badge/badge-core build && tsx watch src/main.ts",
+    "dev": "pnpm --filter @programmers-badge/shared-types build && pnpm --filter @programmers-badge/badge-core build && nest start --watch",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "lint": "eslint src test --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.21"
   }
 }
