@@ -69,8 +69,24 @@ packages/
 docker compose -f docker-compose.local.yml up -d --build
 ```
 
+Optional local port override:
+
+```bash
+API_PORT=5611 \
+WEB_PORT=5610 \
+PUBLIC_BASE_URL=http://localhost:5611 \
+VITE_API_BASE_URL=http://localhost:5611 \
+docker compose -f docker-compose.local.yml up -d --build
+
+API_PORT=5611 WEB_PORT=5610 docker compose -f docker-compose.local.yml down
+```
+
 ## Local Web
 
 ```bash
 pnpm dev:web
 ```
+
+## Local Dynamic Ports
+
+`docker-compose.local.yml` supports `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, and `COMPOSE_PROJECT_NAME` environment overrides for running isolated local stacks.

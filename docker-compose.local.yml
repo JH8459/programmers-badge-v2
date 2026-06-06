@@ -4,16 +4,18 @@ services:
       context: .
       dockerfile: Dockerfile
       target: build
-    container_name: programmers-badge-api
+    container_name: ${COMPOSE_PROJECT_NAME:-programmers-badge}-api
     command: ["pnpm", "--filter", "@programmers-badge/api", "dev"]
     environment:
       PORT: 3000
       DATABASE_PATH: /data/programmers-badge.sqlite
       BADGE_OUTPUT_DIR: /data/badges
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:5010}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:${API_PORT:-5010}}
       PUBLIC_BADGE_PATH_PREFIX: /badge
+      ALLOWED_WEB_ORIGINS: ${ALLOWED_WEB_ORIGINS:-}
+      ALLOW_LOCALHOST_ORIGINS: ${ALLOW_LOCALHOST_ORIGINS:-true}
     ports:
-      - "5010:3000"
+      - "${API_PORT:-5010}:3000"
     volumes:
       - ./apps/api/src:/app/apps/api/src
       - ./packages/badge-core/src:/app/packages/badge-core/src
@@ -38,10 +40,14 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       target: build
-    container_name: programmers-badge-web
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:${API_PORT:-5010}}
+    container_name: ${COMPOSE_PROJECT_NAME:-programmers-badge}-web
     command: ["pnpm", "--filter", "@programmers-badge/web", "dev"]
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:${API_PORT:-5010}}
     ports:
-      - "5020:5173"
+      - "${WEB_PORT:-5020}:5173"
     volumes:
       - ./apps/web/index.html:/app/apps/web/index.html
       - ./apps/web/src:/app/apps/web/src

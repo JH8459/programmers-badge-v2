@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "setup": "pnpm install --frozen-lockfile",
+    "run": "COMPOSE_PROJECT_NAME=\"programmers-badge-${CONDUCTOR_PORT}\" API_PORT=\"$((CONDUCTOR_PORT + 1))\" WEB_PORT=\"$CONDUCTOR_PORT\" PUBLIC_BASE_URL=\"http://localhost:$((CONDUCTOR_PORT + 1))\" VITE_API_BASE_URL=\"http://localhost:$((CONDUCTOR_PORT + 1))\" docker compose -f docker-compose.local.yml up --build",
+    "archive": "COMPOSE_PROJECT_NAME=\"programmers-badge-${CONDUCTOR_PORT}\" docker compose -f docker-compose.local.yml down --remove-orphans"
+  },
+  "runScriptMode": "concurrent"
+}
