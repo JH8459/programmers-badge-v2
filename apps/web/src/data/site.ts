@@ -1,5 +1,17 @@
+const readRequiredViteEnv = (key: string): string => {
+  const configuredValue = import.meta.env[key]?.trim();
+
+  if (!configuredValue) {
+    throw new Error(`${key} is required.`);
+  }
+
+  return configuredValue;
+};
+
+const apiBaseUrl = readRequiredViteEnv("VITE_API_BASE_URL").replace(/\/+$/, "");
+
 export const siteLinks = {
-  apiHealth: "https://api.programmers-badge.jh8459.com/api/health",
+  apiHealth: `${apiBaseUrl}/api/health`,
   chromeStore: "#",
   githubIssues: "https://github.com/JH8459/programmers-badge-v2/issues",
   programmersLesson: "https://school.programmers.co.kr/learn/courses",

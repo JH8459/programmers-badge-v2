@@ -13,6 +13,8 @@
 - API contract runtime validation은 `packages/shared-types`의 zod schema를 기본값으로 사용한다.
 - HTTP boundary에서는 Nest pipe로 zod parse 결과를 받고, normalization은 shared schema 기준을 따른다.
 - `PORT`, `PUBLIC_BASE_URL`, `PUBLIC_BADGE_PATH_PREFIX`, `DATABASE_PATH`, `BADGE_OUTPUT_DIR`는 app-local runtime config zod schema로 검증한다.
+- CORS web origin은 `ALLOWED_WEB_ORIGINS` env의 comma-separated origin list를 기준으로 허용한다.
+- local development에서만 `ALLOW_LOCALHOST_ORIGINS=true`로 explicit port가 있는 `http://localhost:*`, `http://127.0.0.1:*` origin을 허용한다.
 - public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
 - CORS 변경 시 localhost 개발 흐름과 extension origin 허용 범위를 함께 검토한다.
 

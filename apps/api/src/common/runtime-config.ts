@@ -13,6 +13,8 @@ interface ApiRuntimeEnvInput {
   PUBLIC_BADGE_PATH_PREFIX?: string;
   DATABASE_PATH?: string;
   BADGE_OUTPUT_DIR?: string;
+  ALLOWED_WEB_ORIGINS?: string;
+  ALLOW_LOCALHOST_ORIGINS?: string;
 }
 
 interface ApiRuntimeConfigShape {
@@ -21,6 +23,8 @@ interface ApiRuntimeConfigShape {
   publicBadgePathPrefix: string;
   databasePath: string;
   badgeOutputDirectory: string;
+  allowedWebOrigins: string[];
+  allowLocalhostOrigins: boolean;
 }
 
 interface NormalizePublicBaseUrlInput {
@@ -30,6 +34,10 @@ interface NormalizePublicBaseUrlInput {
 
 interface NormalizePublicBadgePathPrefixInput {
   configuredPathPrefix: string | undefined;
+}
+
+interface NormalizeOriginListInput {
+  configuredOrigins: string | undefined;
 }
 
 const normalizeOptionalEnvString = (value: unknown): unknown => {
@@ -63,6 +71,22 @@ const normalizePublicBadgePathPrefix = ({
   return pathPrefixWithLeadingSlash.replace(/\/+$/, "");
 };
 
+const normalizeOriginList = ({ configuredOrigins }: NormalizeOriginListInput): string[] =>
+  configuredOrigins
+    ?.split(",")
+    .map((origin) => origin.trim().replace(/\/+$/, ""))
+    .filter((origin) => origin.length > 0) ?? [];
+
+const booleanEnvSchema = z
+  .preprocess(normalizeOptionalEnvString, z.enum(["true", "false", "1", "0"]).optional())
+  .transform((value) => value === "true" || value === "1");
+
+const originSchema = z.string().url().refine((origin) => {
+  const parsedOrigin = new URL(origin);
+
+  return parsedOrigin.origin === origin;
+}, "Origin must include only protocol, host, and optional port.");
+
 export const apiRuntimeConfigSchema = z
   .object({
     PORT: z.preprocess(normalizeOptionalEnvString, z.coerce.number().int().min(1).max(65_535))
@@ -71,6 +95,8 @@ export const apiRuntimeConfigSchema = z
     PUBLIC_BADGE_PATH_PREFIX: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
     DATABASE_PATH: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
     BADGE_OUTPUT_DIR: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
+    ALLOWED_WEB_ORIGINS: z.preprocess(normalizeOptionalEnvString, z.string().optional()),
+    ALLOW_LOCALHOST_ORIGINS: booleanEnvSchema,
   })
   .transform((env): ApiRuntimeConfigShape => {
     const port = env.PORT ?? DEFAULT_PORT;
@@ -84,8 +110,17 @@ export const apiRuntimeConfigSchema = z
       publicBadgePathPrefix,
       databasePath: env.DATABASE_PATH ?? DEFAULT_DATABASE_PATH,
       badgeOutputDirectory: env.BADGE_OUTPUT_DIR ?? DEFAULT_BADGE_OUTPUT_DIR,
+      allowedWebOrigins: normalizeOriginList({
+        configuredOrigins: env.ALLOWED_WEB_ORIGINS,
+      }),
+      allowLocalhostOrigins: env.ALLOW_LOCALHOST_ORIGINS,
     };
   })
+  .refine(
+    (config: ApiRuntimeConfigShape) =>
+      config.allowedWebOrigins.every((origin) => originSchema.safeParse(origin).success),
+    "ALLOWED_WEB_ORIGINS must be a comma-separated list of URL origins."
+  )
   .refine(
     (config: ApiRuntimeConfigShape) => config.publicBadgePathPrefix.length > 0,
     "PUBLIC_BADGE_PATH_PREFIX must not resolve to the root path."
@@ -100,6 +135,8 @@ export const readApiRuntimeConfig = (env: NodeJS.ProcessEnv = process.env): ApiR
     PUBLIC_BADGE_PATH_PREFIX: env.PUBLIC_BADGE_PATH_PREFIX,
     DATABASE_PATH: env.DATABASE_PATH,
     BADGE_OUTPUT_DIR: env.BADGE_OUTPUT_DIR,
+    ALLOWED_WEB_ORIGINS: env.ALLOWED_WEB_ORIGINS,
+    ALLOW_LOCALHOST_ORIGINS: env.ALLOW_LOCALHOST_ORIGINS,
   };
   const parseResult = apiRuntimeConfigSchema.safeParse(input);
 

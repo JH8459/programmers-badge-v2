@@ -1,19 +1,34 @@
-const ALLOWED_WEB_ORIGINS = new Set([
-  "https://programmers-badge.jh8459.com",
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:5020",
-  "http://127.0.0.1:5020",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-]);
+import type { ApiRuntimeConfig } from "./common/runtime-config";
 
-export const isAllowedCorsOrigin = (origin: string | undefined): boolean => {
+interface IsAllowedCorsOriginInput {
+  origin: string | undefined;
+  runtimeConfig: Pick<ApiRuntimeConfig, "allowedWebOrigins" | "allowLocalhostOrigins">;
+}
+
+const isLocalDevelopmentOrigin = (origin: string): boolean => {
+  try {
+    const { hostname, port, protocol } = new URL(origin);
+    const isLoopbackHostname = hostname === "localhost" || hostname === "127.0.0.1";
+
+    return protocol === "http:" && port.length > 0 && isLoopbackHostname;
+  } catch {
+    return false;
+  }
+};
+
+export const isAllowedCorsOrigin = ({
+  origin,
+  runtimeConfig,
+}: IsAllowedCorsOriginInput): boolean => {
   if (!origin) {
     return true;
   }
 
-  if (ALLOWED_WEB_ORIGINS.has(origin)) {
+  if (runtimeConfig.allowedWebOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (runtimeConfig.allowLocalhostOrigins && isLocalDevelopmentOrigin(origin)) {
     return true;
   }
 

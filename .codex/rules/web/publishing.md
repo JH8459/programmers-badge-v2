@@ -19,6 +19,7 @@
 
 - production UI host는 `https://programmers-badge.jh8459.com`을 기본 방향으로 둔다.
 - production API host는 `https://api.programmers-badge.jh8459.com`을 기본 방향으로 둔다.
+- web client API base URL은 `VITE_API_BASE_URL` env를 source-of-truth로 사용한다.
 - public badge URL은 `https://api.programmers-badge.jh8459.com/badge/...` 형태를 기본 방향으로 둔다.
 
 ## Publishing Guardrails

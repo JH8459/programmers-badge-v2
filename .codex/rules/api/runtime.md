@@ -8,11 +8,14 @@
 - `PUBLIC_BADGE_PATH_PREFIX`가 없으면 public badge URL path는 `/badge`를 사용한다.
 - `DATABASE_PATH`가 없으면 기본 SQLite 파일은 `data/programmers-badge.sqlite`다.
 - `BADGE_OUTPUT_DIR`가 없으면 기본 SVG 출력 디렉토리는 `data/badges`다.
+- `ALLOWED_WEB_ORIGINS`는 comma-separated web origin list다.
+- `ALLOW_LOCALHOST_ORIGINS`는 local dev server용 localhost origin 허용 여부이며 production 기본값은 `false`다.
 - Docker Compose runtime은 `/data/programmers-badge.sqlite`를 사용한다.
 - Docker Compose public entrypoint는 API 단일 컨테이너 `:3000`을 사용한다.
 - NAS production runtime은 root `docker-compose.yml` 파일과 `.env.deploy`를 기준으로 DockerHub 이미지를 pull한다.
 - NAS host port 기본 추천값은 `5010`이다.
 - runtime env는 단일 zod config로 읽고 bootstrap 전에 fail-fast 한다.
+- local API dev runner는 decorator metadata 기반 Nest DI가 동작하도록 Nest CLI watch를 사용한다.
 
 ## Deploy Defaults
 

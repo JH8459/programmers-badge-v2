@@ -8,6 +8,8 @@ services:
       BADGE_OUTPUT_DIR: /data/badges
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
       PUBLIC_BADGE_PATH_PREFIX: /badge
+      ALLOWED_WEB_ORIGINS: ${ALLOWED_WEB_ORIGINS:?ALLOWED_WEB_ORIGINS is required}
+      ALLOW_LOCALHOST_ORIGINS: ${ALLOW_LOCALHOST_ORIGINS:-false}
     ports:
       - "${API_PORT:-5010}:3000"
     volumes:
