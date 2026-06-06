@@ -3,7 +3,7 @@
 이 디렉토리는 NAS production 배포 문서를 둔다.
 compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 두 개를 기준으로 관리한다.
 - `docker-compose.yml`: NAS production deploy 기본 파일
-- `docker-compose.local.yml`: 로컬 개발/검증용 파일. API와 web service는 source bind mount와 dev server/watch mode로 실행하며 host port는 NAS 기본값과 같은 `5010`/`5020`을 사용한다.
+- `docker-compose.local.yml`: 로컬 개발/검증용 파일. API와 web service는 source bind mount와 dev server/watch mode로 실행하며 host port 기본값은 NAS 기본값과 같은 `5010`/`5020`이다. 필요하면 shell env로 `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, `COMPOSE_PROJECT_NAME`을 override한다.
 
 ## Workflow Split
 
@@ -37,15 +37,23 @@ compose 파일은 repo root의 `docker-compose.yml`, `docker-compose.local.yml` 
 - `NAS_USER`: SSH 로그인 사용자
 - `NAS_PASSWORD`: 배포에 사용할 NAS 계정 비밀번호
 - `NAS_DEPLOY_DIR`: NAS에 배포용 `docker-compose.yml`, `.env.deploy`를 둘 디렉터리
-- `API_PORT`: NAS에서 외부에 노출할 API 포트, 기본 추천값은 `5010`
-- `WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본 추천값은 `5020`
 
-Production workflow는 badge URL 생성을 위해 `PUBLIC_BASE_URL=https://api.programmers-badge.jh8459.com`을 `.env.deploy`에 기록한다.
+## Optional Variables
+
+아래 값은 GitHub Actions variables로 둘 수 있으며, 없으면 workflow 기본값을 사용한다.
+
+- `API_PORT`: NAS에서 외부에 노출할 API 포트, 기본값 `5010`
+- `WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본값 `5020`
+- `PUBLIC_BASE_URL`: badge URL 생성용 public API origin, 기본값 `https://api.programmers-badge.jh8459.com`
+- `ALLOWED_WEB_ORIGINS`: API CORS 허용 web origin list, 기본값 `https://programmers-badge.jh8459.com`
+- `ALLOW_LOCALHOST_ORIGINS`: localhost 동적 포트 CORS 허용 여부, production 기본값 `false`
+
+Production workflow는 GitHub Actions variables와 workflow 기본값을 조합해 `.env.deploy`를 생성한다.
 
 ## Secret Guidance
 
 - `deploy-api.yml`과 `deploy-web.yml`의 `deploy` job은 `production` environment를 사용하므로, 위 secrets를 repository secrets 대신 environment secrets로 두는 편이 안전하다.
-- `PUBLIC_BASE_URL`은 workflow에 고정된 production API host를 사용하므로 secret으로 관리하지 않는다.
+- `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`는 secret이 아니므로 GitHub Actions variables로 관리한다.
 - password 인증은 빠르게 붙이기 쉽지만, 장기적으로는 deploy 전용 SSH key로 전환하는 편이 더 안전하다.
 - 현재 workflow는 root 계정 또는 docker 실행 권한이 있는 계정 기준을 전제로 한다.
 - `release-extension.yml`은 현재 GitHub Release asset 게시까지만 자동화한다. Chrome Web Store 게시 자동화는 별도 OAuth/API secret 구성이 필요하다.

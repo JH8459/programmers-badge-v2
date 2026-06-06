@@ -30,7 +30,11 @@ env:
   PNPM_VERSION: 10.28.2
   DOCKER_IMAGE_NAME: programmers-badge-api
   DOCKER_WEB_IMAGE_NAME: programmers-badge-web
-  PUBLIC_BASE_URL: https://api.programmers-badge.jh8459.com
+  API_PORT: ${{ vars.API_PORT || '5010' }}
+  WEB_PORT: ${{ vars.WEB_PORT || '5020' }}
+  PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
+  ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
+  ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -105,6 +109,8 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_BASE_URL=${{ env.PUBLIC_BASE_URL }}
 
   deploy:
     name: Deploy web to NAS
@@ -128,9 +134,11 @@ jobs:
         env:
           DEPLOY_COMPOSE_B64: ${{ steps.compose.outputs.content }}
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          API_PORT: ${{ secrets.API_PORT }}
-          WEB_PORT: ${{ secrets.WEB_PORT }}
+          API_PORT: ${{ env.API_PORT }}
+          WEB_PORT: ${{ env.WEB_PORT }}
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
+          ALLOWED_WEB_ORIGINS: ${{ env.ALLOWED_WEB_ORIGINS }}
+          ALLOW_LOCALHOST_ORIGINS: ${{ env.ALLOW_LOCALHOST_ORIGINS }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
           WEB_DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_WEB_IMAGE_NAME }}:latest
         with:
@@ -138,26 +146,34 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,DOCKER_IMAGE,WEB_DOCKER_IMAGE
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,WEB_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,DOCKER_IMAGE,WEB_DOCKER_IMAGE
           script: |
             set -eu
 
             mkdir -p "${NAS_DEPLOY_DIR}"
             printf '%s' "${DEPLOY_COMPOSE_B64}" | base64 -d > "${NAS_DEPLOY_DIR}/docker-compose.yml"
 
+            API_PORT="${API_PORT:-5010}"
+            WEB_PORT="${WEB_PORT:-5020}"
+            PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://api.programmers-badge.jh8459.com}"
+            ALLOWED_WEB_ORIGINS="${ALLOWED_WEB_ORIGINS:-https://programmers-badge.jh8459.com}"
+            ALLOW_LOCALHOST_ORIGINS="${ALLOW_LOCALHOST_ORIGINS:-false}"
+
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
             WEB_DOCKER_IMAGE=${WEB_DOCKER_IMAGE}
             API_PORT=${API_PORT}
-            WEB_PORT=${WEB_PORT:-5020}
+            WEB_PORT=${WEB_PORT}
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+            ALLOWED_WEB_ORIGINS=${ALLOWED_WEB_ORIGINS}
+            ALLOW_LOCALHOST_ORIGINS=${ALLOW_LOCALHOST_ORIGINS}
             EOF
 
       - name: Pull and restart web container
         uses: appleboy/ssh-action@v1.2.5
         env:
           NAS_DEPLOY_DIR: ${{ secrets.NAS_DEPLOY_DIR }}
-          WEB_PORT: ${{ secrets.WEB_PORT }}
+          WEB_PORT: ${{ env.WEB_PORT }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         with:
