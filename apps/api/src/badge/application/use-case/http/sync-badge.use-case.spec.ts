@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { CommandBus } from "@nestjs/cqrs";
@@ -7,26 +8,26 @@ import { describe, expect, it } from "vitest";
 import {
   SyncBadgeCommand,
   SyncBadgeCommandHandler,
-} from "../src/badge/application/command/sync-badge.command";
-import { SyncBadgeUseCase } from "../src/badge/application/use-case/http/sync-badge.use-case";
-import { BadgeAssetService } from "../src/badge/infra/badge-asset.service";
-import { BadgeProfileRepository } from "../src/badge/infra/badge-profile.repository";
-import { DatabaseService } from "../src/badge/infra/database.service";
+} from "../../command/sync-badge.command";
+import { BadgeAssetService } from "../../../infra/badge-asset.service";
+import { BadgeProfileRepository } from "../../../infra/badge-profile.repository";
+import { DatabaseService } from "../../../infra/database.service";
 
-import {
-  createTempBadgeOutputDirectory,
-  createTempDatabasePath,
-  removeTempDatabase,
-  removeTempDirectory,
-} from "./test-helpers";
+import { SyncBadgeUseCase } from "./sync-badge.use-case";
+
+const createTempBadgeOutputDirectory = (): string =>
+  mkdtempSync(join(tmpdir(), "programmers-badge-assets-"));
+
+const removeTempDirectory = (directoryPath: string): void => {
+  rmSync(directoryPath, { recursive: true, force: true });
+};
 
 describe("SyncBadgeUseCase", () => {
   it("upserts badge data and returns a public badge response", async () => {
-    const databasePath = createTempDatabasePath();
     const badgeOutputDirectory = createTempBadgeOutputDirectory();
     const originalBadgeOutputDirectory = process.env.BADGE_OUTPUT_DIR;
     const originalPublicBaseUrl = process.env.PUBLIC_BASE_URL;
-    const databaseService = new DatabaseService(databasePath);
+    const databaseService = new DatabaseService(":memory:");
     const repository = new BadgeProfileRepository(databaseService);
     const badgeAssetService = new BadgeAssetService();
     const commandHandler = new SyncBadgeCommandHandler(repository);
@@ -85,7 +86,6 @@ describe("SyncBadgeUseCase", () => {
       process.env.BADGE_OUTPUT_DIR = originalBadgeOutputDirectory;
       process.env.PUBLIC_BASE_URL = originalPublicBaseUrl;
       databaseService.onModuleDestroy();
-      removeTempDatabase(databasePath);
       removeTempDirectory(badgeOutputDirectory);
     }
   });

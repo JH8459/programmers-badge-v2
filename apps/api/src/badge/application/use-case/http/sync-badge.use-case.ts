@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 
 import type { BadgeSyncPayload, BadgeSyncResponse } from "@programmers-badge/shared-types";
@@ -11,7 +11,9 @@ import type { BadgeProfileRecord } from "../../../infra/badge-profile.repository
 @Injectable()
 export class SyncBadgeUseCase {
   constructor(
+    @Inject(CommandBus)
     private readonly commandBus: CommandBus,
+    @Inject(BadgeAssetService)
     private readonly badgeAssetService: BadgeAssetService
   ) {}
 

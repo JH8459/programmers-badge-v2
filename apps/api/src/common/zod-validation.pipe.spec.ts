@@ -2,7 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { badgeSyncPayloadSchema } from "@programmers-badge/shared-types";
 import { describe, expect, it } from "vitest";
 
-import { ZodValidationPipe } from "../src/common/zod-validation.pipe";
+import { ZodValidationPipe } from "./zod-validation.pipe";
 
 describe("ZodValidationPipe", () => {
   it("normalizes sync payload input through the shared schema", () => {

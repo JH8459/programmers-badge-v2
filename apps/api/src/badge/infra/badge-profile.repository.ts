@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 
@@ -56,7 +56,7 @@ interface FindByPublicSlugInput {
 
 @Injectable()
 export class BadgeProfileRepository {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly databaseService: DatabaseService) {}
 
   private mapRow(row: BadgeProfileRow): BadgeProfileRecord {
     return {

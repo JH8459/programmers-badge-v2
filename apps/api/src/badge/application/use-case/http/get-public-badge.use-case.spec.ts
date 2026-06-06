@@ -1,31 +1,56 @@
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { QueryBus } from "@nestjs/cqrs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   GetPublicBadgeQuery,
   GetPublicBadgeQueryHandler,
-} from "../src/badge/application/query/get-public-badge.query";
-import { GetPublicBadgeUseCase } from "../src/badge/application/use-case/http/get-public-badge.use-case";
-import { BadgeAssetService } from "../src/badge/infra/badge-asset.service";
-import { BadgeProfileRepository } from "../src/badge/infra/badge-profile.repository";
-import { DatabaseService } from "../src/badge/infra/database.service";
+} from "../../query/get-public-badge.query";
+import { BadgeAssetService } from "../../../infra/badge-asset.service";
+import { BadgeProfileRepository } from "../../../infra/badge-profile.repository";
+import { DatabaseService } from "../../../infra/database.service";
 
-import {
-  createTempBadgeOutputDirectory,
-  createTempDatabasePath,
-  removeTempDatabase,
-  removeTempDirectory,
-} from "./test-helpers";
+import { GetPublicBadgeUseCase } from "./get-public-badge.use-case";
+
+const createTempBadgeOutputDirectory = (): string =>
+  mkdtempSync(join(tmpdir(), "programmers-badge-assets-"));
+
+const removeTempDirectory = (directoryPath: string): void => {
+  rmSync(directoryPath, { recursive: true, force: true });
+};
 
 describe("GetPublicBadgeUseCase", () => {
+  it("treats an empty cached SVG string as a cache hit", async () => {
+    const queryBus = {
+      execute: vi.fn(),
+    } as unknown as QueryBus;
+    const badgeAssetService = {
+      readPublicBadge: vi.fn().mockReturnValue(""),
+      writePublicBadge: vi.fn(),
+    } as unknown as BadgeAssetService;
+    const useCase = new GetPublicBadgeUseCase(queryBus, badgeAssetService);
+
+    // Given: asset cache가 string | null contract 중 빈 문자열을 반환한다.
+    // When: public badge를 조회한다.
+    const svg = await useCase.execute({ slug: "empty-cache" });
+
+    // Then: falsy 문자열도 명시적인 cache hit로 처리하고 DB lookup으로 넘어가지 않는다.
+    expect(svg).toBe("");
+    expect(badgeAssetService.readPublicBadge).toHaveBeenCalledWith({
+      slug: "empty-cache",
+      variant: "full",
+    });
+    expect(queryBus.execute).not.toHaveBeenCalled();
+    expect(badgeAssetService.writePublicBadge).not.toHaveBeenCalled();
+  });
+
   it("renders a persisted public badge svg", async () => {
-    const databasePath = createTempDatabasePath();
     const badgeOutputDirectory = createTempBadgeOutputDirectory();
     const originalBadgeOutputDirectory = process.env.BADGE_OUTPUT_DIR;
-    const databaseService = new DatabaseService(databasePath);
+    const databaseService = new DatabaseService(":memory:");
     const repository = new BadgeProfileRepository(databaseService);
     const badgeAssetService = new BadgeAssetService();
 
@@ -69,7 +94,6 @@ describe("GetPublicBadgeUseCase", () => {
     } finally {
       process.env.BADGE_OUTPUT_DIR = originalBadgeOutputDirectory;
       databaseService.onModuleDestroy();
-      removeTempDatabase(databasePath);
       removeTempDirectory(badgeOutputDirectory);
     }
   });

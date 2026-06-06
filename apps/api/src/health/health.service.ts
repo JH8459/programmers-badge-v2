@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 
 import { DatabaseService } from "../badge/infra/database.service";
 
 @Injectable()
 export class HealthService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(@Inject(DatabaseService) private readonly databaseService: DatabaseService) {}
 
   getHealth() {
     return {
