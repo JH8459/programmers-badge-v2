@@ -1,8 +1,11 @@
+import { z } from "zod";
 import { describe, expect, it } from "vitest";
 
 import {
   BADGE_TIERS,
   SUPPORTED_BADGE_FORMATS,
+  createNonEmptyArraySchema,
+  definedValueSchema,
   parseBadgeSyncPayload,
   parseBadgeSyncResponse,
 } from "../src/index";
@@ -14,6 +17,21 @@ describe("shared types contracts", () => {
 
   it("supports the current badge tiers", () => {
     expect(BADGE_TIERS).toEqual(["starter", "intermediate", "advanced"]);
+  });
+
+  it("rejects undefined and null values with the shared defined-value schema", () => {
+    expect(definedValueSchema.safeParse("defined").success).toBe(true);
+    expect(definedValueSchema.safeParse(0).success).toBe(true);
+    expect(definedValueSchema.safeParse(false).success).toBe(true);
+    expect(definedValueSchema.safeParse(undefined).success).toBe(false);
+    expect(definedValueSchema.safeParse(null).success).toBe(false);
+  });
+
+  it("rejects empty arrays with the shared non-empty array schema", () => {
+    const nonEmptyStringListSchema = createNonEmptyArraySchema(z.string());
+
+    expect(nonEmptyStringListSchema.safeParse(["value"]).success).toBe(true);
+    expect(nonEmptyStringListSchema.safeParse([]).success).toBe(false);
   });
 
   it("normalizes and validates the sync payload contract", () => {

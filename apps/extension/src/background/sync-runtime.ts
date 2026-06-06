@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { createNonEmptyArraySchema, definedValueSchema } from "@programmers-badge/shared-types";
+
 import { parseProgrammersRecord, toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
 import { createIdleSyncState, type ExtensionSyncState } from "../shared/sync-state.js";
 import { EXTENSION_API_HOST, syncBadgePayload } from "./api-client.js";
@@ -31,7 +33,7 @@ const injectedCollectionResultSchema = z.discriminatedUnion("ok", [
   z
     .object({
       ok: z.literal(true),
-      record: z.unknown(),
+      record: definedValueSchema,
     })
     .passthrough(),
   z
@@ -43,15 +45,13 @@ const injectedCollectionResultSchema = z.discriminatedUnion("ok", [
     .passthrough(),
 ]);
 
-const injectedCollectionResultListSchema = z
-  .array(
-    z
-      .object({
-        result: injectedCollectionResultSchema.optional(),
-      })
-      .passthrough()
-  )
-  .nonempty();
+const injectedCollectionResultListSchema = createNonEmptyArraySchema(
+  z
+    .object({
+      result: injectedCollectionResultSchema.optional(),
+    })
+    .passthrough()
+);
 
 export interface AutoSyncTrigger {
   tabId: number;
