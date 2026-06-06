@@ -1,5 +1,14 @@
 # Git Instruction
 
+## Branch Naming Default
+
+- 브랜치명은 PR에 올라갈 작업 내용을 예측해서 짧은 kebab-case로 만든다.
+- 브랜치명은 lowercase letter, number, hyphen만 사용한다.
+- 브랜치명에 `JH8459`와 `/`는 금지한다.
+- 권장 길이는 2-4개 단어다.
+- 예시: `branch-rules`, `pr-workflow`, `api-cors`, `web-guide`
+- 금지 예시: `JH8459-branch-rules`, `feature/api-cors`, `fix/web-guide`
+
 ## Commit Message Default
 
 - 기본 형식은 `type: 한국어 설명`이다.
