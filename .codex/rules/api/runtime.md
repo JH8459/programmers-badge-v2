@@ -23,12 +23,11 @@
 
 ## Deploy Defaults
 
-- API production deploy는 `API verify -> API DockerHub push -> API compose sync -> .env.api.deploy update -> NAS SSH deploy` 순서를 기본 흐름으로 두고, GitHub environment는 `production`을 사용한다.
-- 현재 API deploy workflow는 root `docker-compose.api.yml` 파일을 NAS에 동기화하고, `.env.api.deploy`에 API image와 API runtime env만 기록한 뒤 API image만 pull하고 `api` service만 재시작한다.
-- API test-only, docs-only, root lockfile-only 변경은 자동 production deploy trigger에서 제외한다.
+- API production deploy workflow, environment, secret ownership은 `.codex/rules/deployment.md`를 따른다.
+- API runtime env와 health check path는 이 문서의 Runtime Defaults를 source-of-truth로 둔다.
 
 ## When Editing
 
-- runtime env 규칙을 바꾸면 default 값, invalid env 실패 케이스, deploy 문서를 함께 갱신한다.
-- Dockerfile, compose, deploy workflow를 바꾸면 NAS port, image tag, `.env.api.deploy` key 정합성을 함께 확인한다.
+- runtime env 규칙을 바꾸면 default 값, invalid env 실패 케이스, `.codex/rules/deployment.md`를 함께 갱신한다.
+- Dockerfile, compose, deploy workflow를 바꾸면 `.codex/rules/deployment.md`와 NAS port, image tag, `.env.api.deploy` key 정합성을 함께 확인한다.
 - health check 경로는 `/api/health` 기준으로 유지한다.

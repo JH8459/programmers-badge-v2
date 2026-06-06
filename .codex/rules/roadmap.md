@@ -10,9 +10,7 @@
 - `apps/extension`은 page-context fetch와 extension-context validation을 분리해 `executeScript` boundary를 안전하게 유지한다.
 - `apps/extension`은 hosted API URL과 host permission을 `api.programmers-badge.jh8459.com` 기준으로 사용한다.
 - Docker Compose 기반 API/web 배포 베이스가 있다.
-- PR verify, master production deploy, tag/manual release 기준 GitHub Actions 베이스가 있다.
-- NAS deploy는 DockerHub API/web image와 service별 production compose sync 기준으로 운영하고, API/Web workflow를 runtime/image 영향 범위별로 분리해 갱신한다.
-- API deploy environment는 `production`, extension package release environment는 `extension-release`를 사용한다.
+- PR verify, master production deploy, tag/manual release 기준 GitHub Actions 베이스가 있으며 세부 기준은 `.codex/rules/deployment.md`를 따른다.
 - `apps/web`은 Vite + React + TypeScript 기반 public web UI scaffold와 Nginx runtime image, landing/contact/privacy route를 제공한다.
 
 ## Next Phase 1 - Runtime Strategy Hardening

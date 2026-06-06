@@ -17,7 +17,8 @@
 
 - manifest, permissions, Chrome API, runtime bundling 작업: `.codex/rules/extension/runtime.md`
 - popup, background, content script, sync flow 작업: `.codex/rules/extension/sync-flow.md`
-- icon, store listing asset, zip packaging, release workflow 작업: `.codex/rules/extension/release-assets.md`
+- icon, store listing asset, zip packaging 작업: `.codex/rules/extension/release-assets.md`
+- extension release workflow, environment, secret 작업: `.codex/rules/deployment.md`
 
 여러 범위를 동시에 바꾸면 관련 하위 문서를 모두 읽는다.
 
@@ -28,7 +29,7 @@
 - backend URL 전략을 바꾸면 `manifest.json`, background client, 테스트, 문서를 함께 갱신한다.
 - extension release artifact를 바꾸면 build output, zip packaging, release workflow를 함께 갱신한다.
 - icon을 바꾸면 `manifest.json`, `copy-assets.mjs`, `dist` 포함 여부를 함께 확인한다.
-- package script를 바꾸면 local `pnpm package:extension`과 GitHub Actions `release-extension` workflow를 함께 확인한다.
+- package script를 바꾸면 local `pnpm package:extension`, GitHub Actions `release-extension` workflow, `.codex/rules/deployment.md`를 함께 확인한다.
 - 페이지 감지나 auto-sync 로직을 바꿀 때는 오탐/중복 sync 방지 규칙을 같이 검토한다.
 - popup 변경은 작은 viewport에서도 핵심 액션이 유지되는지 확인한다.
 

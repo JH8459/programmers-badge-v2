@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Workflow"
+  short_description: "Review with senior and critical lanes, then synthesize"
+  default_prompt: "Use $review-workflow to review the current diff in subagent-parallel mode when available, or single-agent-two-lane fallback otherwise, then synthesize the findings."

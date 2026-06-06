@@ -16,6 +16,7 @@
 ## Read By Scope
 
 - runtime env, Docker, NAS deploy, health check 작업: `.codex/rules/api/runtime.md`
+- GitHub Actions deploy workflow, environment, secret 작업: `.codex/rules/deployment.md`
 - endpoint, request/response, validation, CORS 작업: `.codex/rules/api/contracts.md`
 - persistence, public slug, SVG asset, badge static serving 작업: `.codex/rules/api/badge-delivery.md`
 
