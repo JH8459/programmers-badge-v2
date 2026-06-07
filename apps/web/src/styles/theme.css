@@ -259,6 +259,8 @@ h1 {
   font-size: 3.1rem;
   letter-spacing: 0;
   line-height: 1.14;
+  overflow-wrap: break-word;
+  word-break: keep-all;
 }
 
 h2 {
@@ -296,6 +298,10 @@ p {
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .button-primary {
@@ -304,6 +310,15 @@ p {
     linear-gradient(180deg, rgba(127, 156, 255, 0.24), rgba(20, 39, 131, 0.6)),
     var(--brand-navy);
   color: #f6f9ff;
+}
+
+.button-primary:hover,
+.button-primary:focus-visible {
+  border-color: rgba(43, 216, 255, 0.48);
+  background:
+    linear-gradient(180deg, rgba(43, 216, 255, 0.22), rgba(20, 39, 131, 0.68)),
+    var(--brand-navy);
+  transform: translateY(-1px);
 }
 
 .button-secondary {
@@ -315,6 +330,7 @@ p {
 .button-secondary:focus-visible {
   border-color: rgba(127, 156, 255, 0.42);
   background: rgba(20, 39, 131, 0.24);
+  transform: translateY(-1px);
 }
 
 .api-health-panel {
@@ -431,6 +447,19 @@ p {
 .flow-description {
   margin-top: 16px;
   font-size: 0.98rem;
+}
+
+.flow-store-link {
+  display: inline-flex;
+  margin-top: 20px;
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.flow-store-link:hover,
+.flow-store-link:focus-visible {
+  color: var(--accent-blue);
 }
 
 .step-grid,
@@ -713,9 +742,13 @@ p {
   .site-header {
     position: static;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     border-radius: 14px;
+  }
+
+  .brand {
+    min-width: 0;
   }
 
   .brand-mark {
@@ -774,7 +807,16 @@ p {
   }
 
   .site-header {
+    gap: 10px;
     padding: 10px;
+  }
+
+  .brand {
+    gap: 10px;
+  }
+
+  .brand strong {
+    font-size: clamp(0.82rem, 4.2vw, 1.05rem);
   }
 
   .hero-copy,
@@ -794,6 +836,16 @@ p {
 
   h2 {
     font-size: 1.65rem;
+  }
+
+  .hero-actions {
+    display: grid;
+  }
+
+  .button {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 14px;
   }
 }
 
