@@ -64,6 +64,26 @@ body {
   text-transform: uppercase;
 }
 
+.brand-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.version-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 2px var(--space-2);
+  background: var(--color-surface-accent);
+  color: var(--color-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .header {
   display: grid;
   gap: var(--space-2);

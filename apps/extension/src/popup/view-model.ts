@@ -201,7 +201,7 @@ export const getPopupViewModel = (state: ExtensionSyncState): PopupViewModel => 
         statusLabel: "준비",
         statusTone: "neutral",
         title: "배지 동기화",
-        description: "현재 탭의 배지 데이터를 가져옵니다.",
+        description: "현재 탭에서 Programmers 배지 데이터를 가져옵니다.",
         actionLabel: "지금 동기화",
         actionDisabled: false,
         badgePreviewOptions: [],

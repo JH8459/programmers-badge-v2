@@ -74,7 +74,9 @@ const run = (command, args, options = {}) =>
         return;
       }
 
-      rejectPromise(new Error(`${command} ${args.join(" ")} exited with code ${code ?? "unknown"}`));
+      rejectPromise(
+        new Error(`${command} ${args.join(" ")} exited with code ${code ?? "unknown"}`)
+      );
     });
   });
 
@@ -157,8 +159,14 @@ const assertNoBareModuleImports = async () => {
     ].map((match) => match[1]);
 
     for (const specifier of specifiers) {
-      if (!specifier?.startsWith(".") && !specifier?.startsWith("/") && !specifier?.startsWith("chrome:")) {
-        throw new Error(`Extension bundle contains a bare module import: ${specifier} in ${filePath}`);
+      if (
+        !specifier?.startsWith(".") &&
+        !specifier?.startsWith("/") &&
+        !specifier?.startsWith("chrome:")
+      ) {
+        throw new Error(
+          `Extension bundle contains a bare module import: ${specifier} in ${filePath}`
+        );
       }
     }
   }
@@ -206,6 +214,7 @@ const packageExtension = async () => {
   const options = parseArgs();
 
   if (!options.skipBuild) {
+    await run("pnpm", ["--filter", "@programmers-badge/shared-types", "build"]);
     await run("pnpm", ["--filter", "@programmers-badge/extension", "build"]);
   }
 
