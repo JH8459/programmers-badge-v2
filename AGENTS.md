@@ -66,4 +66,5 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.agents/skills/commit/SKILL.md`: commit splitting, staging, push planning skill
 - `.agents/skills/pr-workflow/SKILL.md`: PR 작성 전 커밋 분리, 메시지, PR 템플릿 workflow skill
 - `.agents/skills/docs-update/SKILL.md`: diff 기반 docs update skill
+- `.agents/skills/extension-release/SKILL.md`: Chrome extension release 검증, GitHub Release, Chrome Web Store publish, `extension-v*` tag push workflow skill
 - `.agents/skills/web-publish/SKILL.md`: public web UI/page publishing skill

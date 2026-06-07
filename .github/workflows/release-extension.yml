@@ -15,6 +15,11 @@ on:
         required: false
         default: master
         type: string
+      publish_chrome_web_store:
+        description: "Publish the packaged extension to Chrome Web Store"
+        required: false
+        default: true
+        type: boolean
 
 concurrency:
   group: extension-release
@@ -34,6 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: extension-release
+    outputs:
+      archive_name: ${{ steps.package.outputs.archive_name }}
+      manifest_version: ${{ steps.manifest.outputs.manifest_version }}
+      tag: ${{ steps.release.outputs.tag }}
+      target: ${{ steps.release.outputs.target }}
 
     steps:
       - name: Resolve release inputs
@@ -85,6 +95,9 @@ jobs:
             exit 1
           fi
 
+      - name: Build extension dependencies
+        run: pnpm --filter @programmers-badge/shared-types build
+
       - name: Verify extension
         run: |
           pnpm --filter @programmers-badge/extension lint
@@ -102,20 +115,110 @@ jobs:
           pnpm --filter @programmers-badge/extension package -- --skip-build --output "${archive_name}"
           echo "archive_name=${archive_name}" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve extension release notes
+        id: release_notes
+        shell: bash
+        run: |
+          notes_file="apps/extension/release-notes/${{ steps.manifest.outputs.manifest_version }}.md"
+
+          if [ -f "${notes_file}" ]; then
+            echo "notes_file=${notes_file}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "notes_file=" >> "$GITHUB_OUTPUT"
+
+      - name: Upload extension package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.archive_name }}
+          path: ${{ steps.package.outputs.archive_name }}
+          if-no-files-found: error
+
       - name: Create or update extension release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag="${{ steps.release.outputs.tag }}"
           archive="${{ steps.package.outputs.archive_name }}"
+          notes_file="${{ steps.release_notes.outputs.notes_file }}"
 
           if gh release view "${tag}" >/dev/null 2>&1; then
             gh release upload "${tag}" "${archive}" --clobber
+            if [ -n "${notes_file}" ]; then
+              gh release edit "${tag}" --notes-file "${notes_file}"
+            fi
+            exit 0
+          fi
+
+          if [ -n "${notes_file}" ]; then
+            gh release create "${tag}" \
+              "${archive}" \
+              --target "${{ steps.release.outputs.target }}" \
+              --title "Extension v${{ steps.manifest.outputs.manifest_version }}" \
+              --notes-file "${notes_file}"
             exit 0
           fi
 
           gh release create "${tag}" \
-            "${archive}" \
-            --target "${{ steps.release.outputs.target }}" \
-            --title "Extension v${{ steps.manifest.outputs.manifest_version }}" \
-            --notes "Chrome extension package release for ${tag}."
+              "${archive}" \
+              --target "${{ steps.release.outputs.target }}" \
+              --title "Extension v${{ steps.manifest.outputs.manifest_version }}" \
+              --notes "Chrome extension package release for ${tag}."
+
+  publish-chrome-web-store:
+    name: Publish to Chrome Web Store
+    needs: release-extension
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_chrome_web_store }}
+    runs-on: ubuntu-latest
+    environment:
+      name: extension-release
+    permissions:
+      contents: read
+    env:
+      CWS_ACCESS_TOKEN: ${{ secrets.CWS_ACCESS_TOKEN }}
+      CWS_BLOCK_ON_WARNINGS: ${{ vars.CWS_BLOCK_ON_WARNINGS || 'true' }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_DEPLOY_PERCENTAGE: ${{ vars.CWS_DEPLOY_PERCENTAGE }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID || vars.CWS_EXTENSION_ID }}
+      CWS_PUBLISH_TYPE: ${{ vars.CWS_PUBLISH_TYPE || 'DEFAULT_PUBLISH' }}
+      CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID || vars.CWS_PUBLISHER_ID }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+      CWS_SERVICE_ACCOUNT_JSON: ${{ secrets.CWS_SERVICE_ACCOUNT_JSON }}
+      CWS_SKIP_REVIEW: ${{ vars.CWS_SKIP_REVIEW || 'false' }}
+      CWS_UPLOAD_STATUS_ATTEMPTS: ${{ vars.CWS_UPLOAD_STATUS_ATTEMPTS }}
+      CWS_UPLOAD_STATUS_INTERVAL_MS: ${{ vars.CWS_UPLOAD_STATUS_INTERVAL_MS }}
+      NODE_VERSION: 22.13.0
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release-extension.outputs.target }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download extension package artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.release-extension.outputs.archive_name }}
+          path: .
+
+      - name: Publish extension to Chrome Web Store
+        run: |
+          node apps/extension/scripts/publish-chrome-web-store.mjs \
+            --archive "${{ needs.release-extension.outputs.archive_name }}"
+
+      - name: Write publish summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "### Chrome Web Store publish"
+            echo "- Tag: ${{ needs.release-extension.outputs.tag }}"
+            echo "- Manifest version: ${{ needs.release-extension.outputs.manifest_version }}"
+            echo "- Archive: ${{ needs.release-extension.outputs.archive_name }}"
+          } >> "$GITHUB_STEP_SUMMARY"

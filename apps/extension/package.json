@@ -1,6 +1,6 @@
 {
   "name": "@programmers-badge/extension",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@programmers-badge/shared-types": "workspace:*",
@@ -14,6 +14,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "build": "node scripts/build-extension.mjs && node scripts/copy-assets.mjs",
     "package": "node scripts/package-extension.mjs",
+    "publish:chrome-web-store": "node scripts/publish-chrome-web-store.mjs",
     "lint": "eslint src test scripts --max-warnings 0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"

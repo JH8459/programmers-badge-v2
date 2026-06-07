@@ -1,0 +1,4 @@
+interface:
+  display_name: "Extension Release"
+  short_description: "Chrome extension 릴리스 검증, 커밋, 태그 push 절차를 정리합니다."
+  default_prompt: "Use $extension-release to validate the extension release, commit the changes, push the branch, and push the matching extension-v tag."

@@ -44,6 +44,7 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
 
 const render = (): void => {
   const viewModel = getPopupViewModel(currentState);
+  const extensionVersion = chrome.runtime.getManifest().version;
   const selectedPreviewOption =
     viewModel.badgePreviewOptions.find((option) => option.key === selectedPreviewVariant) ??
     viewModel.badgePreviewOptions[0];
@@ -137,7 +138,10 @@ const render = (): void => {
     <section class="shell">
       <header class="header">
         <div class="header-top">
-          <div class="eyebrow">PROGRAMMERS BADGE</div>
+          <div class="brand-line">
+            <div class="eyebrow">PROGRAMMERS BADGE</div>
+            <span class="version-chip">v${escapeHtml(extensionVersion)}</span>
+          </div>
           <span class="status-chip" data-tone="${viewModel.statusTone}">${escapeHtml(viewModel.statusLabel)}</span>
         </div>
         <h1>${escapeHtml(viewModel.title)}</h1>
@@ -155,9 +159,7 @@ const render = (): void => {
 
   root.querySelectorAll<HTMLButtonElement>("[data-copy-key]").forEach((buttonElement) => {
     buttonElement.addEventListener("click", () => {
-      const copyItem = selectedCopyItems.find(
-        (item) => item.key === buttonElement.dataset.copyKey
-      );
+      const copyItem = selectedCopyItems.find((item) => item.key === buttonElement.dataset.copyKey);
       void copyToClipboard(copyItem?.value);
     });
   });

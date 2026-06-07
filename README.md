@@ -63,8 +63,9 @@ packages/
 - deployment and NAS production: `.codex/rules/deployment.md`
 - privacy policy page: `https://programmers-badge.jh8459.com/privacy`
 - web local container: `docker compose -f docker-compose.local.yml up -d --build web`
-- extension package release workflow: `.github/workflows/release-extension.yml`
+- extension package and Chrome Web Store release workflow: `.github/workflows/release-extension.yml`
 - extension local package: `pnpm package:extension`
+- extension release notes: `apps/extension/release-notes`
 - Chrome Web Store listing assets: `apps/extension/store-assets`
 
 ## Local Docker
