@@ -12,7 +12,8 @@ const apiBaseUrl = readRequiredViteEnv("VITE_API_BASE_URL").replace(/\/+$/, "");
 
 export const siteLinks = {
   apiHealth: `${apiBaseUrl}/api/health`,
-  chromeStore: "#",
+  chromeStore:
+    "https://chromewebstore.google.com/detail/programmers-badge-v2/nfaknmfniiemabicmcbdkajapapdglaf?authuser=0&hl=ko",
   githubIssues: "https://github.com/JH8459/programmers-badge-v2/issues",
   programmersLesson: "https://school.programmers.co.kr/learn/courses",
 };

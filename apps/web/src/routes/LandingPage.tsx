@@ -69,15 +69,21 @@ export function LandingPage() {
     <main>
       <section className="hero-section">
         <div className="hero-copy">
-          <span className="section-kicker">Hosted Badge for Programmers</span>
-          <h1>프로그래머스 풀이 기록을 토대로 프로필 배지를 생성합니다.</h1>
+          <span className="section-kicker">Chrome Web Store Published</span>
+          <h1>프로그래머스 풀이 기록을 공개 배지로 공유하세요.</h1>
           <p>
-            현재 로그인된 프로그래머스 로그인 세션을 활용해 풀이 기록 정보를 동기화합니다.
-            배지 생성에 필요한 최소 정보만 처리하며, 미리 제공된 API를 통해 SVG 배지를 생성한
-            뒤 정적 파일 형태로 제공합니다. 비밀번호나 세션 토큰 같은 개인정보는 별도로
-            수집하거나 저장하지 않습니다.
+            승인된 크롬 확장 프로그램으로 풀이 기록을 동기화하고, 생성된 SVG 배지 URL과
+            Markdown snippet을 프로필이나 README에 바로 사용할 수 있습니다.
           </p>
           <div className="hero-actions">
+            <a
+              className="button button-primary"
+              href={siteLinks.chromeStore}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Chrome Web Store에서 설치
+            </a>
             <button className="button button-secondary" type="button" onClick={checkApiHealth}>
               API 상태 확인
             </button>
@@ -98,11 +104,19 @@ export function LandingPage() {
       <section className="flow-section">
         <div>
           <span className="section-kicker">Flow</span>
-          <h2>손 쉽게 사용 가능합니다.</h2>
+          <h2>손쉽게 사용 가능합니다.</h2>
           <p className="flow-description">
-            크롬 확장 프로그램 설치 후 프로그래머스 문제 풀이 기록을 동기화하고, 생성된 배지
-            URL을 자유롭게 활용하세요.
+            공개된 크롬 확장 프로그램을 설치한 뒤 프로그래머스 문제 풀이 기록을 동기화하고,
+            생성된 배지 URL을 자유롭게 활용하세요.
           </p>
+          <a
+            className="flow-store-link"
+            href={siteLinks.chromeStore}
+            target="_blank"
+            rel="noreferrer"
+          >
+            확장 프로그램 설치 페이지 열기
+          </a>
         </div>
         <div className="step-grid">
           {flowSteps.map((step, index) => (
