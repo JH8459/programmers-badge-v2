@@ -6,6 +6,12 @@
 - `WARNING`: 잠재 버그, 검증 누락, 구조적 냄새
 - `SUGGESTION`: 유지보수성 개선 제안
 
+## Remote GitHub Review
+
+- Codex GitHub 원격 PR 리뷰는 `.codex/instructions/remote-code-review.md`의 `P0`/`P1`/`P2`/`P3` 기준을 따른다.
+- 원격 리뷰 코멘트와 요약은 한국어로 작성한다.
+- `CRITICAL`은 보통 `P0`, merge 전에 고쳐야 하는 `WARNING`은 `P1`, 권장 수준의 `WARNING`은 `P2`, `SUGGESTION`은 보통 `P3`로 본다.
+
 ## Review Checklist
 
 ### Product / Scope
