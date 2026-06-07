@@ -1,4 +1,5 @@
 import { createSign } from "node:crypto";
+import { spawn } from "node:child_process";
 import { readFile, stat } from "node:fs/promises";
 import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -130,6 +131,41 @@ const parseDeployPercentage = () => {
 };
 
 const readJsonFile = async (path) => JSON.parse(await readFile(path, "utf8"));
+
+const runAndCapture = (command, args) =>
+  new Promise((resolvePromise, rejectPromise) => {
+    const child = spawn(command, args, {
+      cwd: repoRoot,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    const stdoutChunks = [];
+    const stderrChunks = [];
+
+    child.stdout.on("data", (chunk) => {
+      stdoutChunks.push(chunk);
+    });
+
+    child.stderr.on("data", (chunk) => {
+      stderrChunks.push(chunk);
+    });
+
+    child.on("error", rejectPromise);
+    child.on("exit", (code) => {
+      const stdout = Buffer.concat(stdoutChunks).toString("utf8");
+      const stderr = Buffer.concat(stderrChunks).toString("utf8");
+
+      if (code === 0) {
+        resolvePromise(stdout);
+        return;
+      }
+
+      rejectPromise(
+        new Error(
+          `${command} ${args.join(" ")} exited with code ${code ?? "unknown"}${stderr ? `: ${stderr.trim()}` : ""}`
+        )
+      );
+    });
+  });
 
 const readManifest = async (manifestPath) => {
   const manifest = await readJsonFile(manifestPath);
@@ -486,6 +522,27 @@ const assertArchiveExists = async (archivePath) => {
   }
 };
 
+const readArchiveManifest = async (archivePath) => {
+  const manifestSource = await runAndCapture("unzip", ["-p", archivePath, "manifest.json"]);
+  const manifest = JSON.parse(manifestSource);
+
+  if (typeof manifest.version !== "string" || manifest.version.trim().length === 0) {
+    throw new Error(`Archive manifest version is missing in ${archivePath}.`);
+  }
+
+  return manifest;
+};
+
+const assertArchiveManifestVersion = async ({ archivePath, manifestVersion }) => {
+  const archiveManifest = await readArchiveManifest(archivePath);
+
+  if (archiveManifest.version !== manifestVersion) {
+    throw new Error(
+      `Archive manifest version mismatch. Expected ${manifestVersion}, received ${archiveManifest.version}.`
+    );
+  }
+};
+
 const publishChromeWebStore = async () => {
   const options = parseArgs();
   const manifestPath = resolveRepoPath(options.manifest);
@@ -507,6 +564,10 @@ const publishChromeWebStore = async () => {
 
   parseChromeVersion(manifest.version);
   await assertArchiveExists(archivePath);
+  await assertArchiveManifestVersion({
+    archivePath,
+    manifestVersion: manifest.version,
+  });
 
   console.log(`Chrome Web Store item: ${itemName}`);
   console.log(`Manifest version: ${manifest.version}`);
