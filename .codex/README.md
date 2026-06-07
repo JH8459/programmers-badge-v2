@@ -43,6 +43,7 @@
 - `.codex/memory/recurring-mistakes.md`: 반복 실수와 예방 규칙
 - `.codex/instructions/workflow.md`: planning/execution/validation/reporting 기본 절차
 - `.codex/instructions/review.md`: 리뷰 severity와 체크리스트
+- `.codex/instructions/remote-code-review.md`: Codex GitHub 원격 리뷰 P0/P1/P2/P3 기준
 - `.codex/instructions/git.md`: commit message와 commit splitting 규칙
 - `.codex/instructions/memory.md`: memory 읽기/승격/업데이트 절차
 - `.codex/agents/README.md`: custom subagent 목록과 호출 기준

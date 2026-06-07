@@ -4,6 +4,13 @@
 source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 `AGENTS.md`에는 경로만 유지하고 세부 정책은 `.codex`에 둔다.
 
+## Review guidelines
+
+- Codex GitHub 원격 리뷰는 `.codex/instructions/remote-code-review.md`를 따른다.
+- 리뷰 코멘트와 리뷰 요약은 한국어로 작성한다.
+- 모든 finding은 `P0`, `P1`, `P2`, `P3` 중 하나로 분류한다.
+- GitHub 원격 리뷰 기본 코멘트는 merge 전에 반드시 봐야 하는 `P0`/`P1`을 우선한다.
+
 ## Read Order
 
 1. `.codex/README.md`
@@ -46,6 +53,7 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 - `.codex/memory/recurring-mistakes.md`: 반복 실수와 예방 규칙
 - `.codex/instructions/workflow.md`: 작업 절차
 - `.codex/instructions/review.md`: 리뷰 기준
+- `.codex/instructions/remote-code-review.md`: Codex GitHub 원격 리뷰 기준
 - `.codex/instructions/git.md`: Git 규칙
 - `.codex/instructions/memory.md`: memory 읽기/승격/업데이트 절차
 - `.codex/agents/README.md`: custom subagent 목록과 호출 기준
