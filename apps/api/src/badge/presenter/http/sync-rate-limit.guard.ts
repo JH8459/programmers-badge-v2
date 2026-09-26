@@ -48,7 +48,8 @@ export const createSyncRateLimiter = (
 
       if (activeRequests.length >= maxRequests) {
         requestsByClient.set(clientKey, activeRequests);
-        const oldestRequestTime = activeRequests[0] ?? currentTime;
+        // maxRequests is at least one, so this branch always has a first timestamp.
+        const oldestRequestTime = activeRequests[0] as number;
         return Math.max(1, Math.ceil((oldestRequestTime + windowMs - currentTime) / 1000));
       }
 
@@ -56,13 +57,8 @@ export const createSyncRateLimiter = (
       requestsByClient.set(clientKey, activeRequests);
 
       while (requestsByClient.size > maxEntries) {
-        const oldestClientKey = requestsByClient.keys().next().value;
-
-        if (oldestClientKey === undefined) {
-          break;
-        }
-
-        requestsByClient.delete(oldestClientKey);
+        // A map larger than maxEntries must have at least one key.
+        requestsByClient.delete(requestsByClient.keys().next().value as string);
       }
 
       return null;
