@@ -66,6 +66,10 @@ export class BadgeAssetService {
       variant === "mini" ? renderMiniBadgeSvg(renderModel) : renderBadgeSvg(renderModel);
     const badgeFilePath = this.getBadgeFilePath({ slug: record.publicSlug, variant });
 
+    if (this.readPublicBadge({ slug: record.publicSlug, variant }) === badgeSvg) {
+      return badgeSvg;
+    }
+
     mkdirSync(dirname(badgeFilePath), { recursive: true });
 
     // 부분적으로 써진 SVG가 노출되지 않도록 임시 파일에 쓴 뒤 교체한다.

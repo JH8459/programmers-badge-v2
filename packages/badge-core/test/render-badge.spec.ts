@@ -29,6 +29,22 @@ describe("renderBadgeSvg", () => {
     expect(svg).toContain("Rank");
   });
 
+  it("escapes XML characters and removes invalid control characters from display names", () => {
+    const svg = renderBadgeSvg(
+      createProgrammersBadgeRenderModel({
+        displayName: `A&B <Coder> "O'Neil"\u0001`,
+        solvedCount: 1,
+        solvedTotal: 2,
+        skillLevel: 1,
+        rankingScore: 10,
+        rankingRank: 1,
+      })
+    );
+
+    expect(svg).toContain("A&amp;B &lt;Coder&gt; &quot;O&apos;Neil&quot;");
+    expect(svg).not.toContain("\u0001");
+  });
+
   it("returns the v1 mini badge shape", () => {
     const svg = renderMiniBadgeSvg(
       createProgrammersBadgeRenderModel({

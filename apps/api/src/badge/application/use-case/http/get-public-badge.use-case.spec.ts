@@ -35,12 +35,12 @@ describe("GetPublicBadgeUseCase", () => {
 
     // Given: asset cache가 string | null contract 중 빈 문자열을 반환한다.
     // When: public badge를 조회한다.
-    const svg = await useCase.execute({ slug: "empty-cache" });
+    const svg = await useCase.execute({ slug: "aabbccddeeff" });
 
     // Then: falsy 문자열도 명시적인 cache hit로 처리하고 DB lookup으로 넘어가지 않는다.
     expect(svg).toBe("");
     expect(badgeAssetService.readPublicBadge).toHaveBeenCalledWith({
-      slug: "empty-cache",
+      slug: "aabbccddeeff",
       variant: "full",
     });
     expect(queryBus.execute).not.toHaveBeenCalled();
@@ -55,7 +55,7 @@ describe("GetPublicBadgeUseCase", () => {
     const badgeAssetService = new BadgeAssetService();
 
     const record = repository.upsert({
-      programmerHandle: "coder-01",
+      programmerId: "coder-01",
       displayName: "Coder 01",
       solvedCount: 128,
       solvedTotal: 250,

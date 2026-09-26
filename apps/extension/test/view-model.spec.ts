@@ -29,7 +29,6 @@ describe("getPopupViewModel", () => {
           "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
           "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-        programmerHandle: "programmers-user",
         displayName: "Programmers User",
         solvedCount: 100,
         solvedTotal: 300,
@@ -44,7 +43,6 @@ describe("getPopupViewModel", () => {
     expect(viewModel.statusTone).toBe("success");
     expect(viewModel.title).toBe("배지 반영 완료");
     expect(viewModel.summaryTitle).toBe("Programmers User");
-    expect(viewModel.summarySubtitle).toBe("@programmers-user");
     expect(viewModel.badgePreviewOptions).toEqual([
       {
         key: "standard",
@@ -127,7 +125,6 @@ describe("getPopupViewModel", () => {
           "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
           "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-        programmerHandle: "JH8459",
         displayName: "JH8459",
         solvedCount: 100,
         solvedTotal: 300,
@@ -140,7 +137,6 @@ describe("getPopupViewModel", () => {
     });
 
     expect(viewModel.summaryTitle).toBe("JH8459");
-    expect(viewModel.summarySubtitle).toBeUndefined();
     expect(viewModel.summaryItems).toHaveLength(4);
   });
 

@@ -10,7 +10,7 @@ export class ErrorResponseDto {
 
   @ApiProperty({
     type: String,
-    example: "programmerHandle: Too small: expected string to have >=1 characters",
+    example: "programmerId: Too small: expected string to have >=1 characters",
     description: "Error message returned by Nest exception filters.",
   })
   readonly message!: string;

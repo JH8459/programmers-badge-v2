@@ -40,7 +40,7 @@ describe("setupApiHttpApplication", () => {
         prefix: "/badge/",
         etag: true,
         lastModified: true,
-        maxAge: "5m",
+        maxAge: 0,
       })
     );
     expect(app.setGlobalPrefix).toHaveBeenCalledWith("api");
@@ -58,7 +58,7 @@ describe("setupApiHttpApplication", () => {
     expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "image/svg+xml");
     expect(response.setHeader).toHaveBeenCalledWith(
       "Cache-Control",
-      "public, no-cache, must-revalidate"
+      "public, max-age=0, must-revalidate"
     );
 
     const corsOptions = vi.mocked(app.enableCors).mock.calls[0]?.[0] as {

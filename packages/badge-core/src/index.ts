@@ -52,6 +52,27 @@ const clampSkillLevel = (skillLevel: number): number => {
 const getBadgeColor = (skillLevel: number): BadgeColor =>
   BADGE_COLORS[clampSkillLevel(skillLevel)] ?? DEFAULT_BADGE_COLOR;
 
+const escapeXmlText = (value: string): string =>
+  Array.from(value)
+    .filter((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+
+      return (
+        codePoint === 0x9 ||
+        codePoint === 0xa ||
+        codePoint === 0xd ||
+        (codePoint >= 0x20 && codePoint <= 0xd7ff) ||
+        (codePoint >= 0xe000 && codePoint <= 0xfffd) ||
+        (codePoint >= 0x10000 && codePoint <= 0x10ffff)
+      );
+    })
+    .join("")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&apos;");
+
 export const renderBadgeSvg = (userData: BadgeUserData): string => {
   const colors = getBadgeColor(userData.skillCheck?.level ?? 0);
 
@@ -146,7 +167,7 @@ export const renderBadgeSvg = (userData: BadgeUserData): string => {
 
             <text text-anchor="middle" dominant-baseline="middle" x="66.5" y="95" class="title_no" style="fill:#ffffff;">${userData.skillCheck?.level ?? 0}</text>
 
-            <text text-anchor="start" x="160" y="55" class="title_id" style="fill:#ffffff;">${userData.name}</text>
+            <text text-anchor="start" x="160" y="55" class="title_id" style="fill:#ffffff;">${escapeXmlText(userData.name)}</text>
         </g>
 
         <g class="group">

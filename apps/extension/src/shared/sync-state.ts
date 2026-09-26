@@ -12,7 +12,16 @@ export interface ExtensionSyncState {
   status: ExtensionSyncStatus;
   message: string;
   lastSync: BadgeSyncResponse | null;
+  legacyProgrammerHandle?: string;
 }
+
+export interface ExtensionSettings {
+  autoSyncEnabled: boolean;
+}
+
+export const DEFAULT_EXTENSION_SETTINGS: ExtensionSettings = {
+  autoSyncEnabled: true,
+};
 
 export interface AutoSyncTriggerMessage {
   type: "trigger-auto-sync";
@@ -22,6 +31,8 @@ export interface AutoSyncTriggerMessage {
 
 export type ExtensionMessage =
   | { type: "get-sync-state" }
+  | { type: "get-extension-settings" }
+  | { type: "set-auto-sync-enabled"; enabled: boolean }
   | { type: "start-sync" }
   | AutoSyncTriggerMessage;
 

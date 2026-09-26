@@ -17,13 +17,12 @@ export const setupApiHttpApplication = ({
     prefix: `${runtimeConfig.publicBadgePathPrefix}/`,
     etag: true,
     lastModified: true,
-    maxAge: "5m",
+    maxAge: 0,
     setHeaders(response, filePath) {
       if (filePath.endsWith(".svg")) {
         response.setHeader("Content-Type", "image/svg+xml");
+        response.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
       }
-
-      response.setHeader("Cache-Control", "public, no-cache, must-revalidate");
     },
   });
   app.setGlobalPrefix("api");

@@ -42,7 +42,7 @@ describe("SyncBadgeUseCase", () => {
     try {
       const response = await useCase.execute({
         payload: {
-          programmerHandle: "  sync-user  ",
+          programmerId: "  sync-user  ",
           displayName: "  Sync User  ",
           solvedCount: 32,
           solvedTotal: 120,
@@ -66,7 +66,7 @@ describe("SyncBadgeUseCase", () => {
       expect(response.displayName).toBe("Sync User");
       expect(response.rankingScore).toBe(5820);
 
-      const savedRecord = repository.findByProgrammerHandle({ programmerHandle: "sync-user" });
+      const savedRecord = repository.findByProgrammerId({ programmerId: "sync-user" });
       expect(savedRecord).not.toBeNull();
       expect(savedRecord?.displayName).toBe("Sync User");
       expect(savedRecord?.badgeTier).toBe("intermediate");

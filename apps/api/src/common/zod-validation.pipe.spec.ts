@@ -10,7 +10,7 @@ describe("ZodValidationPipe", () => {
 
     expect(
       pipe.transform({
-        programmerHandle: "  sync-user  ",
+        programmerId: "  sync-user  ",
         displayName: "  Sync User  ",
         solvedCount: 10,
         solvedTotal: 20,
@@ -21,7 +21,7 @@ describe("ZodValidationPipe", () => {
         syncedAt: "2026-04-07T01:02:03.000Z",
       })
     ).toMatchObject({
-      programmerHandle: "sync-user",
+      programmerId: "sync-user",
       displayName: "Sync User",
     });
   });
@@ -31,7 +31,7 @@ describe("ZodValidationPipe", () => {
 
     expect(() =>
       pipe.transform({
-        programmerHandle: "sync-user",
+        programmerId: "sync-user",
         displayName: "Sync User",
         solvedCount: 10,
         solvedTotal: 20,

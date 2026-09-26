@@ -7,7 +7,7 @@ import { badgeTierSchema, type BadgeSyncPayload } from "@programmers-badge/share
 import { DatabaseService } from "./database.service";
 
 export interface BadgeProfileRecord {
-  programmerHandle: string;
+  programmerId: string;
   displayName: string;
   publicSlug: string;
   solvedCount: number;
@@ -30,6 +30,8 @@ const publicSlugRowSchema = z
 const badgeProfileRowSchema = z
   .object({
     programmer_handle: z.string(),
+    programmer_id: z.string(),
+    identity_source: z.enum(["legacy", "stable"]),
     display_name: z.string(),
     public_slug: z.string(),
     solved_count: z.number(),
@@ -46,12 +48,26 @@ const badgeProfileRowSchema = z
 
 type BadgeProfileRow = z.infer<typeof badgeProfileRowSchema>;
 
-interface FindByProgrammerHandleInput {
-  programmerHandle: string;
+interface FindByProgrammerIdInput {
+  programmerId: string;
 }
 
 interface FindByPublicSlugInput {
   publicSlug: string;
+}
+
+interface FindLegacyByDisplayNameInput {
+  displayName: string;
+}
+
+interface FindLegacyByHandleInput {
+  legacyProgrammerHandle: string;
+}
+
+interface UpdateExistingProfileInput {
+  existingRecord: BadgeProfileRow;
+  payload: BadgeSyncPayload;
+  updatedAt: string;
 }
 
 @Injectable()
@@ -60,7 +76,7 @@ export class BadgeProfileRepository {
 
   private mapRow(row: BadgeProfileRow): BadgeProfileRecord {
     return {
-      programmerHandle: row.programmer_handle,
+      programmerId: row.programmer_id,
       displayName: row.display_name,
       publicSlug: row.public_slug,
       solvedCount: row.solved_count,
@@ -98,63 +114,24 @@ export class BadgeProfileRepository {
     }
   }
 
-  upsert(payload: BadgeSyncPayload): BadgeProfileRecord {
+  private getUniqueInternalHandle(): string {
     const database = this.databaseService.getConnection();
-    const existingRecord = this.getByProgrammerHandle({
-      programmerHandle: payload.programmerHandle,
-    });
 
-    const now = new Date().toISOString();
-    const publicSlug = existingRecord?.public_slug ?? this.getUniquePublicSlug();
-    const createdAt = existingRecord?.created_at ?? now;
+    while (true) {
+      const candidateHandle = `stable:${randomBytes(12).toString("hex")}`;
+      const existing = database
+        .prepare("SELECT programmer_handle FROM badge_profiles WHERE programmer_handle = ?")
+        .get(candidateHandle);
 
-    database
-      .prepare(
-        [
-          "INSERT INTO badge_profiles(",
-          "  programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
-          ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-          "ON CONFLICT(programmer_handle) DO UPDATE SET",
-          "  display_name = excluded.display_name,",
-          "  solved_count = excluded.solved_count,",
-          "  solved_total = excluded.solved_total,",
-          "  skill_level = excluded.skill_level,",
-          "  ranking_score = excluded.ranking_score,",
-          "  ranking_rank = excluded.ranking_rank,",
-          "  badge_tier = excluded.badge_tier,",
-          "  source_synced_at = excluded.source_synced_at,",
-          "  updated_at = excluded.updated_at",
-        ].join(" ")
-      )
-      .run(
-        payload.programmerHandle,
-        payload.displayName,
-        publicSlug,
-        payload.solvedCount,
-        payload.solvedTotal,
-        payload.skillLevel,
-        payload.rankingScore,
-        payload.rankingRank,
-        payload.badgeTier,
-        payload.syncedAt,
-        createdAt,
-        now
-      );
-
-    const savedRecord = this.findByProgrammerHandle({
-      programmerHandle: payload.programmerHandle,
-    });
-
-    if (!savedRecord) {
-      throw new Error("Badge profile was not persisted.");
+      if (!existing) {
+        return candidateHandle;
+      }
     }
-
-    return savedRecord;
   }
 
-  private getByProgrammerHandle({
-    programmerHandle,
-  }: FindByProgrammerHandleInput): BadgeProfileRow | undefined {
+  private getRowByProgrammerId({ programmerId }: FindByProgrammerIdInput):
+    | BadgeProfileRow
+    | undefined {
     return badgeProfileRowSchema
       .optional()
       .parse(
@@ -162,17 +139,207 @@ export class BadgeProfileRepository {
           .getConnection()
           .prepare(
             [
-              "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "SELECT programmer_handle, programmer_id, identity_source, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
               "FROM badge_profiles",
-              "WHERE programmer_handle = ?",
+              "WHERE programmer_id = ?",
             ].join(" ")
           )
-          .get(programmerHandle)
+          .get(programmerId)
       );
   }
 
-  findByProgrammerHandle(input: FindByProgrammerHandleInput): BadgeProfileRecord | null {
-    const row = this.getByProgrammerHandle(input);
+  private getUniqueLegacyRowByDisplayName({ displayName }: FindLegacyByDisplayNameInput):
+    | BadgeProfileRow
+    | undefined {
+    const rows = z
+      .array(badgeProfileRowSchema)
+      .parse(
+        this.databaseService
+          .getConnection()
+          .prepare(
+            [
+              "SELECT programmer_handle, programmer_id, identity_source, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "FROM badge_profiles",
+              "WHERE identity_source = 'legacy' AND display_name = ?",
+            ].join(" ")
+          )
+          .all(displayName)
+      );
+
+    return rows.length === 1 ? rows[0] : undefined;
+  }
+
+  private getLegacyRowByHandle({ legacyProgrammerHandle }: FindLegacyByHandleInput):
+    | BadgeProfileRow
+    | undefined {
+    return badgeProfileRowSchema
+      .optional()
+      .parse(
+        this.databaseService
+          .getConnection()
+          .prepare(
+            [
+              "SELECT programmer_handle, programmer_id, identity_source, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "FROM badge_profiles",
+              "WHERE programmer_handle = ? AND identity_source = 'legacy'",
+            ].join(" ")
+          )
+          .get(legacyProgrammerHandle)
+      );
+  }
+
+  private isOlderSnapshot({ existingRecord, payload }: UpdateExistingProfileInput): boolean {
+    const storedTimestamp = Date.parse(existingRecord.source_synced_at);
+    const incomingTimestamp = Date.parse(payload.syncedAt);
+
+    return Number.isFinite(storedTimestamp) && incomingTimestamp < storedTimestamp;
+  }
+
+  private updateExistingProfile({
+    existingRecord,
+    payload,
+    updatedAt,
+  }: UpdateExistingProfileInput): void {
+    this.databaseService
+      .getConnection()
+      .prepare(
+        [
+          "UPDATE badge_profiles SET",
+          "  programmer_id = ?,",
+          "  identity_source = 'stable',",
+          "  display_name = ?,",
+          "  solved_count = ?,",
+          "  solved_total = ?,",
+          "  skill_level = ?,",
+          "  ranking_score = ?,",
+          "  ranking_rank = ?,",
+          "  badge_tier = ?,",
+          "  source_synced_at = ?,",
+          "  updated_at = ?",
+          "WHERE programmer_handle = ?",
+        ].join(" ")
+      )
+      .run(
+        payload.programmerId,
+        payload.displayName,
+        payload.solvedCount,
+        payload.solvedTotal,
+        payload.skillLevel,
+        payload.rankingScore,
+        payload.rankingRank,
+        payload.badgeTier,
+        payload.syncedAt,
+        updatedAt,
+        existingRecord.programmer_handle
+      );
+  }
+
+  private adoptLegacyIdentity({
+    existingRecord,
+    programmerId,
+    updatedAt,
+  }: {
+    existingRecord: BadgeProfileRow;
+    programmerId: string;
+    updatedAt: string;
+  }): void {
+    this.databaseService
+      .getConnection()
+      .prepare(
+        [
+          "UPDATE badge_profiles SET",
+          "  programmer_id = ?,",
+          "  identity_source = 'stable',",
+          "  updated_at = ?",
+          "WHERE programmer_handle = ?",
+        ].join(" ")
+      )
+      .run(programmerId, updatedAt, existingRecord.programmer_handle);
+  }
+
+  upsert(payload: BadgeSyncPayload): BadgeProfileRecord {
+    const database = this.databaseService.getConnection();
+    const stableRecord = this.getRowByProgrammerId({ programmerId: payload.programmerId });
+    const legacyRecord = stableRecord
+      ? undefined
+      : payload.legacyProgrammerHandle
+        ? this.getLegacyRowByHandle({ legacyProgrammerHandle: payload.legacyProgrammerHandle })
+        : this.getUniqueLegacyRowByDisplayName({ displayName: payload.displayName });
+    const existingRecord = stableRecord ?? legacyRecord;
+    const now = new Date().toISOString();
+
+    if (existingRecord && this.isOlderSnapshot({ existingRecord, payload, updatedAt: now })) {
+      if (existingRecord.identity_source === "legacy") {
+        this.adoptLegacyIdentity({
+          existingRecord,
+          programmerId: payload.programmerId,
+          updatedAt: now,
+        });
+        const adoptedRecord = this.getRowByProgrammerId({ programmerId: payload.programmerId });
+
+        if (!adoptedRecord) {
+          throw new Error("Legacy badge profile identity was not migrated.");
+        }
+
+        return this.mapRow(adoptedRecord);
+      }
+
+      return this.mapRow(existingRecord);
+    }
+
+    if (existingRecord) {
+      this.updateExistingProfile({ existingRecord, payload, updatedAt: now });
+    } else {
+      const internalHandle = this.getUniqueInternalHandle();
+      const publicSlug = this.getUniquePublicSlug();
+
+      database
+        .prepare(
+          [
+            "INSERT INTO badge_profiles(",
+            "  programmer_handle, programmer_id, identity_source, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+            ") VALUES (?, ?, 'stable', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "ON CONFLICT(programmer_id) DO UPDATE SET",
+            "  display_name = excluded.display_name,",
+            "  solved_count = excluded.solved_count,",
+            "  solved_total = excluded.solved_total,",
+            "  skill_level = excluded.skill_level,",
+            "  ranking_score = excluded.ranking_score,",
+            "  ranking_rank = excluded.ranking_rank,",
+            "  badge_tier = excluded.badge_tier,",
+            "  source_synced_at = excluded.source_synced_at,",
+            "  updated_at = excluded.updated_at",
+            "WHERE excluded.source_synced_at > badge_profiles.source_synced_at",
+          ].join(" ")
+        )
+        .run(
+          internalHandle,
+          payload.programmerId,
+          payload.displayName,
+          publicSlug,
+          payload.solvedCount,
+          payload.solvedTotal,
+          payload.skillLevel,
+          payload.rankingScore,
+          payload.rankingRank,
+          payload.badgeTier,
+          payload.syncedAt,
+          now,
+          now
+        );
+    }
+
+    const savedRecord = this.getRowByProgrammerId({ programmerId: payload.programmerId });
+
+    if (!savedRecord) {
+      throw new Error("Badge profile was not persisted.");
+    }
+
+    return this.mapRow(savedRecord);
+  }
+
+  findByProgrammerId({ programmerId }: FindByProgrammerIdInput): BadgeProfileRecord | null {
+    const row = this.getRowByProgrammerId({ programmerId });
 
     return row ? this.mapRow(row) : null;
   }
@@ -185,7 +352,7 @@ export class BadgeProfileRepository {
           .getConnection()
           .prepare(
             [
-              "SELECT programmer_handle, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
+              "SELECT programmer_handle, programmer_id, identity_source, display_name, public_slug, solved_count, solved_total, skill_level, ranking_score, ranking_rank, badge_tier, source_synced_at, created_at, updated_at",
               "FROM badge_profiles",
               "WHERE public_slug = ?",
             ].join(" ")

@@ -15,23 +15,23 @@ describe("SyncBadgeCommandHandler", () => {
       const record = await handler.execute(
         new SyncBadgeCommand({
           payload: {
-            programmerHandle: "  command-user  ",
+            programmerId: "  command-user  ",
             displayName: "  Command User  ",
             solvedCount: 20,
             solvedTotal: 100,
             skillLevel: 2,
             rankingScore: 1_200,
             rankingRank: 15,
-            badgeTier: "starter",
+            badgeTier: "intermediate",
             syncedAt: "2026-04-07T01:02:03.000Z",
           },
         })
       );
 
       expect(record.publicSlug).toHaveLength(12);
-      expect(record.programmerHandle).toBe("command-user");
+      expect(record.programmerId).toBe("command-user");
       expect(record.displayName).toBe("Command User");
-      expect(repository.findByProgrammerHandle({ programmerHandle: "command-user" })).toEqual(
+      expect(repository.findByProgrammerId({ programmerId: "command-user" })).toEqual(
         record
       );
     } finally {
@@ -49,7 +49,7 @@ describe("SyncBadgeCommandHandler", () => {
         handler.execute(
           new SyncBadgeCommand({
             payload: {
-              programmerHandle: "invalid-command-user",
+              programmerId: "invalid-command-user",
               displayName: "Invalid Command User",
               solvedCount: 20,
               solvedTotal: 100,
@@ -63,7 +63,7 @@ describe("SyncBadgeCommandHandler", () => {
         )
       ).rejects.toThrow();
       expect(
-        repository.findByProgrammerHandle({ programmerHandle: "invalid-command-user" })
+        repository.findByProgrammerId({ programmerId: "invalid-command-user" })
       ).toBeNull();
     } finally {
       databaseService.onModuleDestroy();

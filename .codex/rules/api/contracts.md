@@ -3,7 +3,12 @@
 ## Endpoint Defaults
 
 - sync 응답은 `BadgeSyncResponse`를 반환한다.
+- sync request는 안정적인 Programmers 계정 ID와 검증된 전체 통계 snapshot을 받는다. 기존 확장 프로그램에서 넘어오는 `legacyProgrammerHandle`은 이전 public slug를 한 번 이어받는 데만 사용한다.
+- sync 응답에는 내부 계정 ID를 포함하지 않는다.
 - public badge는 full SVG와 mini SVG를 제공한다.
+- malformed slug와 미등록 slug는 같은 404 메시지를 반환한다.
+- `/api/sync`는 client IP별 분당 30회로 제한하고 `Retry-After`를 반환한다.
+- API badge route는 일치하는 `ETag`에 304를 반환한다. 정적 badge URL은 `ETag`와 `Cache-Control: public, max-age=0, must-revalidate`를 제공한다.
 - health endpoint는 minimal readiness 확인용이다.
 - Swagger 문서는 `ENABLE_SWAGGER=true`일 때 `/api/docs`와 `/api/docs-json`으로 제공하고, HTTP Basic Auth를 요구한다.
 - public legal/privacy page는 web이 소유하며 API는 `/privacy`를 서빙하지 않는다.
@@ -18,6 +23,7 @@
 - CORS web origin은 `ALLOWED_WEB_ORIGINS` env의 comma-separated origin list를 기준으로 허용한다.
 - local development에서만 `ALLOW_LOCALHOST_ORIGINS=true`로 explicit port가 있는 `http://localhost:*`, `http://127.0.0.1:*` origin을 허용한다.
 - public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
+- solved count는 total을 넘을 수 없고, badge tier는 skill level에서 계산한 값과 일치해야 한다.
 - CORS 변경 시 localhost 개발 흐름과 extension origin 허용 범위를 함께 검토한다.
 
 ## When Editing
