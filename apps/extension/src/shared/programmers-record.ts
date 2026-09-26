@@ -1,98 +1,95 @@
 import {
+  getBadgeTierFromSkillLevel,
   parseBadgeSyncPayload,
   type BadgeSyncPayload,
-  type BadgeTier,
 } from "@programmers-badge/shared-types";
 import { z } from "zod";
 
-// 외부 API 응답은 필드가 더 붙을 수 있으므로 필요한 값만 느슨하게 검증한다.
-export const programmersRecordSchema = z.looseObject({
-  name: z.string().optional(),
-  skillCheck: z
-    .looseObject({
-      level: z.number().finite().optional(),
-    })
-    .optional(),
-  ranking: z
-    .looseObject({
-      score: z.number().finite().optional(),
-      rank: z.number().finite().optional(),
-    })
-    .optional(),
-  codingTest: z
-    .looseObject({
-      solved: z.number().finite().optional(),
-      total: z.number().finite().optional(),
-    })
-    .optional(),
-});
+const programmerIdSchema = z.union([
+  z.string().trim().min(1),
+  z.number().int().nonnegative().transform(String),
+]);
+
+// upstream 필드는 늘 수 있지만, badge snapshot에 필요한 값은 전부 필수로 검증한다.
+export const programmersRecordSchema = z
+  .looseObject({
+    id: programmerIdSchema.optional(),
+    userId: programmerIdSchema.optional(),
+    user_id: programmerIdSchema.optional(),
+    programmerId: programmerIdSchema.optional(),
+    programmer_id: programmerIdSchema.optional(),
+    user: z.looseObject({ id: programmerIdSchema }).optional(),
+    name: z.string().trim().min(1),
+    skillCheck: z.looseObject({
+      level: z.number().int().nonnegative(),
+    }),
+    ranking: z.looseObject({
+      score: z.number().int().nonnegative(),
+      rank: z.number().int().positive(),
+    }),
+    codingTest: z.looseObject({
+      solved: z.number().int().nonnegative(),
+      total: z.number().int().nonnegative(),
+    }),
+  })
+  .refine(
+    ({ id, userId, user_id, programmerId, programmer_id, user }) =>
+      id !== undefined ||
+      userId !== undefined ||
+      user_id !== undefined ||
+      programmerId !== undefined ||
+      programmer_id !== undefined ||
+      user?.id !== undefined,
+    {
+      path: ["id"],
+      message: "Programmers user identifier is required.",
+    }
+  )
+  .refine(({ codingTest }) => codingTest.solved <= codingTest.total, {
+    path: ["codingTest", "total"],
+    message: "Solved problem count cannot exceed the total problem count.",
+  });
 
 export type ProgrammersRecord = z.infer<typeof programmersRecordSchema>;
 
 export const parseProgrammersRecord = (input: unknown): ProgrammersRecord =>
   programmersRecordSchema.parse(input);
 
-interface NonNegativeIntegerInput {
-  value: number | undefined;
-  fallback?: number;
-}
-
 interface BadgeSyncPayloadInput {
   input: ProgrammersRecord;
   syncedAt?: string;
+  legacyProgrammerHandle?: string;
 }
-
-const toNonNegativeInteger = ({ value, fallback = 0 }: NonNegativeIntegerInput): number => {
-  if (!Number.isFinite(value)) {
-    return fallback;
-  }
-
-  return Math.max(0, Math.trunc(value ?? fallback));
-};
-
-export const getBadgeTierFromSkillLevel = (skillLevel: number): BadgeTier => {
-  if (skillLevel >= 4) {
-    return "advanced";
-  }
-
-  if (skillLevel >= 2) {
-    return "intermediate";
-  }
-
-  return "starter";
-};
 
 export const toBadgeSyncPayload = ({
   input,
   syncedAt = new Date().toISOString(),
+  legacyProgrammerHandle,
 }: BadgeSyncPayloadInput): BadgeSyncPayload => {
   const record = parseProgrammersRecord(input);
-  const displayName = record.name?.trim();
+  const programmerId =
+    record.userId ??
+    record.user_id ??
+    record.programmerId ??
+    record.programmer_id ??
+    record.user?.id ??
+    record.id;
 
-  if (!displayName) {
-    throw new Error("Programmers 프로필 이름을 확인하지 못했습니다.");
+  if (!programmerId) {
+    throw new Error("Programmers 사용자 식별 정보를 확인하지 못했습니다.");
   }
 
-  const solvedCount = toNonNegativeInteger({ value: record.codingTest?.solved });
-  const solvedTotal = toNonNegativeInteger({
-    value: record.codingTest?.total,
-    fallback: solvedCount,
-  });
-  const skillLevel = toNonNegativeInteger({ value: record.skillCheck?.level });
-  const rankingScore = toNonNegativeInteger({ value: record.ranking?.score });
-  const rankingRank = Math.max(
-    1,
-    toNonNegativeInteger({ value: record.ranking?.rank, fallback: 1 })
-  );
+  const skillLevel = record.skillCheck.level;
 
   return parseBadgeSyncPayload({
-    programmerHandle: displayName,
-    displayName,
-    solvedCount,
-    solvedTotal,
+    programmerId,
+    ...(legacyProgrammerHandle ? { legacyProgrammerHandle } : {}),
+    displayName: record.name,
+    solvedCount: record.codingTest.solved,
+    solvedTotal: record.codingTest.total,
     skillLevel,
-    rankingScore,
-    rankingRank,
+    rankingScore: record.ranking.score,
+    rankingRank: record.ranking.rank,
     badgeTier: getBadgeTierFromSkillLevel(skillLevel),
     syncedAt,
   });

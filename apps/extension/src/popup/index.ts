@@ -1,9 +1,12 @@
 import {
   createIdleSyncState,
+  DEFAULT_EXTENSION_SETTINGS,
   type ExtensionMessage,
+  type ExtensionSettings,
   type ExtensionSyncState,
 } from "../shared/sync-state.js";
-import { getPopupViewModel, type BadgePreviewVariant } from "./view-model.js";
+import { getPopupViewModel } from "./view-model.js";
+import type { BadgePreviewVariant } from "./view-model.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 
@@ -11,9 +14,9 @@ if (!root) {
   throw new Error("Popup root element was not found.");
 }
 
-const sendMessage = async (message: ExtensionMessage): Promise<ExtensionSyncState> =>
-  new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response: ExtensionSyncState) => {
+const sendMessage = async <Response>(message: ExtensionMessage): Promise<Response> =>
+  new Promise<Response>((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response: Response) => {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
         return;
@@ -24,6 +27,7 @@ const sendMessage = async (message: ExtensionMessage): Promise<ExtensionSyncStat
   });
 
 let currentState = createIdleSyncState();
+let currentSettings: ExtensionSettings = DEFAULT_EXTENSION_SETTINGS;
 let selectedPreviewVariant: BadgePreviewVariant = "standard";
 
 const escapeHtml = (value: string): string =>
@@ -49,6 +53,14 @@ const render = (): void => {
     viewModel.badgePreviewOptions.find((option) => option.key === selectedPreviewVariant) ??
     viewModel.badgePreviewOptions[0];
   const selectedCopyItems = selectedPreviewOption?.copyItems ?? [];
+  const lastSyncTime = currentState.lastSync
+    ? new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium", timeStyle: "short" }).format(
+        new Date(currentState.lastSync.syncedAt)
+      )
+    : undefined;
+  const lastSyncMarkup = currentState.lastSync
+    ? `<p class="last-sync">마지막 동기화: ${escapeHtml(lastSyncTime ?? "")}</p>`
+    : `<p class="last-sync">마지막 동기화 기록이 없습니다.</p>`;
   const previewToggleMarkup =
     viewModel.badgePreviewOptions.length > 1
       ? `
@@ -148,6 +160,20 @@ const render = (): void => {
         <p class="description">${escapeHtml(viewModel.description)}</p>
       </header>
       <button type="button" class="primary-button" ${viewModel.actionDisabled ? "disabled" : ""}>${escapeHtml(viewModel.actionLabel)}</button>
+      <section class="settings-panel" aria-label="동기화 설정">
+        <label class="auto-sync-setting">
+          <span class="auto-sync-copy">
+            <strong>자동 동기화</strong>
+            <span>문제를 푼 뒤 배지를 자동으로 갱신합니다.</span>
+          </span>
+          <input
+            type="checkbox"
+            class="auto-sync-toggle"
+            ${currentSettings.autoSyncEnabled ? "checked" : ""}
+          />
+        </label>
+        ${lastSyncMarkup}
+      </section>
       ${summaryMarkup}
       ${copyMarkup}
     </section>
@@ -155,6 +181,16 @@ const render = (): void => {
 
   root.querySelector<HTMLButtonElement>(".primary-button")?.addEventListener("click", () => {
     void runSync();
+  });
+
+  root.querySelector<HTMLInputElement>(".auto-sync-toggle")?.addEventListener("change", (event) => {
+    const enabled = (event.currentTarget as HTMLInputElement).checked;
+    currentSettings = { autoSyncEnabled: enabled };
+    render();
+    void sendMessage<ExtensionSettings>({ type: "set-auto-sync-enabled", enabled }).catch(() => {
+      currentSettings = { autoSyncEnabled: !enabled };
+      render();
+    });
   });
 
   root.querySelectorAll<HTMLButtonElement>("[data-copy-key]").forEach((buttonElement) => {
@@ -187,7 +223,7 @@ const runSync = async (): Promise<void> => {
   render();
 
   try {
-    currentState = await sendMessage({ type: "start-sync" });
+    currentState = await sendMessage<ExtensionSyncState>({ type: "start-sync" });
     selectedPreviewVariant = "standard";
   } catch (error) {
     currentState = {
@@ -202,9 +238,15 @@ const runSync = async (): Promise<void> => {
 
 const initialize = async (): Promise<void> => {
   try {
-    currentState = await sendMessage({ type: "get-sync-state" });
+    const [state, settings] = await Promise.all([
+      sendMessage<ExtensionSyncState>({ type: "get-sync-state" }),
+      sendMessage<ExtensionSettings>({ type: "get-extension-settings" }),
+    ]);
+    currentState = state;
+    currentSettings = settings;
   } catch {
     currentState = createIdleSyncState();
+    currentSettings = DEFAULT_EXTENSION_SETTINGS;
   }
 
   render();

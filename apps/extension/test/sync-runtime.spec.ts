@@ -51,7 +51,6 @@ describe("sync runtime", () => {
         "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
       miniMarkdownSnippet:
         "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-      programmerHandle: "programmers-user",
       displayName: "Programmers User",
       solvedCount: 123,
       solvedTotal: 456,
@@ -65,6 +64,7 @@ describe("sync runtime", () => {
       ok: true,
       status: 200,
       json: async () => ({
+        id: 83164003,
         name: "Programmers User",
         skillCheck: { level: 3 },
         ranking: { score: 9876, rank: 12 },
@@ -126,7 +126,7 @@ describe("sync runtime", () => {
   });
 
   it("syncs a provided tab id without relying on the active tab query", async () => {
-    const nextState = await performSyncForTab(77);
+    const nextState = await performSyncForTab({ tabId: 77 });
 
     expect(globalThis.chrome.tabs.get).toHaveBeenCalledWith(77);
     expect(globalThis.chrome.tabs.query).not.toHaveBeenCalled();
@@ -161,20 +161,76 @@ describe("sync runtime", () => {
     expect(nextState.lastSync?.displayName).toBe("Programmers User");
   });
 
+  it("sends a legacy handle during the one-time public slug migration", async () => {
+    const nextState = await performSyncForTab({
+      tabId: 77,
+      legacyProgrammerHandle: "old-programmers-name",
+    });
+
+    expect(nextState.status).toBe("success");
+    expect(mockedSyncBadgePayload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        programmerId: "83164003",
+        legacyProgrammerHandle: "old-programmers-name",
+      })
+    );
+  });
+
+  it("retries transient upstream failures before syncing refreshed data", async () => {
+    mockedFetch
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 83164003,
+          name: "Programmers User",
+          skillCheck: { level: 3 },
+          ranking: { score: 9876, rank: 12 },
+          codingTest: { solved: 123, total: 456 },
+        }),
+      });
+
+    const nextState = await performSyncForTab({ tabId: 77 });
+
+    expect(nextState.status).toBe("success");
+    expect(mockedFetch).toHaveBeenCalledTimes(2);
+    expect(globalThis.chrome.scripting.executeScript).toHaveBeenCalledTimes(2);
+    expect(mockedSyncBadgePayload).toHaveBeenCalledTimes(1);
+  });
+
   it("treats an invalid external record as a sync error after the page-context fetch returns", async () => {
     mockedFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({
+        id: 83164003,
         name: "Programmers User",
         skillCheck: { level: "bad" },
       }),
     });
 
-    const nextState = await performSyncForTab(77);
+    const nextState = await performSyncForTab({ tabId: 77 });
 
     expect(nextState.status).toBe("error");
-    expect(nextState.message).toBe("Programmers 기록 형식을 확인하지 못했습니다.");
+    expect(nextState.message).toContain("필수 항목(skillCheck.level)");
+    expect(mockedSyncBadgePayload).not.toHaveBeenCalled();
+  });
+
+  it("does not retry or sync a malformed JSON upstream response", async () => {
+    mockedFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new SyntaxError("Unexpected token");
+      },
+    });
+
+    const nextState = await performSyncForTab({ tabId: 77 });
+
+    expect(nextState.status).toBe("error");
+    expect(nextState.message).toBe("Programmers 기록 응답이 올바른 JSON 형식이 아닙니다.");
+    expect(mockedFetch).toHaveBeenCalledTimes(1);
     expect(mockedSyncBadgePayload).not.toHaveBeenCalled();
   });
 });

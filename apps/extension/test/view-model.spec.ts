@@ -29,7 +29,6 @@ describe("getPopupViewModel", () => {
           "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
           "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-        programmerHandle: "programmers-user",
         displayName: "Programmers User",
         solvedCount: 100,
         solvedTotal: 300,
@@ -127,7 +126,6 @@ describe("getPopupViewModel", () => {
           "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
           "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-        programmerHandle: "JH8459",
         displayName: "JH8459",
         solvedCount: 100,
         solvedTotal: 300,

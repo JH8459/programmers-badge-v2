@@ -167,6 +167,47 @@ h1 {
   box-shadow: none;
 }
 
+.settings-panel {
+  display: grid;
+  gap: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.auto-sync-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.auto-sync-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.auto-sync-copy strong {
+  font-size: 12px;
+}
+
+.auto-sync-copy span,
+.last-sync {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.auto-sync-toggle {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
 .panel {
   display: grid;
   gap: var(--space-4);

@@ -2,7 +2,11 @@ import { z } from "zod";
 
 import { createNonEmptyArraySchema, definedValueSchema } from "@programmers-badge/shared-types";
 
-import { parseProgrammersRecord, toBadgeSyncPayload, type ProgrammersRecord } from "../shared/programmers-record.js";
+import {
+  parseProgrammersRecord,
+  toBadgeSyncPayload,
+  type ProgrammersRecord,
+} from "../shared/programmers-record.js";
 import { createIdleSyncState, type ExtensionSyncState } from "../shared/sync-state.js";
 import { EXTENSION_API_HOST, syncBadgePayload } from "./api-client.js";
 
@@ -10,6 +14,7 @@ const PROGRAMMERS_HOST = "programmers.co.kr";
 const PROGRAMMERS_RECORD_URL = `https://${PROGRAMMERS_HOST}/api/v1/users/record`;
 const DEFAULT_AUTO_SYNC_COOLDOWN_MS = 15_000;
 const DEFAULT_AUTO_SYNC_MAX_ENTRIES = 128;
+const COLLECTION_RETRY_DELAYS_MS = [300, 900] as const;
 
 type CollectionResult =
   | {
@@ -20,6 +25,7 @@ type CollectionResult =
       ok: false;
       reason: "not-logged-in" | "request-failed";
       message: string;
+      retryable: boolean;
     };
 
 type InjectedCollectionResult =
@@ -41,6 +47,7 @@ const injectedCollectionResultSchema = z.discriminatedUnion("ok", [
       ok: z.literal(false),
       reason: z.enum(["not-logged-in", "request-failed"]),
       message: z.string().min(1),
+      retryable: z.boolean(),
     })
     .passthrough(),
 ]);
@@ -75,6 +82,16 @@ interface CollectRecordFromTabInput {
 interface PerformSyncForResolvedTabInput {
   tabId: number;
   tabUrl: string | undefined;
+  legacyProgrammerHandle?: string;
+}
+
+interface PerformSyncForTabInput {
+  tabId: number;
+  legacyProgrammerHandle?: string;
+}
+
+interface PerformSyncForActiveTabInput {
+  legacyProgrammerHandle?: string;
 }
 
 export interface AutoSyncDeduper {
@@ -168,6 +185,7 @@ const parseInjectedCollectionResult = (input: unknown): InjectedCollectionResult
     ok: false,
     reason: "request-failed",
     message: "Programmers 기록 수집 결과를 확인하지 못했습니다.",
+    retryable: false,
   };
 };
 
@@ -193,6 +211,7 @@ const collectRecordFromTab = async ({
             ok: false,
             reason: "not-logged-in",
             message: "Programmers 로그인 상태를 확인해주세요.",
+            retryable: false,
           };
         }
 
@@ -201,12 +220,27 @@ const collectRecordFromTab = async ({
             ok: false,
             reason: "request-failed",
             message: `Programmers 기록 조회가 실패했습니다 (${response.status}).`,
+            retryable:
+              response.status === 408 || response.status === 429 || response.status >= 500,
+          };
+        }
+
+        let record: unknown;
+
+        try {
+          record = await response.json();
+        } catch {
+          return {
+            ok: false,
+            reason: "request-failed",
+            message: "Programmers 기록 응답이 올바른 JSON 형식이 아닙니다.",
+            retryable: false,
           };
         }
 
         return {
           ok: true,
-          record: await response.json(),
+          record,
         };
       } catch (error) {
         return {
@@ -214,6 +248,7 @@ const collectRecordFromTab = async ({
           reason: "request-failed",
           message:
             error instanceof Error ? error.message : "Programmers 기록을 불러오지 못했습니다.",
+          retryable: true,
         };
       }
     },
@@ -231,24 +266,68 @@ const collectRecordFromTab = async ({
       ok: true,
       record: parseProgrammersRecord(injectedResult.record),
     };
-  } catch {
+  } catch (error) {
+    const validationPath =
+      error instanceof z.ZodError ? error.issues[0]?.path.join(".") : undefined;
+
     return {
       ok: false,
       reason: "request-failed",
-      message: "Programmers 기록 형식을 확인하지 못했습니다.",
+      message: validationPath
+        ? `Programmers 응답의 필수 항목(${validationPath})을 확인할 수 없습니다.`
+        : "Programmers 기록 형식을 확인하지 못했습니다.",
+      retryable: false,
     };
   }
+};
+
+const collectRecordWithRetry = async ({
+  tabId,
+}: CollectRecordFromTabInput): Promise<CollectionResult> => {
+  for (let attempt = 0; attempt <= COLLECTION_RETRY_DELAYS_MS.length; attempt += 1) {
+    try {
+      const result = await collectRecordFromTab({ tabId });
+
+      if (result.ok || !result.retryable || attempt === COLLECTION_RETRY_DELAYS_MS.length) {
+        return result;
+      }
+    } catch {
+      if (attempt === COLLECTION_RETRY_DELAYS_MS.length) {
+        return {
+          ok: false,
+          reason: "request-failed",
+          message:
+            "Programmers 탭에서 데이터를 가져오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.",
+          retryable: false,
+        };
+      }
+    }
+
+    const delayMs = COLLECTION_RETRY_DELAYS_MS[attempt];
+
+    if (delayMs !== undefined) {
+      await new Promise<void>((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  return {
+    ok: false,
+    reason: "request-failed",
+    message: "Programmers 기록을 불러오지 못했습니다.",
+    retryable: false,
+  };
 };
 
 const performSyncForResolvedTab = async ({
   tabId,
   tabUrl,
+  legacyProgrammerHandle,
 }: PerformSyncForResolvedTabInput): Promise<ExtensionSyncState> => {
   if (!isProgrammersUrl(tabUrl)) {
     return createNeedsProgrammersPageState();
   }
 
-  const collected = await collectRecordFromTab({ tabId });
+  const collected = await collectRecordWithRetry({ tabId });
 
   if (!collected.ok) {
     return {
@@ -259,7 +338,7 @@ const performSyncForResolvedTab = async ({
   }
 
   try {
-    const payload = toBadgeSyncPayload({ input: collected.record });
+    const payload = toBadgeSyncPayload({ input: collected.record, legacyProgrammerHandle });
     const syncResponse = await syncBadgePayload(payload);
 
     return {
@@ -279,24 +358,33 @@ const performSyncForResolvedTab = async ({
   }
 };
 
-export const performSyncForTab = async (tabId: number): Promise<ExtensionSyncState> => {
+export const performSyncForTab = async ({
+  tabId,
+  legacyProgrammerHandle,
+}: PerformSyncForTabInput): Promise<ExtensionSyncState> => {
   const tab = await chrome.tabs.get(tabId);
 
   if (!tab.id) {
     return createNeedsProgrammersPageState();
   }
 
-  return performSyncForResolvedTab({ tabId: tab.id, tabUrl: tab.url });
+  return performSyncForResolvedTab({ tabId: tab.id, tabUrl: tab.url, legacyProgrammerHandle });
 };
 
-export const performSyncForActiveTab = async (): Promise<ExtensionSyncState> => {
+export const performSyncForActiveTab = async ({
+  legacyProgrammerHandle,
+}: PerformSyncForActiveTabInput = {}): Promise<ExtensionSyncState> => {
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (!activeTab?.id) {
     return createNeedsProgrammersPageState();
   }
 
-  return performSyncForResolvedTab({ tabId: activeTab.id, tabUrl: activeTab.url });
+  return performSyncForResolvedTab({
+    tabId: activeTab.id,
+    tabUrl: activeTab.url,
+    legacyProgrammerHandle,
+  });
 };
 
 export { createIdleSyncState };

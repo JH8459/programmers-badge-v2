@@ -9,6 +9,7 @@ import { createAutoSyncToastPresenter } from "./toast.js";
 
 const SUBMISSION_SIGNAL_WINDOW_MS = 45_000;
 const SCAN_DEBOUNCE_MS = 250;
+const AUTO_SYNC_REFRESH_DELAY_MS = 2_000;
 
 const sendMessage = async (message: ExtensionMessage): Promise<ExtensionSyncState> =>
   new Promise((resolve, reject) => {
@@ -100,12 +101,16 @@ const triggerAutoSync = async (fingerprint: string): Promise<void> => {
   isTriggerInFlight = true;
 
   try {
+    // Programmers 통계가 제출 직후 갱신될 시간을 준 뒤 최신 기록을 다시 읽는다.
+    await new Promise<void>((resolve) => window.setTimeout(resolve, AUTO_SYNC_REFRESH_DELAY_MS));
     const nextState = await sendMessage({
       type: "trigger-auto-sync",
       fingerprint,
     });
 
-    toastPresenter.show(nextState);
+    if (nextState.status !== "idle") {
+      toastPresenter.show(nextState);
+    }
   } catch (error) {
     toastPresenter.show({
       status: "error",

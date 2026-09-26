@@ -10,6 +10,7 @@ describe("api client runtime config and response validation", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
 
     if (originalChrome) {
       Object.defineProperty(globalThis, "chrome", {
@@ -58,7 +59,7 @@ describe("api client runtime config and response validation", () => {
 
     await expect(
       syncBadgePayload({
-        programmerHandle: "sync-user",
+        programmerId: "sync-user",
         displayName: "Sync User",
         solvedCount: 10,
         solvedTotal: 20,
@@ -69,5 +70,35 @@ describe("api client runtime config and response validation", () => {
         syncedAt: "2026-04-07T01:02:03.000Z",
       })
     ).rejects.toThrow();
+  });
+
+  it("retries transient server failures a bounded number of times", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }))
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }))
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }));
+    globalThis.fetch = fetchMock;
+    const { syncBadgePayload } = await import("../src/background/api-client");
+    const payload = {
+      programmerId: "sync-user",
+      displayName: "Sync User",
+      solvedCount: 10,
+      solvedTotal: 20,
+      skillLevel: 1,
+      rankingScore: 120,
+      rankingRank: 4,
+      badgeTier: "starter" as const,
+      syncedAt: "2026-04-07T01:02:03.000Z",
+    };
+    const result = expect(syncBadgePayload(payload)).rejects.toThrow(
+      "배지 서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해주세요."
+    );
+
+    await vi.runAllTimersAsync();
+    await result;
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 });
