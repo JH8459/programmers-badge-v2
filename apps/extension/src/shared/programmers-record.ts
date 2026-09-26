@@ -56,7 +56,7 @@ export const parseProgrammersRecord = (input: unknown): ProgrammersRecord =>
   programmersRecordSchema.parse(input);
 
 interface BadgeSyncPayloadInput {
-  input: ProgrammersRecord;
+  input: unknown;
   syncedAt?: string;
   legacyProgrammerHandle?: string;
 }

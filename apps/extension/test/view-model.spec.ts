@@ -137,7 +137,6 @@ describe("getPopupViewModel", () => {
     });
 
     expect(viewModel.summaryTitle).toBe("JH8459");
-    expect(viewModel.summarySubtitle).toBeUndefined();
     expect(viewModel.summaryItems).toHaveLength(4);
   });
 

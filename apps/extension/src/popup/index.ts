@@ -104,7 +104,6 @@ const render = (): void => {
       ? `
         <section class="panel">
           ${viewModel.summaryTitle ? `<p class="summary-title">${escapeHtml(viewModel.summaryTitle)}</p>` : ""}
-          ${viewModel.summarySubtitle ? `<p class="summary-subtitle">${escapeHtml(viewModel.summarySubtitle)}</p>` : ""}
           ${badgePreviewMarkup}
           <div class="summary-grid">
             ${viewModel.summaryItems
