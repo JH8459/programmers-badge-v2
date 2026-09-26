@@ -20,6 +20,7 @@
 - NAS host port 기본 추천값은 `5010`이다.
 - runtime env는 단일 zod config로 읽고 bootstrap 전에 fail-fast 한다.
 - local API dev runner는 decorator metadata 기반 Nest DI가 동작하도록 Nest CLI watch를 사용한다.
+- Express는 NAS Synology reverse proxy 한 hop을 신뢰해 API 요청 제한에 client IP를 사용한다.
 
 ## Deploy Defaults
 

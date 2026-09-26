@@ -26,6 +26,8 @@
 
 - API와 extension 사이의 contract만 소유한다.
 - sync response는 full badge URL/Markdown과 mini badge URL/Markdown을 함께 포함한다.
+- sync request의 identity는 stable `programmerId`이고, response에는 이 내부 identity를 포함하지 않는다.
+- sync payload schema는 필수 통계, solved/total 관계, skill/tier 일관성, ISO datetime을 검증한다.
 - shared contract의 runtime validation schema가 필요하면 zod schema와 parse helper를 여기 둔다.
 - API와 extension이 함께 쓰는 zod boundary helper는 `packages/shared-types`에 둘 수 있다.
 - app-specific external payload schema나 framework wiring은 여기 두지 않는다.
