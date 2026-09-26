@@ -33,6 +33,8 @@
 - shared contract 변경이면 zod schema, parse 지점, 관련 테스트가 함께 갱신됐는지 확인한다.
 - runtime config 변경이면 default 값과 invalid env 실패 케이스까지 테스트로 고정한다.
 - 문서 변경만이면 링크, 참조 경로, source-of-truth 정합성을 확인한다.
+- 코드 변경에서는 주석의 필요성, `try/catch` 범위, 제어문 중괄호, suppression 사유와 적용 범위를 수동으로 확인한다. lint 통과만으로 이 규칙들을 검증했다고 보지 않는다.
+- Promise rejection 테스트가 예외 미발생 시에도 통과하지 않는지, 테스트가 변경한 공유 상태와 임시 자원이 복원되는지 확인한다.
 - public badge 변경이면 상태 코드, 응답 형식, 민감 정보 노출 여부를 함께 확인한다.
 - extension UI 변경이면 작은 viewport와 핵심 액션 노출 여부를 함께 본다.
 
