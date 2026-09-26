@@ -37,7 +37,7 @@ describe("shared types contracts", () => {
   it("normalizes and validates the sync payload contract", () => {
     expect(
       parseBadgeSyncPayload({
-        programmerHandle: "  sync-user  ",
+        programmerId: "  sync-user  ",
         displayName: "  Sync User  ",
         solvedCount: 10,
         solvedTotal: 20,
@@ -48,7 +48,7 @@ describe("shared types contracts", () => {
         syncedAt: "2026-04-07T01:02:03.000Z",
       })
     ).toEqual({
-      programmerHandle: "sync-user",
+      programmerId: "sync-user",
       displayName: "Sync User",
       solvedCount: 10,
       solvedTotal: 20,
@@ -63,7 +63,7 @@ describe("shared types contracts", () => {
   it("rejects invalid sync payload fields", () => {
     expect(() =>
       parseBadgeSyncPayload({
-        programmerHandle: "sync-user",
+        programmerId: "sync-user",
         displayName: "Sync User",
         solvedCount: 10,
         solvedTotal: 20,
@@ -76,9 +76,25 @@ describe("shared types contracts", () => {
     ).toThrow();
   });
 
+  it("rejects inconsistent counts and badge tiers", () => {
+    const validPayload = {
+      programmerId: "sync-user",
+      displayName: "Sync User",
+      solvedCount: 10,
+      solvedTotal: 20,
+      skillLevel: 1,
+      rankingScore: 120,
+      rankingRank: 4,
+      badgeTier: "starter",
+      syncedAt: "2026-04-07T01:02:03.000Z",
+    };
+
+    expect(() => parseBadgeSyncPayload({ ...validPayload, solvedCount: 21 })).toThrow();
+    expect(() => parseBadgeSyncPayload({ ...validPayload, badgeTier: "advanced" })).toThrow();
+  });
+
   it("validates the API sync response contract", () => {
-    expect(
-      parseBadgeSyncResponse({
+    const response = parseBadgeSyncResponse({
         slug: "abc123def456",
         badgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456.svg",
         miniBadgeUrl: "https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg",
@@ -86,7 +102,6 @@ describe("shared types contracts", () => {
           "![Programmers Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456.svg)",
         miniMarkdownSnippet:
           "![Programmers Mini Badge](https://api.programmers-badge.jh8459.com/badge/abc123def456-mini.svg)",
-        programmerHandle: "sync-user",
         displayName: "Sync User",
         solvedCount: 10,
         solvedTotal: 20,
@@ -95,7 +110,10 @@ describe("shared types contracts", () => {
         rankingRank: 4,
         badgeTier: "starter",
         syncedAt: "2026-04-07T01:02:03.000Z",
-      }).slug
-    ).toBe("abc123def456");
+      });
+
+    expect(response.slug).toBe("abc123def456");
+    expect(response).not.toHaveProperty("programmerId");
+    expect(() => parseBadgeSyncResponse({ ...response, programmerId: "internal-id" })).toThrow();
   });
 });
