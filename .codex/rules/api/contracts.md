@@ -8,7 +8,7 @@
 - public badge는 full SVG와 mini SVG를 제공한다.
 - malformed slug와 미등록 slug는 같은 404 메시지를 반환한다.
 - `/api/sync`는 client IP별 분당 30회로 제한하고 `Retry-After`를 반환한다.
-- API badge route와 정적 badge URL은 `ETag`, `Cache-Control: public, max-age=0, must-revalidate`로 재검증 캐시를 지원한다.
+- API badge route는 일치하는 `ETag`에 304를 반환한다. 정적 badge URL은 `ETag`와 `Cache-Control: public, max-age=0, must-revalidate`를 제공한다.
 - health endpoint는 minimal readiness 확인용이다.
 - Swagger 문서는 `ENABLE_SWAGGER=true`일 때 `/api/docs`와 `/api/docs-json`으로 제공하고, HTTP Basic Auth를 요구한다.
 - public legal/privacy page는 web이 소유하며 API는 `/privacy`를 서빙하지 않는다.

@@ -7,7 +7,7 @@
 - 오래된 `syncedAt` snapshot은 최신 row를 덮어쓰지 않는다.
 - sync 시 동일 slug의 full/mini SVG asset을 pre-render하며, 렌더 결과가 같으면 파일을 다시 쓰지 않는다.
 - `/badge/*.svg`는 Nest/Express static middleware로 정적 서빙한다.
-- API badge route와 static asset은 ETag 조건부 요청을 처리하고 재검증 캐시 헤더를 제공한다.
+- API badge route는 일치하는 ETag에 304를 반환하고, static asset은 ETag와 재검증 Cache-Control 헤더를 제공한다.
 - full badge의 display name은 XML 텍스트로 escape하고 XML 1.0에서 허용하지 않는 제어 문자를 제거한다.
 - public slug는 소문자 hex 12자로 검증하며 malformed/미등록 slug는 동일한 404 응답을 반환한다.
 - `/api/sync` 요청은 client IP별 분당 30회로 제한한다. rate-limit 상태는 단일 API 프로세스 내에서 관리한다.
