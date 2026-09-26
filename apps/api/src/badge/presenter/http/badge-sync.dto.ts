@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   BADGE_TIERS,
   type BadgeSyncPayload,
@@ -9,10 +9,17 @@ import {
 export class BadgeSyncRequestDto implements BadgeSyncPayload {
   @ApiProperty({
     type: String,
-    example: "jh8459",
-    description: "Programmers profile handle.",
+    example: "83164003",
+    description: "Stable Programmers user identifier from the signed-in record.",
   })
-  readonly programmerHandle!: string;
+  readonly programmerId!: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    example: "legacy-programmers-name",
+    description: "Previous extension identity used once to retain an existing public badge URL.",
+  })
+  readonly legacyProgrammerHandle?: string;
 
   @ApiProperty({
     type: String,
@@ -79,11 +86,11 @@ export class BadgeSyncRequestDto implements BadgeSyncPayload {
   readonly syncedAt!: string;
 }
 
-export class BadgeSyncResponseDto extends BadgeSyncRequestDto implements BadgeSyncResponse {
+export class BadgeSyncResponseDto implements BadgeSyncResponse {
   @ApiProperty({
     type: String,
     example: "a1b2c3d4e5f6",
-    description: "Stable public badge slug for the programmer handle.",
+    description: "Stable public badge slug for the programmer profile.",
   })
   readonly slug!: string;
 
@@ -116,4 +123,28 @@ export class BadgeSyncResponseDto extends BadgeSyncRequestDto implements BadgeSy
     description: "Markdown snippet for the mini badge.",
   })
   readonly miniMarkdownSnippet!: string;
+
+  @ApiProperty({ type: String, example: "JH" })
+  readonly displayName!: string;
+
+  @ApiProperty({ type: Number, example: 128, minimum: 0 })
+  readonly solvedCount!: number;
+
+  @ApiProperty({ type: Number, example: 250, minimum: 0 })
+  readonly solvedTotal!: number;
+
+  @ApiProperty({ type: Number, example: 4, minimum: 0 })
+  readonly skillLevel!: number;
+
+  @ApiProperty({ type: Number, example: 12000, minimum: 0 })
+  readonly rankingScore!: number;
+
+  @ApiProperty({ type: Number, example: 55, minimum: 1 })
+  readonly rankingRank!: number;
+
+  @ApiProperty({ type: String, enum: BADGE_TIERS, enumName: "BadgeTier", example: "advanced" })
+  readonly badgeTier!: BadgeTier;
+
+  @ApiProperty({ type: String, example: "2026-04-07T01:02:03.000Z", format: "date-time" })
+  readonly syncedAt!: string;
 }

@@ -13,7 +13,7 @@ describe("GetPublicBadgeQueryHandler", () => {
 
     try {
       const record = repository.upsert({
-        programmerHandle: "query-user",
+        programmerId: "query-user",
         displayName: "Query User",
         solvedCount: 40,
         solvedTotal: 100,

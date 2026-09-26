@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { QueryBus } from "@nestjs/cqrs";
+import { publicBadgeSlugSchema } from "@programmers-badge/shared-types";
 
 import { GetPublicBadgeQuery } from "../../query/get-public-badge.query";
 import { BadgeAssetService, type BadgeAssetVariant } from "../../../infra/badge-asset.service";
@@ -15,6 +16,10 @@ export class GetPublicBadgeUseCase {
   ) {}
 
   async execute({ slug, variant = "full" }: GetPublicBadgeUseCaseProps): Promise<string> {
+    if (!publicBadgeSlugSchema.safeParse(slug).success) {
+      throw new NotFoundException("Public badge was not found.");
+    }
+
     const cachedBadgeSvg = this.badgeAssetService.readPublicBadge({ slug, variant });
 
     if (cachedBadgeSvg !== null) {
@@ -26,9 +31,7 @@ export class GetPublicBadgeUseCase {
     );
 
     if (!badgeProfile) {
-      const badgeName = variant === "mini" ? "Public mini badge" : "Public badge";
-
-      throw new NotFoundException(`${badgeName} '${slug}' was not found.`);
+      throw new NotFoundException("Public badge was not found.");
     }
 
     return this.badgeAssetService.writePublicBadge({ record: badgeProfile, variant });

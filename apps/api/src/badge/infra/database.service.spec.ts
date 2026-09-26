@@ -28,6 +28,23 @@ describe("DatabaseService", () => {
         ");",
       ].join("\n")
     );
+    legacyDatabase
+      .prepare(
+        [
+          "INSERT INTO badge_profiles (",
+          "  programmer_handle, public_slug, solved_count, badge_tier, source_synced_at, created_at, updated_at",
+          ") VALUES (?, ?, ?, ?, ?, ?, ?)",
+        ].join(" ")
+      )
+      .run(
+        "legacy-user-name",
+        "001122aabbcc",
+        5,
+        "starter",
+        "2026-04-07T01:02:03.000Z",
+        "2026-04-07T01:02:03.000Z",
+        "2026-04-07T01:02:03.000Z"
+      );
     legacyDatabase.close();
 
     const databaseService = new DatabaseService(databasePath);
@@ -46,8 +63,16 @@ describe("DatabaseService", () => {
           "skill_level",
           "ranking_score",
           "ranking_rank",
+          "programmer_id",
+          "identity_source",
         ])
       );
+      expect(
+        databaseService
+          .getConnection()
+          .prepare("SELECT programmer_id FROM badge_profiles WHERE programmer_handle = ?")
+          .get("legacy-user-name")
+      ).toEqual({ programmer_id: "legacy-user-name" });
     } finally {
       databaseService.onModuleDestroy();
       rmSync(databasePath, { force: true });

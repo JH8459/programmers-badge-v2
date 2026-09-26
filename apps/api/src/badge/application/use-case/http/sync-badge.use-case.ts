@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
 
 import type { BadgeSyncPayload, BadgeSyncResponse } from "@programmers-badge/shared-types";
@@ -10,6 +10,8 @@ import type { BadgeProfileRecord } from "../../../infra/badge-profile.repository
 
 @Injectable()
 export class SyncBadgeUseCase {
+  private readonly logger = new Logger(SyncBadgeUseCase.name);
+
   constructor(
     @Inject(CommandBus)
     private readonly commandBus: CommandBus,
@@ -24,6 +26,8 @@ export class SyncBadgeUseCase {
 
     this.badgeAssetService.writePublicBadge({ record });
     this.badgeAssetService.writePublicBadge({ record, variant: "mini" });
+
+    this.logger.log(`Badge sync completed for public slug ${record.publicSlug}.`);
 
     return buildBadgeSyncResponse(record);
   }

@@ -22,7 +22,7 @@ describe("SyncHttpController e2e", () => {
   it("creates a public badge response and pre-renders full and mini assets", async () => {
     // Given: extension이 Programmers에서 수집한 payload에 trim이 필요한 문자열이 포함되어 있다.
     const payload = createBadgeSyncPayload({
-      programmerHandle: "  e2e-sync-user  ",
+      programmerId: "  e2e-sync-user  ",
       displayName: "  E2E Sync User  ",
     });
 
@@ -33,7 +33,7 @@ describe("SyncHttpController e2e", () => {
     expect(response.status).toBe(201);
     const body = await parseBadgeSyncResponse(response);
     expect(body.slug).toHaveLength(12);
-    expect(body.programmerHandle).toBe("e2e-sync-user");
+    expect(body).not.toHaveProperty("programmerId");
     expect(body.displayName).toBe("E2E Sync User");
     expect(body.badgeUrl).toBe(`${api.baseUrl}/badge/${body.slug}.svg`);
     expect(body.miniBadgeUrl).toBe(`${api.baseUrl}/badge/${body.slug}-mini.svg`);
@@ -52,11 +52,11 @@ describe("SyncHttpController e2e", () => {
   });
 
   it("keeps the public slug stable when the same programmer syncs again", async () => {
-    // Given: 같은 programmerHandle로 첫 badge snapshot이 저장되어 있다.
+    // Given: 같은 stable programmer ID로 첫 badge snapshot이 저장되어 있다.
     const firstResponse = await postBadgeSync({
       api,
       payload: createBadgeSyncPayload({
-        programmerHandle: "stable-user",
+        programmerId: "stable-user",
         displayName: "Stable User Before",
         solvedCount: 10,
         rankingScore: 100,
@@ -64,11 +64,11 @@ describe("SyncHttpController e2e", () => {
     });
     const firstBody = await parseBadgeSyncResponse(firstResponse);
 
-    // When: 동일 programmerHandle이 변경된 점수와 표시 이름으로 다시 sync한다.
+    // When: 같은 stable ID가 변경된 점수와 표시 이름으로 다시 sync한다.
     const secondResponse = await postBadgeSync({
       api,
       payload: createBadgeSyncPayload({
-        programmerHandle: "stable-user",
+        programmerId: "stable-user",
         displayName: "Stable User After",
         solvedCount: 75,
         rankingScore: 9_900,
@@ -94,8 +94,8 @@ describe("SyncHttpController e2e", () => {
   it.each([
     {
       name: "blank programmer handle",
-      payload: createBadgeSyncPayload({ programmerHandle: "   " }),
-      expectedMessage: "programmerHandle",
+      payload: createBadgeSyncPayload({ programmerId: "   " }),
+      expectedMessage: "programmerId",
     },
     {
       name: "blank display name",

@@ -9,6 +9,7 @@ import { BadgeAssetService } from "./infra/badge-asset.service";
 import { BadgePersistenceModule } from "./infra/badge-persistence.module";
 import { BadgeHttpController } from "./presenter/http/badge.http.controller";
 import { SyncHttpController } from "./presenter/http/sync.http.controller";
+import { SyncRateLimitGuard } from "./presenter/http/sync-rate-limit.guard";
 
 @Module({
   imports: [CqrsModule, BadgePersistenceModule],
@@ -26,6 +27,7 @@ import { SyncHttpController } from "./presenter/http/sync.http.controller";
 
     /** Infra */
     BadgeAssetService,
+    SyncRateLimitGuard,
   ],
   exports: [BadgePersistenceModule],
 })

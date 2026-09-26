@@ -39,7 +39,7 @@ const E2E_SWAGGER_PASSWORD = "e2e-swagger-password";
 export const createBadgeSyncPayload = (
   overrides: Partial<BadgeSyncPayload> = {}
 ): BadgeSyncPayload => ({
-  programmerHandle: "  e2e-user  ",
+  programmerId: "  e2e-user  ",
   displayName: "  E2E User  ",
   solvedCount: 48,
   solvedTotal: 100,

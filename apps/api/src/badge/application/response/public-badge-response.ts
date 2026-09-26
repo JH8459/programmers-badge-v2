@@ -24,7 +24,6 @@ export const buildPublicBadgeResponse = (slug: string): PublicBadgeResponse => {
 export const buildBadgeSyncResponse = (record: BadgeProfileRecord): BadgeSyncResponse =>
   parseBadgeSyncResponse({
     ...buildPublicBadgeResponse(record.publicSlug),
-    programmerHandle: record.programmerHandle,
     displayName: record.displayName,
     solvedCount: record.solvedCount,
     solvedTotal: record.solvedTotal,

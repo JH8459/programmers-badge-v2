@@ -26,7 +26,7 @@ describe("BadgeHttpController e2e", () => {
     // Given: sync endpoint가 full/mini badge asset을 생성한 public slug가 있다.
     const syncResponse = await postBadgeSync({
       api,
-      payload: createBadgeSyncPayload({ programmerHandle: "controller-user" }),
+      payload: createBadgeSyncPayload({ programmerId: "controller-user" }),
     });
     const syncBody = await parseBadgeSyncResponse(syncResponse);
 
@@ -37,11 +37,25 @@ describe("BadgeHttpController e2e", () => {
     // Then: 두 route 모두 SVG content-type과 badge 본문을 반환한다.
     expect(fullBadgeResponse.status).toBe(200);
     expect(fullBadgeResponse.headers.get("content-type")).toContain("image/svg+xml");
-    await expect(fullBadgeResponse.text()).resolves.toContain("E2E User");
+    const fullSvg = await fullBadgeResponse.text();
+    expect(fullSvg).toContain("E2E User");
+    const fullEtag = fullBadgeResponse.headers.get("etag");
+    expect(fullEtag).toBeTruthy();
+    const fullNotModifiedResponse = await fetch(`${api.baseUrl}/api/badge/${syncBody.slug}.svg`, {
+      headers: { "if-none-match": fullEtag ?? "" },
+    });
+    expect(fullNotModifiedResponse.status).toBe(304);
 
     expect(miniBadgeResponse.status).toBe(200);
     expect(miniBadgeResponse.headers.get("content-type")).toContain("image/svg+xml");
+    const miniEtag = miniBadgeResponse.headers.get("etag");
+    expect(miniEtag).toBeTruthy();
     await expect(miniBadgeResponse.text()).resolves.toContain("programmers");
+    const miniNotModifiedResponse = await fetch(
+      `${api.baseUrl}/api/badge/${syncBody.slug}/mini.svg`,
+      { headers: { "if-none-match": miniEtag ?? "" } }
+    );
+    expect(miniNotModifiedResponse.status).toBe(304);
   });
 
   it("regenerates full and mini SVG assets on cache miss using persisted badge data", async () => {
@@ -49,7 +63,7 @@ describe("BadgeHttpController e2e", () => {
     const syncResponse = await postBadgeSync({
       api,
       payload: createBadgeSyncPayload({
-        programmerHandle: "cache-miss-user",
+        programmerId: "cache-miss-user",
         displayName: "Cache Miss User",
       }),
     });
@@ -76,7 +90,7 @@ describe("BadgeHttpController e2e", () => {
     // Given: sync response가 public static full/mini badge URL을 제공한다.
     const syncResponse = await postBadgeSync({
       api,
-      payload: createBadgeSyncPayload({ programmerHandle: "static-user" }),
+      payload: createBadgeSyncPayload({ programmerId: "static-user" }),
     });
     const syncBody = await parseBadgeSyncResponse(syncResponse);
 
@@ -88,28 +102,40 @@ describe("BadgeHttpController e2e", () => {
     expect(fullStaticResponse.status).toBe(200);
     expect(fullStaticResponse.headers.get("content-type")).toContain("image/svg+xml");
     expect(fullStaticResponse.headers.get("cache-control")).toBe(
-      "public, no-cache, must-revalidate"
+      "public, max-age=0, must-revalidate"
     );
+    const fullStaticEtag = fullStaticResponse.headers.get("etag");
+    expect(fullStaticEtag).toBeTruthy();
     await expect(fullStaticResponse.text()).resolves.toContain("E2E User");
+    const fullStaticNotModifiedResponse = await fetch(syncBody.badgeUrl, {
+      headers: { "if-none-match": fullStaticEtag ?? "" },
+    });
+    expect(fullStaticNotModifiedResponse.status).toBe(304);
 
     expect(miniStaticResponse.status).toBe(200);
     expect(miniStaticResponse.headers.get("content-type")).toContain("image/svg+xml");
     expect(miniStaticResponse.headers.get("cache-control")).toBe(
-      "public, no-cache, must-revalidate"
+      "public, max-age=0, must-revalidate"
     );
+    const miniStaticEtag = miniStaticResponse.headers.get("etag");
+    expect(miniStaticEtag).toBeTruthy();
     await expect(miniStaticResponse.text()).resolves.toContain("programmers");
+    const miniStaticNotModifiedResponse = await fetch(syncBody.miniBadgeUrl, {
+      headers: { "if-none-match": miniStaticEtag ?? "" },
+    });
+    expect(miniStaticNotModifiedResponse.status).toBe(304);
   });
 
   it.each([
     {
       name: "full badge",
       path: "/api/badge/missing.svg",
-      expectedMessage: "Public badge 'missing' was not found.",
+      expectedMessage: "Public badge was not found.",
     },
     {
       name: "mini badge",
       path: "/api/badge/missing/mini.svg",
-      expectedMessage: "Public mini badge 'missing' was not found.",
+      expectedMessage: "Public badge was not found.",
     },
   ])("returns not found for missing $name", async ({ path, expectedMessage }) => {
     // Given: 요청 slug와 일치하는 persisted badge snapshot이 없다.
@@ -125,6 +151,19 @@ describe("BadgeHttpController e2e", () => {
       message: expectedMessage,
     });
   });
+
+  it.each(["not-a-slug", "abc123def456"]) (
+    "uses the same 404 response for malformed and absent slug %s",
+    async (slug) => {
+      const response = await fetch(`${api.baseUrl}/api/badge/${slug}.svg`);
+
+      expect(response.status).toBe(404);
+      await expect(response.json()).resolves.toMatchObject({
+        statusCode: 404,
+        message: "Public badge was not found.",
+      });
+    }
+  );
 
   it("returns not found when a static public badge file does not exist", async () => {
     // Given: static badge directory에 missing.svg 파일이 존재하지 않는다.

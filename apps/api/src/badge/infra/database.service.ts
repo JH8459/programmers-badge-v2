@@ -56,6 +56,8 @@ export class DatabaseService implements OnModuleDestroy {
       [
         "CREATE TABLE IF NOT EXISTS badge_profiles (",
         "  programmer_handle TEXT PRIMARY KEY,",
+        "  programmer_id TEXT,",
+        "  identity_source TEXT NOT NULL DEFAULT 'legacy',",
         "  display_name TEXT NOT NULL,",
         "  public_slug TEXT NOT NULL UNIQUE,",
         "  solved_count INTEGER NOT NULL,",
@@ -77,6 +79,19 @@ export class DatabaseService implements OnModuleDestroy {
     this.ensureColumn({ columnName: "skill_level", definition: "INTEGER NOT NULL DEFAULT 0" });
     this.ensureColumn({ columnName: "ranking_score", definition: "INTEGER NOT NULL DEFAULT 0" });
     this.ensureColumn({ columnName: "ranking_rank", definition: "INTEGER NOT NULL DEFAULT 1" });
+    this.ensureColumn({ columnName: "programmer_id", definition: "TEXT" });
+    this.ensureColumn({
+      columnName: "identity_source",
+      definition: "TEXT NOT NULL DEFAULT 'legacy'",
+    });
+    this.database.exec(
+      [
+        "UPDATE badge_profiles",
+        "SET programmer_id = programmer_handle",
+        "WHERE programmer_id IS NULL;",
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_badge_profiles_programmer_id ON badge_profiles(programmer_id);",
+      ].join(" ")
+    );
   }
 
   private ensureColumn({ columnName, definition }: EnsureColumnInput): void {
