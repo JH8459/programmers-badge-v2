@@ -10,7 +10,6 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import type { Request, Response } from "express";
 
 import { ErrorResponseDto } from "../../../common/http/error-response.dto";
 import { GetPublicBadgeUseCase } from "../../application/use-case/http/get-public-badge.use-case";
@@ -25,9 +24,22 @@ const svgResponseContent = {
 };
 
 interface SendSvgResponseInput {
-  request: Request;
-  response: Response;
+  request: BadgeHttpRequest;
+  response: BadgeHttpResponse;
   svg: string;
+}
+
+interface BadgeHttpRequest {
+  readonly headers: {
+    readonly [header: string]: string | string[] | undefined;
+  };
+}
+
+interface BadgeHttpResponse {
+  setHeader(name: string, value: string): unknown;
+  status(statusCode: number): BadgeHttpResponse;
+  end(): unknown;
+  send(body: string): unknown;
 }
 
 const matchesEntityTag = (header: string | string[] | undefined, entityTag: string): boolean =>
@@ -78,8 +90,8 @@ export class BadgeHttpController {
   })
   async getBadgeSvg(
     @Param("slug") slug: string,
-    @Req() request: Request,
-    @Res() response: Response
+    @Req() request: BadgeHttpRequest,
+    @Res() response: BadgeHttpResponse
   ): Promise<void> {
     const svg = await this.getPublicBadgeUseCase.execute({ slug });
     this.sendSvg({ request, response, svg });
@@ -104,8 +116,8 @@ export class BadgeHttpController {
   })
   async getMiniBadgeSvg(
     @Param("slug") slug: string,
-    @Req() request: Request,
-    @Res() response: Response
+    @Req() request: BadgeHttpRequest,
+    @Res() response: BadgeHttpResponse
   ): Promise<void> {
     const svg = await this.getPublicBadgeUseCase.execute({ slug, variant: "mini" });
     this.sendSvg({ request, response, svg });

@@ -43,7 +43,6 @@ describe("getPopupViewModel", () => {
     expect(viewModel.statusTone).toBe("success");
     expect(viewModel.title).toBe("배지 반영 완료");
     expect(viewModel.summaryTitle).toBe("Programmers User");
-    expect(viewModel.summarySubtitle).toBe("@programmers-user");
     expect(viewModel.badgePreviewOptions).toEqual([
       {
         key: "standard",

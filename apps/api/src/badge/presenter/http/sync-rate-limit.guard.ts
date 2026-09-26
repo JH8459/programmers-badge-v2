@@ -5,7 +5,17 @@ import {
   type CanActivate,
   type ExecutionContext,
 } from "@nestjs/common";
-import type { Request, Response } from "express";
+
+interface SyncHttpRequest {
+  readonly ip?: string;
+  readonly socket?: {
+    readonly remoteAddress?: string;
+  };
+}
+
+interface SyncHttpResponse {
+  setHeader(name: string, value: string): unknown;
+}
 
 interface CreateSyncRateLimiterOptions {
   maxRequests?: number;
@@ -66,9 +76,9 @@ export class SyncRateLimitGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const httpContext = context.switchToHttp();
-    const request = httpContext.getRequest<Request>();
-    const response = httpContext.getResponse<Response>();
-    const clientKey = request.ip || request.socket.remoteAddress || "unknown";
+    const request = httpContext.getRequest<SyncHttpRequest>();
+    const response = httpContext.getResponse<SyncHttpResponse>();
+    const clientKey = request.ip || request.socket?.remoteAddress || "unknown";
     const retryAfterSeconds = this.rateLimiter.consume({
       clientKey,
       currentTime: Date.now(),

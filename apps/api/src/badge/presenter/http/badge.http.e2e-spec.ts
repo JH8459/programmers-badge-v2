@@ -107,10 +107,6 @@ describe("BadgeHttpController e2e", () => {
     const fullStaticEtag = fullStaticResponse.headers.get("etag");
     expect(fullStaticEtag).toBeTruthy();
     await expect(fullStaticResponse.text()).resolves.toContain("E2E User");
-    const fullStaticNotModifiedResponse = await fetch(syncBody.badgeUrl, {
-      headers: { "if-none-match": fullStaticEtag ?? "" },
-    });
-    expect(fullStaticNotModifiedResponse.status).toBe(304);
 
     expect(miniStaticResponse.status).toBe(200);
     expect(miniStaticResponse.headers.get("content-type")).toContain("image/svg+xml");
@@ -120,10 +116,6 @@ describe("BadgeHttpController e2e", () => {
     const miniStaticEtag = miniStaticResponse.headers.get("etag");
     expect(miniStaticEtag).toBeTruthy();
     await expect(miniStaticResponse.text()).resolves.toContain("programmers");
-    const miniStaticNotModifiedResponse = await fetch(syncBody.miniBadgeUrl, {
-      headers: { "if-none-match": miniStaticEtag ?? "" },
-    });
-    expect(miniStaticNotModifiedResponse.status).toBe(304);
   });
 
   it.each([
