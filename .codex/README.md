@@ -20,7 +20,7 @@
 
 ## Directory Map
 
-- `.codex/rules/common.md`: 제품 목표, MVP 범위, 공통 guardrail, repo/runtime 기본값
+- `.codex/rules/common.md`: 제품 목표, MVP 범위, 공통 guardrail, repo/runtime 기본값, TypeScript 코드 작성 규칙
 - `.codex/rules/architecture.md`: monorepo 구조, 책임, dependency boundary, 기본 data flow
 - `.codex/rules/deployment.md`: GitHub Actions deploy/release workflow, environment, secret ownership, NAS production 운영 기준
 - `.codex/rules/api.md`: `apps/api` 전용 entrypoint, 하위 API rule 읽기 기준

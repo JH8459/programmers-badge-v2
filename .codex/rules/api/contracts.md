@@ -16,6 +16,7 @@
 ## Validation And Security
 
 - 입력 검증은 서버에서 수행하고 client 입력을 신뢰하지 않는다.
+- SQLite query의 동적 값은 prepared statement의 parameter binding으로 전달한다. 요청값이나 저장값을 SQL 문자열에 직접 보간하지 않는다. 컬럼·정렬 키처럼 바인딩할 수 없는 식별자는 코드 내 allowlist에서 선택한다.
 - API contract runtime validation은 `packages/shared-types`의 zod schema를 기본값으로 사용한다.
 - Swagger DTO는 문서화용 class로만 두고, runtime request validation은 zod schema와 Nest pipe를 기준으로 한다.
 - HTTP boundary에서는 Nest pipe로 zod parse 결과를 받고, normalization은 shared schema 기준을 따른다.

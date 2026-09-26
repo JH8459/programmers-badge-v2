@@ -30,7 +30,7 @@ source-of-truth는 `.codex/rules/*`와 `.codex/instructions/*`를 사용한다.
 ## Path Index
 
 - `.codex/README.md`: 전체 읽기 순서와 문서 지도
-- `.codex/rules/common.md`: 공통 제품/범위/guardrail
+- `.codex/rules/common.md`: 공통 제품/범위/guardrail와 TypeScript 코드 작성 규칙
 - `.codex/rules/architecture.md`: monorepo 구조와 boundary
 - `.codex/rules/deployment.md`: GitHub Actions deploy/release workflow, environment, secret ownership, NAS production 운영 규칙
 - `.codex/rules/api.md`: `apps/api` 전용 entrypoint
