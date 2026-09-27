@@ -2,7 +2,10 @@ import { BadRequestException } from "@nestjs/common";
 import { describe, expect, it, vi } from "vitest";
 
 import type { GitHubConnectionRecord } from "../../infra/github.repository";
-import { GitHubHttpController } from "./github.http.controller";
+import {
+  GITHUB_CONNECTION_STATE_COOKIE_NAME,
+  GitHubHttpController,
+} from "./github.http.controller";
 import { SESSION_COOKIE_NAME } from "./github-session.guard";
 
 const connection: GitHubConnectionRecord = {
@@ -21,13 +24,22 @@ const response = () => ({
 
 describe("GitHubHttpController", () => {
   it("starts the installation flow and redirects to GitHub", async () => {
-    const githubUseCase = { startConnection: vi.fn().mockResolvedValue({ url: "https://github.com/install" }) };
+    const githubUseCase = {
+      startConnection: vi.fn().mockResolvedValue({ url: "https://github.com/install", state: "browser-state" }),
+    };
     const controller = new GitHubHttpController(githubUseCase as never);
     const result = response();
 
-    await controller.connect(result);
+    await controller.connect({ secure: true, headers: {} }, result);
 
     expect(githubUseCase.startConnection).toHaveBeenCalledWith({ now: expect.any(String) });
+    expect(result.cookie).toHaveBeenCalledWith(GITHUB_CONNECTION_STATE_COOKIE_NAME, "browser-state", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/api/github/callback",
+      maxAge: 10 * 60_000,
+    });
     expect(result.redirect).toHaveBeenCalledWith(302, "https://github.com/install");
   });
 
@@ -39,6 +51,12 @@ describe("GitHubHttpController", () => {
     await controller.callback({ installation_id: "0" }, { secure: true, headers: {} }, result);
 
     expect(result.cookie).not.toHaveBeenCalled();
+    expect(result.clearCookie).toHaveBeenCalledWith(GITHUB_CONNECTION_STATE_COOKIE_NAME, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/api/github/callback",
+    });
     expect(result.redirect).toHaveBeenCalledWith(302, "https://web.example/github/connected?status=failed");
   });
 
@@ -73,7 +91,7 @@ describe("GitHubHttpController", () => {
 
     await controller.callback(
       { state: "state", installation_id: "17", setup_action: "install" },
-      { secure: true, headers: {} },
+      { secure: true, headers: { cookie: `other=value; ${GITHUB_CONNECTION_STATE_COOKIE_NAME}=state` } },
       result
     );
 
@@ -81,6 +99,12 @@ describe("GitHubHttpController", () => {
       state: "state",
       installationId: 17,
       now: expect.any(String),
+    });
+    expect(result.clearCookie).toHaveBeenCalledWith(GITHUB_CONNECTION_STATE_COOKIE_NAME, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/api/github/callback",
     });
     expect(result.cookie).toHaveBeenCalledWith(SESSION_COOKIE_NAME, "session-token", {
       httpOnly: true,
@@ -106,6 +130,27 @@ describe("GitHubHttpController", () => {
       result
     );
 
+    expect(result.cookie).not.toHaveBeenCalled();
+    expect(result.redirect).toHaveBeenCalledWith(302, "https://web.example/github/connected?status=failed");
+  });
+
+  it("rejects a callback when its state does not match the initiating browser cookie", async () => {
+    const githubUseCase = {
+      getPublicWebOrigin: vi.fn().mockReturnValue("https://web.example"),
+      completeConnection: vi.fn(),
+    };
+    const controller = new GitHubHttpController(githubUseCase as never);
+    const result = response();
+
+    for (const cookie of [undefined, `${GITHUB_CONNECTION_STATE_COOKIE_NAME}=victim-state`]) {
+      await controller.callback(
+        { state: "attacker-state", installation_id: "17", setup_action: "install" },
+        { secure: true, headers: { cookie } },
+        result
+      );
+    }
+
+    expect(githubUseCase.completeConnection).not.toHaveBeenCalled();
     expect(result.cookie).not.toHaveBeenCalled();
     expect(result.redirect).toHaveBeenCalledWith(302, "https://web.example/github/connected?status=failed");
   });

@@ -116,6 +116,7 @@ describe("GitHubUseCase", () => {
 
     await expect(harness.useCase.startConnection({ now })).resolves.toEqual({
       url: "https://github.com/apps/app/installations/new?state=flow",
+      state: "flow",
     });
     expect(harness.githubAppService.buildInstallationUrl).toHaveBeenCalledWith({ state: "flow" });
   });

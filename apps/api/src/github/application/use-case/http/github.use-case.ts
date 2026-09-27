@@ -61,12 +61,12 @@ export class GitHubUseCase {
     @Inject(GitHubAppService) private readonly githubAppService: GitHubAppService
   ) {}
 
-  async startConnection({ now }: { now: string }): Promise<{ url: string }> {
+  async startConnection({ now }: { now: string }): Promise<{ url: string; state: string }> {
     const { state } = await this.commandBus.execute<
       CreateGitHubAuthFlowCommand,
       { state: string; expiresAt: string }
     >(new CreateGitHubAuthFlowCommand(now));
-    return { url: this.githubAppService.buildInstallationUrl({ state }) };
+    return { url: this.githubAppService.buildInstallationUrl({ state }), state };
   }
 
   async completeConnection({

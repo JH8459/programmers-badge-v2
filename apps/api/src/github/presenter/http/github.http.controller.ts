@@ -36,11 +36,11 @@ interface GitHubHttpResponse {
   cookie(
     name: string,
     value: string,
-    options: { httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string; maxAge: number }
+    options: { httpOnly: boolean; secure: boolean; sameSite: "strict" | "lax"; path: string; maxAge: number }
   ): unknown;
   clearCookie(
     name: string,
-    options: { httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string }
+    options: { httpOnly: boolean; secure: boolean; sameSite: "strict" | "lax"; path: string }
   ): unknown;
   status(statusCode: number): { send(): unknown };
 }
@@ -53,14 +53,31 @@ const callbackQuerySchema = z.object({
 });
 
 const sessionLifetimeMs = 30 * 24 * 60 * 60_000;
+export const GITHUB_CONNECTION_STATE_COOKIE_NAME = "programmers_badge_github_connection_state";
+const connectionStateLifetimeMs = 10 * 60_000;
+const callbackPath = "/api/github/callback";
+
+const getGitHubConnectionStateCookie = (cookieHeader: string | undefined): string | undefined =>
+  cookieHeader
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${GITHUB_CONNECTION_STATE_COOKIE_NAME}=`))
+    ?.slice(GITHUB_CONNECTION_STATE_COOKIE_NAME.length + 1);
 
 @Controller("github")
 export class GitHubHttpController {
   constructor(@Inject(GitHubUseCase) private readonly githubUseCase: GitHubUseCase) {}
 
   @Get("connect")
-  async connect(@Res() response: GitHubHttpResponse): Promise<void> {
+  async connect(@Req() request: GitHubHttpRequest, @Res() response: GitHubHttpResponse): Promise<void> {
     const connection = await this.githubUseCase.startConnection({ now: new Date().toISOString() });
+    response.cookie(GITHUB_CONNECTION_STATE_COOKIE_NAME, connection.state, {
+      httpOnly: true,
+      secure: request.secure,
+      sameSite: "lax",
+      path: callbackPath,
+      maxAge: connectionStateLifetimeMs,
+    });
     response.redirect(302, connection.url);
   }
 
@@ -71,6 +88,12 @@ export class GitHubHttpController {
     @Res() response: GitHubHttpResponse
   ): Promise<void> {
     const destination = new URL("/github/connected", this.githubUseCase.getPublicWebOrigin());
+    response.clearCookie(GITHUB_CONNECTION_STATE_COOKIE_NAME, {
+      httpOnly: true,
+      secure: request.secure,
+      sameSite: "lax",
+      path: callbackPath,
+    });
     const parsedQuery = callbackQuerySchema.safeParse(input);
     if (!parsedQuery.success) {
       destination.searchParams.set("status", "failed");
@@ -85,6 +108,12 @@ export class GitHubHttpController {
       query.installation_id === undefined ||
       query.setup_action === undefined
     ) {
+      destination.searchParams.set("status", "failed");
+      response.redirect(302, destination.toString());
+      return;
+    }
+
+    if (getGitHubConnectionStateCookie(request.headers.cookie) !== query.state) {
       destination.searchParams.set("status", "failed");
       response.redirect(302, destination.toString());
       return;

@@ -13,7 +13,7 @@
 - health endpoint는 minimal readiness 확인용이다.
 - Swagger 문서는 `ENABLE_SWAGGER=true`일 때 `/api/docs`와 `/api/docs-json`으로 제공하고, HTTP Basic Auth를 요구한다.
 - public legal/privacy page는 web이 소유하며 API는 `/privacy`를 서빙하지 않는다.
-- GitHub 연동은 `/api/github/*`가 소유한다. 설치 state는 일회용으로 검증하고, session token은 hash만 저장한다.
+- GitHub 연동은 `/api/github/*`가 소유한다. 설치 state는 일회용이며 시작 브라우저의 단기 HttpOnly cookie와 함께 검증하고, session token은 hash만 저장한다.
 - GitHub installation token은 API 서버에서 저장소를 지정해 요청 시 발급한다. extension에는 GitHub credential을 전달하지 않는다.
 - 풀이 제출은 payload를 재검증한다. GitHub 기록 실패일 때만 재시도용 source code를 보관하고, 성공·건너뜀 또는 연결 해제 시 제거한다.
 
