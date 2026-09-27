@@ -13,6 +13,7 @@ import type {
 } from "@programmers-badge/shared-types";
 import { getPopupViewModel } from "./view-model.js";
 import type { BadgePreviewVariant } from "./view-model.js";
+import { loadPopupInitialData } from "./initialize.js";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 
@@ -428,21 +429,20 @@ const runSync = async (): Promise<void> => {
 };
 
 const initialize = async (): Promise<void> => {
-  try {
-    const [state, settings, connection] = await Promise.all([
-      sendMessage<ExtensionSyncState>({ type: "get-sync-state" }),
-      sendMessage<ExtensionSettings>({ type: "get-extension-settings" }),
-      sendMessage<GitHubConnectionResponse>({ type: "get-github-connection" }),
-    ]);
-    currentState = state;
-    currentSettings = settings;
-    githubConnection = connection;
-    if (connection.connected) {
-      await refreshGitHubData();
-    }
-  } catch {
-    currentState = createIdleSyncState();
-    currentSettings = DEFAULT_EXTENSION_SETTINGS;
+  const initialData = await loadPopupInitialData({
+    initialSyncState: currentState,
+    initialSettings: currentSettings,
+    initialGitHubConnection: githubConnection,
+    getSyncState: () => sendMessage<ExtensionSyncState>({ type: "get-sync-state" }),
+    getSettings: () => sendMessage<ExtensionSettings>({ type: "get-extension-settings" }),
+    getGitHubConnection: () => sendMessage<GitHubConnectionResponse>({ type: "get-github-connection" }),
+  });
+  currentState = initialData.syncState;
+  currentSettings = initialData.settings;
+  githubConnection = initialData.githubConnection;
+  githubStatusMessage = initialData.githubStatusMessage;
+  if (githubConnection.connected) {
+    await refreshGitHubData();
   }
 
   render();

@@ -14,6 +14,7 @@ import {
 } from "./github-client.js";
 import { captureProgrammersSolution } from "./solution-capture.js";
 import { createSolutionRecordPayload } from "../shared/programmers-solution.js";
+import { processSolvedSubmission } from "./solution-flow.js";
 import {
   createAutoSyncDeduper,
   createIdleSyncState,
@@ -90,78 +91,24 @@ const getAutoSyncTabId = ({ message, sender }: AutoSyncTabIdInput): number | nul
 const isExtensionUiSender = (sender: chrome.runtime.MessageSender): boolean =>
   sender.id === chrome.runtime.id && sender.tab === undefined;
 
-const runSolvedSubmission = async ({
-  message,
-  tabId,
-}: {
-  message: AutoSyncTriggerMessage;
-  tabId: number;
-}): Promise<ExtensionSyncState> => {
-  const previousState = await getStoredSyncState();
-  const settings = await getExtensionSettings();
-  let badgeState: ExtensionSyncState;
-  if (settings.autoSyncEnabled) {
-    try {
-      badgeState = await runSync((legacyProgrammerHandle) =>
-        performSyncForTab({ tabId, legacyProgrammerHandle })
-      );
-    } catch (error) {
-      badgeState = {
-        status: "error",
-        message:
-          error instanceof Error ? error.message : "배지 동기화를 실행하지 못했습니다.",
-        lastSync: previousState.lastSync,
-      };
-    }
-  } else {
-    badgeState = {
-        status: "idle" as const,
-        message: "배지 자동 동기화가 꺼져 있습니다.",
-        lastSync: previousState.lastSync,
-      };
-  }
-
-  let solutionRecord: ExtensionSyncState["solutionRecord"];
-  try {
-    const connection = await getGitHubConnection();
-    if (!connection.connected) {
-      return badgeState;
-    }
-    if (!connection.settings) {
-      solutionRecord = {
-        submissionId: crypto.randomUUID(),
-        status: "skipped",
-        message: "GitHub 저장소를 연결하고 기록 경로를 설정해 주세요.",
-        commitUrl: null,
-      };
-    } else {
-      const capture = await captureProgrammersSolution({
-        tabId,
-        resultSummary: message.resultSummary,
-      });
-      const payload = createSolutionRecordPayload({
-        capture,
-        submissionId: crypto.randomUUID(),
-        submittedAt: new Date().toISOString(),
-      });
-      solutionRecord = await submitGitHubSolution({ payload });
-    }
-  } catch (error) {
-    solutionRecord = {
-      submissionId: crypto.randomUUID(),
-      status: "failed",
-      message: error instanceof Error ? error.message : "GitHub 풀이 기록을 처리하지 못했습니다.",
-      commitUrl: null,
-    };
-  }
-
-  const nextState = {
-    ...badgeState,
-    solutionRecord,
-  };
-  await setStoredSyncState(nextState);
-  return nextState;
-};
+const runSolvedSubmission = ({ message, tabId }: { message: AutoSyncTriggerMessage; tabId: number }) =>
+  processSolvedSubmission({
+    message,
+    tabId,
+    dependencies: {
+      getStoredSyncState,
+      getExtensionSettings,
+      setStoredSyncState,
+      runSync,
+      performSyncForTab,
+      getGitHubConnection,
+      captureProgrammersSolution,
+      createSolutionRecordPayload,
+      submitGitHubSolution,
+      createSubmissionId: () => crypto.randomUUID(),
+      now: () => new Date().toISOString(),
+    },
+  });
 
 const handleMessage = async ({
   message,
