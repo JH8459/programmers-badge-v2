@@ -6,7 +6,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { readApiRuntimeConfig } from "../../../common/runtime-config";
+import { isChromeExtensionOrigin } from "../../../cors";
 import type { GitHubConnectionRecord } from "../../infra/github.repository";
 import { GitHubUseCase } from "../../application/use-case/http/github.use-case";
 
@@ -37,7 +37,7 @@ export class GitHubSessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<GitHubAuthenticatedRequest>();
     const origin = request.headers.origin;
-    if (!origin || !readApiRuntimeConfig().allowedExtensionOrigins.includes(origin)) {
+    if (!origin || !isChromeExtensionOrigin(origin)) {
       throw new ForbiddenException("GitHub API 요청은 허용된 확장 프로그램에서만 실행할 수 있습니다.");
     }
 

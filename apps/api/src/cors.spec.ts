@@ -25,6 +25,39 @@ describe("isAllowedCorsOrigin", () => {
     ).toBe(true);
   });
 
+  it("allows any valid Chrome extension origin without an explicit allowlist entry", () => {
+    const runtimeConfig = {
+      allowedWebOrigins: [],
+      allowedExtensionOrigins: [],
+      allowLocalhostOrigins: false,
+    };
+
+    expect(
+      isAllowedCorsOrigin({
+        origin: `chrome-extension://${"a".repeat(32)}`,
+        runtimeConfig,
+      })
+    ).toBe(true);
+    expect(
+      isAllowedCorsOrigin({
+        origin: `chrome-extension://${"q".repeat(32)}`,
+        runtimeConfig,
+      })
+    ).toBe(false);
+    expect(
+      isAllowedCorsOrigin({
+        origin: `chrome-extension://${"a".repeat(31)}`,
+        runtimeConfig,
+      })
+    ).toBe(false);
+    expect(
+      isAllowedCorsOrigin({
+        origin: `chrome-extension://${"a".repeat(32)}/path`,
+        runtimeConfig,
+      })
+    ).toBe(false);
+  });
+
   it("allows localhost origins only when explicitly enabled", () => {
     const runtimeConfig = {
       allowedWebOrigins: [],

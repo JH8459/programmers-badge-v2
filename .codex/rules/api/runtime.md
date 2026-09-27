@@ -9,9 +9,9 @@
 - `DATABASE_PATH`가 없으면 기본 SQLite 파일은 `data/programmers-badge.sqlite`다.
 - `BADGE_OUTPUT_DIR`가 없으면 기본 SVG 출력 디렉토리는 `data/badges`다.
 - `ALLOWED_WEB_ORIGINS`는 comma-separated web origin list다.
-- `ALLOWED_EXTENSION_ORIGINS`는 comma-separated Chrome extension origin allowlist이며, production 기본값은 현재 Chrome Web Store ID 하나다.
+- extension API 요청은 유효한 Chrome extension ID 형식의 origin을 허용한다. `ALLOWED_EXTENSION_ORIGINS`는 선택형 comma-separated 설정으로 유지한다.
 - `ALLOW_LOCALHOST_ORIGINS`는 local dev server용 localhost origin 허용 여부이며 production 기본값은 `false`다.
-- GitHub App 연결을 켜려면 `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, 정확한 extension origin인 `ALLOWED_EXTENSION_ORIGINS`를 설정한다. App 설정이 일부 빠졌거나 origin allowlist가 비면 bootstrap 전에 실패한다.
+- GitHub App 연결을 켜려면 `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`를 설정한다. App 설정이 일부 빠지면 bootstrap 전에 실패한다.
 - GitHub App private key는 env의 실제 줄바꿈 또는 `\\n` 형식을 지원한다. App 설치 토큰은 API가 요청마다 발급하며 저장하지 않는다.
 - `ENABLE_SWAGGER`는 Swagger UI/OpenAPI JSON 노출 여부다. app-local runtime 기본값은 `false`이고, production/local compose 기본 주입값은 `true`다.
 - Swagger가 활성화되면 UI는 `/api/docs`, OpenAPI JSON은 `/api/docs-json`에서 제공한다.

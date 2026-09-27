@@ -54,7 +54,7 @@ GitHub App 연동용 private key는 저장소 전체 workflow에서 참조할 �
 - `WEB_PORT`: NAS에서 외부에 노출할 web 포트, 기본값 `5020`
 - `PUBLIC_BASE_URL`: badge URL 생성용 public API origin, 기본값 `https://api.programmers-badge.jh8459.com`
 - `ALLOWED_WEB_ORIGINS`: API CORS 허용 web origin list, 기본값 `https://programmers-badge.jh8459.com`
-- `ALLOWED_EXTENSION_ORIGINS`: 추가로 허용할 credentialed API CORS extension origin 목록. production deploy는 기존 Chrome Web Store origin `chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf`를 항상 포함한다.
+- `ALLOWED_EXTENSION_ORIGINS`: 선택형 credentialed API CORS extension origin 설정. API는 형식이 유효한 모든 `chrome-extension://<32자 ID>` origin을 허용하며, 이 변수는 기존 배포 설정과의 호환성을 위해 유지한다.
 - `PROGRAMMERS_BADGE_GITHUB_APP_ID`: 선택형 GitHub App ID. API workflow가 runtime `GITHUB_APP_ID`로 전달한다.
 - `PROGRAMMERS_BADGE_GITHUB_APP_SLUG`: 선택형 GitHub App slug. API workflow가 runtime `GITHUB_APP_SLUG`로 전달한다.
 - `ALLOW_LOCALHOST_ORIGINS`: localhost 동적 포트 CORS 허용 여부, production 기본값 `false`
