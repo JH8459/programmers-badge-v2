@@ -126,7 +126,7 @@ describe("GitHubHttpController", () => {
 
     await controller.callback(
       { state: "state", installation_id: "17", setup_action: "update" },
-      { secure: false, headers: {} },
+      { secure: false, headers: { cookie: `${GITHUB_CONNECTION_STATE_COOKIE_NAME}=state` } },
       result
     );
 
