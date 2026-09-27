@@ -30,7 +30,7 @@ import {
 const autoSyncDeduper = createAutoSyncDeduper();
 const API_BASE_URL = chrome.runtime
   .getManifest()
-  .host_permissions?.find((permission) => /^https?:\/\/[^*]+\/\*$/.test(permission))
+  .host_permissions?.find((permission: string) => /^https?:\/\/[^*]+\/\*$/.test(permission))
   ?.replace(/\/\*$/, "");
 
 const isProgrammersProblemPageUrl = (url: string): boolean => {
