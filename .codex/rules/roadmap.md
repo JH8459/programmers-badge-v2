@@ -9,6 +9,7 @@
 - `apps/extension`은 manual sync, 설정 가능한 제출 감지 기반 auto-sync, bounded retry, 마지막 성공 시각과 popup copy flow를 제공한다.
 - `apps/extension`은 page-context fetch와 extension-context validation을 분리해 `executeScript` boundary를 안전하게 유지한다.
 - `apps/extension`은 hosted API URL과 host permission을 `api.programmers-badge.jh8459.com` 기준으로 사용한다.
+- 선택형 GitHub App 연동은 Programmers 정답 제출 README와 언어별 풀이를 저장하며, 동일 언어의 변경 파일은 덮어쓰고 동일 내용은 커밋하지 않는다.
 - Docker Compose 기반 API/web 배포 베이스가 있다.
 - PR verify, master production deploy, tag/manual release 기준 GitHub Actions 베이스가 있으며 세부 기준은 `.codex/rules/deployment.md`를 따른다.
 - `apps/web`은 Vite + React + TypeScript 기반 public web UI scaffold와 Nginx runtime image, landing/contact/privacy route를 제공한다.
@@ -40,3 +41,4 @@
 - multi-tenant admin features
 - queue/worker infra
 - analytics/observability stack beyond minimal ops needs
+- 제품명 변경은 GitHub 풀이 기록 기능이 안정화된 뒤 결정한다.

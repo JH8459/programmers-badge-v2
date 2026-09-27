@@ -4,6 +4,7 @@
 
 - sync 응답은 `BadgeSyncResponse`를 반환한다.
 - sync request는 안정적인 Programmers 계정 ID와 검증된 전체 통계 snapshot을 받는다. 기존 확장 프로그램에서 넘어오는 `legacyProgrammerHandle`은 이전 public slug를 한 번 이어받는 데만 사용한다.
+- 기존 확장 버전 호환을 위해 `/api/sync` payload/response와 기존 badge·health route는 유지하고, 새 기능은 별도 route와 additive persistence migration으로 추가한다.
 - sync 응답에는 내부 계정 ID를 포함하지 않는다.
 - public badge는 full SVG와 mini SVG를 제공한다.
 - malformed slug와 미등록 slug는 같은 404 메시지를 반환한다.
@@ -12,6 +13,9 @@
 - health endpoint는 minimal readiness 확인용이다.
 - Swagger 문서는 `ENABLE_SWAGGER=true`일 때 `/api/docs`와 `/api/docs-json`으로 제공하고, HTTP Basic Auth를 요구한다.
 - public legal/privacy page는 web이 소유하며 API는 `/privacy`를 서빙하지 않는다.
+- GitHub 연동은 `/api/github/*`가 소유한다. 설치 state는 일회용이며 시작 브라우저의 단기 HttpOnly cookie와 함께 검증하고, session token은 hash만 저장한다.
+- GitHub installation token은 API 서버에서 저장소를 지정해 요청 시 발급한다. extension에는 GitHub credential을 전달하지 않는다.
+- 풀이 제출은 payload를 재검증한다. GitHub 기록 실패일 때만 재시도용 source code를 보관하고, 성공·건너뜀 또는 연결 해제 시 제거한다.
 
 ## Validation And Security
 
@@ -22,6 +26,9 @@
 - HTTP boundary에서는 Nest pipe로 zod parse 결과를 받고, normalization은 shared schema 기준을 따른다.
 - `PORT`, `PUBLIC_BASE_URL`, `PUBLIC_BADGE_PATH_PREFIX`, `DATABASE_PATH`, `BADGE_OUTPUT_DIR`는 app-local runtime config zod schema로 검증한다.
 - CORS web origin은 `ALLOWED_WEB_ORIGINS` env의 comma-separated origin list를 기준으로 허용한다.
+- extension CORS origin은 `ALLOWED_EXTENSION_ORIGINS`의 exact Chrome extension origin만 허용한다.
+- production `ALLOWED_EXTENSION_ORIGINS`에는 기존 Chrome Web Store extension ID를 유지한다. 같은 Store 항목의 이전·신규 버전은 같은 origin으로 API를 호출한다.
+- GitHub mutation/session routes는 credentialed cookie와 함께 extension `Origin`을 검증해 CSRF 요청을 거부한다.
 - local development에서만 `ALLOW_LOCALHOST_ORIGINS=true`로 explicit port가 있는 `http://localhost:*`, `http://127.0.0.1:*` origin을 허용한다.
 - public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
 - solved count는 total을 넘을 수 없고, badge tier는 skill level에서 계산한 값과 일치해야 한다.

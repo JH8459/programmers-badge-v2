@@ -6,6 +6,7 @@ describe("isAllowedCorsOrigin", () => {
   it("allows configured web origins and extension origins", () => {
     const runtimeConfig = {
       allowedWebOrigins: ["https://programmers-badge.jh8459.com"],
+      allowedExtensionOrigins: ["chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf"],
       allowLocalhostOrigins: false,
     };
 
@@ -18,7 +19,7 @@ describe("isAllowedCorsOrigin", () => {
     ).toBe(true);
     expect(
       isAllowedCorsOrigin({
-        origin: "chrome-extension://abcdefghijklmnop",
+        origin: "chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf",
         runtimeConfig,
       })
     ).toBe(true);
@@ -27,6 +28,7 @@ describe("isAllowedCorsOrigin", () => {
   it("allows localhost origins only when explicitly enabled", () => {
     const runtimeConfig = {
       allowedWebOrigins: [],
+      allowedExtensionOrigins: [],
       allowLocalhostOrigins: true,
     };
 
@@ -40,6 +42,7 @@ describe("isAllowedCorsOrigin", () => {
   it("rejects unrelated web origins", () => {
     const runtimeConfig = {
       allowedWebOrigins: ["https://programmers-badge.jh8459.com"],
+      allowedExtensionOrigins: [],
       allowLocalhostOrigins: false,
     };
 

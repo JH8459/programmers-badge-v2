@@ -9,7 +9,8 @@ import { readApiRuntimeConfig } from "./common/runtime-config";
 
 const bootstrap = async (): Promise<void> => {
   const runtimeConfig = readApiRuntimeConfig();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false });
+  app.useBodyParser("json", { limit: "2mb" });
 
   // Production traffic reaches the API through the single Synology reverse-proxy hop.
   app.set("trust proxy", 1);

@@ -125,8 +125,11 @@ jobs:
       API_PORT: ${{ vars.API_PORT || '5010' }}
       PUBLIC_BASE_URL: ${{ vars.PUBLIC_BASE_URL || 'https://api.programmers-badge.jh8459.com' }}
       ALLOWED_WEB_ORIGINS: ${{ vars.ALLOWED_WEB_ORIGINS || 'https://programmers-badge.jh8459.com' }}
+      ALLOWED_EXTENSION_ORIGINS: ${{ vars.ALLOWED_EXTENSION_ORIGINS || '' }}
       ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
       ENABLE_SWAGGER: ${{ vars.ENABLE_SWAGGER || 'true' }}
+      GITHUB_APP_ID: ${{ vars.PROGRAMMERS_BADGE_GITHUB_APP_ID || '' }}
+      GITHUB_APP_SLUG: ${{ vars.PROGRAMMERS_BADGE_GITHUB_APP_SLUG || '' }}
 
     steps:
       - name: Checkout repository
@@ -138,6 +141,18 @@ jobs:
         run: |
           echo "content=$(base64 < docker-compose.api.yml | tr -d '\n')" >> "$GITHUB_OUTPUT"
 
+      - name: Encode GitHub App private key
+        id: github-app-key
+        shell: bash
+        env:
+          GITHUB_APP_PRIVATE_KEY: ${{ secrets.PROGRAMMERS_BADGE_GITHUB_APP_PRIVATE_KEY }}
+        run: |
+          private_key_b64="$(printf '%s' "$GITHUB_APP_PRIVATE_KEY" | base64 | tr -d '\n')"
+          if [ -n "$private_key_b64" ]; then
+            echo "::add-mask::${private_key_b64}"
+          fi
+          echo "private_key_b64=${private_key_b64}" >> "$GITHUB_OUTPUT"
+
       - name: Sync deploy files on NAS
         uses: appleboy/ssh-action@v1.2.5
         env:
@@ -146,8 +161,12 @@ jobs:
           API_PORT: ${{ env.API_PORT }}
           PUBLIC_BASE_URL: ${{ env.PUBLIC_BASE_URL }}
           ALLOWED_WEB_ORIGINS: ${{ env.ALLOWED_WEB_ORIGINS }}
+          ALLOWED_EXTENSION_ORIGINS: ${{ env.ALLOWED_EXTENSION_ORIGINS }}
           ALLOW_LOCALHOST_ORIGINS: ${{ env.ALLOW_LOCALHOST_ORIGINS }}
           ENABLE_SWAGGER: ${{ env.ENABLE_SWAGGER }}
+          GITHUB_APP_ID: ${{ env.GITHUB_APP_ID }}
+          GITHUB_APP_SLUG: ${{ env.GITHUB_APP_SLUG }}
+          GITHUB_APP_PRIVATE_KEY_B64: ${{ steps.github-app-key.outputs.private_key_b64 }}
           SWAGGER_USERNAME: ${{ secrets.SWAGGER_USERNAME }}
           SWAGGER_PASSWORD: ${{ secrets.SWAGGER_PASSWORD }}
           DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
@@ -156,7 +175,7 @@ jobs:
           username: ${{ secrets.NAS_USER }}
           password: ${{ secrets.NAS_PASSWORD }}
           port: ${{ secrets.NAS_PORT }}
-          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOW_LOCALHOST_ORIGINS,ENABLE_SWAGGER,SWAGGER_USERNAME,SWAGGER_PASSWORD,DOCKER_IMAGE
+          envs: DEPLOY_COMPOSE_B64,NAS_DEPLOY_DIR,API_PORT,PUBLIC_BASE_URL,ALLOWED_WEB_ORIGINS,ALLOWED_EXTENSION_ORIGINS,ALLOW_LOCALHOST_ORIGINS,ENABLE_SWAGGER,GITHUB_APP_ID,GITHUB_APP_SLUG,GITHUB_APP_PRIVATE_KEY_B64,SWAGGER_USERNAME,SWAGGER_PASSWORD,DOCKER_IMAGE
           script: |
             set -eu
 
@@ -166,16 +185,35 @@ jobs:
             API_PORT="${API_PORT:-5010}"
             PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://api.programmers-badge.jh8459.com}"
             ALLOWED_WEB_ORIGINS="${ALLOWED_WEB_ORIGINS:-https://programmers-badge.jh8459.com}"
+            ALLOWED_EXTENSION_ORIGINS="${ALLOWED_EXTENSION_ORIGINS:-}"
+            REQUIRED_EXTENSION_ORIGIN="chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf"
+            case ",${ALLOWED_EXTENSION_ORIGINS}," in
+              *,"${REQUIRED_EXTENSION_ORIGIN}",*) ;;
+              *)
+                if [ -n "${ALLOWED_EXTENSION_ORIGINS}" ]; then
+                  ALLOWED_EXTENSION_ORIGINS="${ALLOWED_EXTENSION_ORIGINS},${REQUIRED_EXTENSION_ORIGIN}"
+                else
+                  ALLOWED_EXTENSION_ORIGINS="${REQUIRED_EXTENSION_ORIGIN}"
+                fi
+                ;;
+            esac
             ALLOW_LOCALHOST_ORIGINS="${ALLOW_LOCALHOST_ORIGINS:-false}"
             ENABLE_SWAGGER="${ENABLE_SWAGGER:-true}"
+            GITHUB_APP_ID="${GITHUB_APP_ID:-}"
+            GITHUB_APP_SLUG="${GITHUB_APP_SLUG:-}"
+            GITHUB_APP_PRIVATE_KEY="$(printf '%s' "${GITHUB_APP_PRIVATE_KEY_B64:-}" | base64 -d)"
 
             cat <<EOF > "${NAS_DEPLOY_DIR}/.env.api.deploy"
             DOCKER_IMAGE=${DOCKER_IMAGE}
             API_PORT=${API_PORT}
             PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
             ALLOWED_WEB_ORIGINS=${ALLOWED_WEB_ORIGINS}
+            ALLOWED_EXTENSION_ORIGINS=${ALLOWED_EXTENSION_ORIGINS}
             ALLOW_LOCALHOST_ORIGINS=${ALLOW_LOCALHOST_ORIGINS}
             ENABLE_SWAGGER=${ENABLE_SWAGGER}
+            GITHUB_APP_ID=${GITHUB_APP_ID}
+            GITHUB_APP_SLUG=${GITHUB_APP_SLUG}
+            GITHUB_APP_PRIVATE_KEY='${GITHUB_APP_PRIVATE_KEY}'
             SWAGGER_USERNAME=${SWAGGER_USERNAME}
             SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
             EOF

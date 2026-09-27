@@ -93,7 +93,7 @@ const collectMutationRoots = (records: MutationRecord[]): Element[] => {
   return Array.from(elements);
 };
 
-const triggerAutoSync = async (fingerprint: string): Promise<void> => {
+const triggerAutoSync = async (fingerprint: string, resultSummary: string): Promise<void> => {
   if (isTriggerInFlight) {
     return;
   }
@@ -104,11 +104,12 @@ const triggerAutoSync = async (fingerprint: string): Promise<void> => {
     // Programmers 통계가 제출 직후 갱신될 시간을 준 뒤 최신 기록을 다시 읽는다.
     await new Promise<void>((resolve) => window.setTimeout(resolve, AUTO_SYNC_REFRESH_DELAY_MS));
     const nextState = await sendMessage({
-      type: "trigger-auto-sync",
+      type: "trigger-solved-submission",
       fingerprint,
+      resultSummary,
     });
 
-    if (nextState.status !== "idle") {
+    if (nextState.status !== "idle" || nextState.solutionRecord) {
       toastPresenter.show(nextState);
     }
   } catch (error) {
@@ -147,7 +148,7 @@ const scanPendingRoots = async (): Promise<void> => {
       continue;
     }
 
-    await triggerAutoSync(signal.fingerprint);
+    await triggerAutoSync(signal.fingerprint, signal.summary);
     lastSubmissionAt = 0;
     return;
   }

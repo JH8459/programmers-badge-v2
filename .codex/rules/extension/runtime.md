@@ -4,12 +4,12 @@
 
 - Manifest V3를 사용한다.
 - 현재 permission은 `storage`, `activeTab`, `tabs`, `scripting`이다.
-- 현재 `host_permissions`는 `https://api.programmers-badge.jh8459.com/*`만 허용한다.
+- 현재 `host_permissions`는 hosted API와 문제 편집기 수집을 위한 `https://school.programmers.co.kr/*`만 허용한다.
 - extension runtime JS는 `esbuild`로 번들링해서 bare package import가 Chrome runtime에 남지 않게 한다.
 
 ## Security And Privacy
 
-- raw credential, session token, cookie를 저장하지 않는다.
+- Programmers와 GitHub access token, session token, cookie를 extension storage에 저장하지 않는다. GitHub API session cookie는 API domain에 HttpOnly로 설정한다.
 - extension 권한은 최소 범위를 유지한다.
 - 민감한 사용자 정보를 popup, storage, public URL에 과하게 노출하지 않는다.
 - backend persistence 규칙이나 admin 성격 로직을 extension에 복제하지 않는다.

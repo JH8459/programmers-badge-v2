@@ -2,7 +2,10 @@ import type { ApiRuntimeConfig } from "./common/runtime-config";
 
 interface IsAllowedCorsOriginInput {
   origin: string | undefined;
-  runtimeConfig: Pick<ApiRuntimeConfig, "allowedWebOrigins" | "allowLocalhostOrigins">;
+  runtimeConfig: Pick<
+    ApiRuntimeConfig,
+    "allowedWebOrigins" | "allowedExtensionOrigins" | "allowLocalhostOrigins"
+  >;
 }
 
 const isLocalDevelopmentOrigin = (origin: string): boolean => {
@@ -32,5 +35,5 @@ export const isAllowedCorsOrigin = ({
     return true;
   }
 
-  return origin.startsWith("chrome-extension://");
+  return runtimeConfig.allowedExtensionOrigins.includes(origin);
 };
