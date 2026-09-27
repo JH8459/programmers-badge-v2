@@ -52,6 +52,7 @@ let githubConnection: GitHubConnectionResponse = {
   settings: null,
 };
 let githubRepositories: GitHubRepository[] = [];
+let githubRepositoriesLoaded = false;
 let failedSolutions: FailedSolutionRecord[] = [];
 let githubStatusMessage = "";
 let selectedPreviewVariant: BadgePreviewVariant = "standard";
@@ -64,6 +65,22 @@ const escapeHtml = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
+const getGitHubRepositoryUrl = ({ owner, name }: GitHubRepository): string =>
+  `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`;
+
+const getSafeGitHubCommitUrl = (value: string | null): string | undefined => {
+  if (value === null) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "github.com" ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 const copyToClipboard = async (text: string | undefined): Promise<void> => {
   if (!text) {
     return;
@@ -73,16 +90,34 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
 };
 
 const refreshGitHubData = async (): Promise<void> => {
-  try {
-    const [repositories, records] = await Promise.all([
-      sendMessage<GitHubRepository[]>({ type: "get-github-repositories" }),
-      sendMessage<FailedSolutionRecord[]>({ type: "get-failed-github-solutions" }),
-    ]);
-    githubRepositories = repositories;
-    failedSolutions = records;
-  } catch (error) {
-    githubStatusMessage = error instanceof Error ? error.message : "GitHub 설정을 읽지 못했습니다.";
+  const [repositoriesResult, failedSolutionsResult] = await Promise.allSettled([
+    sendMessage<GitHubRepository[]>({ type: "get-github-repositories" }),
+    sendMessage<FailedSolutionRecord[]>({ type: "get-failed-github-solutions" }),
+  ]);
+  const errors: string[] = [];
+
+  if (repositoriesResult.status === "fulfilled") {
+    githubRepositories = repositoriesResult.value;
+    githubRepositoriesLoaded = true;
+  } else {
+    errors.push(
+      repositoriesResult.reason instanceof Error
+        ? repositoriesResult.reason.message
+        : "GitHub 저장소 목록을 읽지 못했습니다."
+    );
   }
+
+  if (failedSolutionsResult.status === "fulfilled") {
+    failedSolutions = failedSolutionsResult.value;
+  } else {
+    errors.push(
+      failedSolutionsResult.reason instanceof Error
+        ? failedSolutionsResult.reason.message
+        : "실패한 풀이 기록을 읽지 못했습니다."
+    );
+  }
+
+  githubStatusMessage = errors.join(" ");
 };
 
 const render = (): void => {
@@ -184,11 +219,30 @@ const render = (): void => {
       `
     : "";
   const githubSettings = githubConnection.settings;
+  const latestCommitUrl = getSafeGitHubCommitUrl(currentState.solutionRecord?.commitUrl ?? null);
   const latestSolutionMarkup = currentState.solutionRecord
-    ? `<p class="github-feedback" data-tone="${currentState.solutionRecord.status}">${escapeHtml(currentState.solutionRecord.message)}</p>`
+    ? `
+      <div class="github-solution-result" data-tone="${currentState.solutionRecord.status}">
+        <p>${escapeHtml(currentState.solutionRecord.message)}</p>
+        ${latestCommitUrl ? `<a class="github-link" href="${escapeHtml(latestCommitUrl)}" target="_blank" rel="noreferrer">저장된 커밋 보기</a>` : ""}
+      </div>
+    `
     : "";
   const selectedRepositoryId = githubSettings?.repositoryId ?? githubRepositories[0]?.id;
-  const selectedRepository = githubRepositories.find(({ id }) => id === selectedRepositoryId);
+  const selectedRepository =
+    githubRepositories.find(({ id }) => id === selectedRepositoryId) ?? githubSettings?.repository;
+  const selectedRepositoryUrl = selectedRepository ? getGitHubRepositoryUrl(selectedRepository) : undefined;
+  const selectedRepositoryIsAvailable = githubSettings
+    ? githubRepositories.some(({ id }) => id === githubSettings.repositoryId)
+    : true;
+  const repositoryGuidance =
+    githubRepositoriesLoaded && githubSettings && !selectedRepositoryIsAvailable
+      ? "현재 GitHub App에서 이 저장소에 접근할 수 없습니다. GitHub App 설정에서 저장소 권한을 확인해 주세요."
+      : githubRepositoriesLoaded && githubRepositories.length === 0
+        ? "GitHub App이 접근할 수 있는 저장소가 없습니다. GitHub App 설정에서 저장소를 공유한 뒤 목록을 새로고침하세요."
+        : githubSettings
+          ? "정답 제출이 확인되면 이 저장소에 풀이를 자동 기록합니다."
+          : "저장소를 선택해 설정을 저장하면 다음 정답 제출부터 풀이가 자동 기록됩니다.";
   const repositoryMarkup = githubRepositories
     .map(
       (repository) =>
@@ -224,11 +278,19 @@ const render = (): void => {
           <button type="button" class="text-button github-disconnect">연결 해제</button>
         </div>
         <label class="github-field">
-          <span>저장소</span>
+          <span>GitHub App 접근 저장소</span>
           <select class="github-repository" ${githubRepositories.length ? "" : "disabled"}>
             ${repositoryMarkup || "<option value=\"\">권한이 있는 저장소가 없습니다.</option>"}
           </select>
         </label>
+        <div class="github-repository-target">
+          <span class="github-repository-target-label">${githubSettings ? "저장된 풀이 기록 대상 주소" : "선택한 저장소 주소"}</span>
+          ${selectedRepositoryUrl
+            ? `<a class="github-link github-repository-link" href="${escapeHtml(selectedRepositoryUrl)}" target="_blank" rel="noreferrer">${escapeHtml(selectedRepositoryUrl)}</a>`
+            : `<span class="github-note">공유된 저장소가 없습니다.</span>`}
+          <p class="github-note github-repository-notice">${escapeHtml(repositoryGuidance)}</p>
+        </div>
+        <button type="button" class="text-button github-refresh">저장소 목록 새로고침</button>
         <label class="github-field">
           <span>브랜치</span>
           <input class="github-branch" value="${escapeHtml(githubSettings?.branch ?? selectedRepository?.defaultBranch ?? "main")}" maxlength="255" />
@@ -308,9 +370,42 @@ const render = (): void => {
     const repositoryId = Number((event.currentTarget as HTMLSelectElement).value);
     const repository = githubRepositories.find(({ id }) => id === repositoryId);
     const branchElement = root.querySelector<HTMLInputElement>(".github-branch");
+    const repositoryLink = root.querySelector<HTMLAnchorElement>(".github-repository-link");
+    const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
+    const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
     if (repository && branchElement) {
       branchElement.value = repository.defaultBranch;
     }
+    if (repository && repositoryLink) {
+      const repositoryUrl = getGitHubRepositoryUrl(repository);
+      repositoryLink.href = repositoryUrl;
+      repositoryLink.textContent = repositoryUrl;
+    }
+    if (repositoryLabel) {
+      repositoryLabel.textContent = "선택한 저장소 주소";
+    }
+    if (repositoryNotice) {
+      repositoryNotice.textContent = "저장소 설정을 저장하면 다음 정답 제출부터 풀이가 자동 기록됩니다.";
+    }
+  });
+
+  root.querySelectorAll<HTMLInputElement>(".github-branch, .github-base-path").forEach((inputElement) => {
+    inputElement.addEventListener("input", () => {
+      const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
+      const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
+      if (repositoryLabel) {
+        repositoryLabel.textContent = "선택한 저장소 주소";
+      }
+      if (repositoryNotice) {
+        repositoryNotice.textContent = "저장소 설정을 저장하면 다음 정답 제출부터 풀이가 자동 기록됩니다.";
+      }
+    });
+  });
+
+  root.querySelector<HTMLButtonElement>(".github-refresh")?.addEventListener("click", () => {
+    githubStatusMessage = "GitHub App 접근 저장소를 새로 조회하고 있습니다.";
+    render();
+    void refreshGitHubData().then(render);
   });
 
   root.querySelector<HTMLButtonElement>(".github-save")?.addEventListener("click", () => {
@@ -345,6 +440,7 @@ const render = (): void => {
       .then((nextConnection) => {
         githubConnection = nextConnection;
         githubRepositories = [];
+        githubRepositoriesLoaded = false;
         failedSolutions = [];
         githubStatusMessage = "이 서비스의 연결과 실패 기록을 삭제했습니다.";
         render();

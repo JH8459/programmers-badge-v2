@@ -230,6 +230,38 @@ h1 {
   font-size: 11px;
 }
 
+.github-repository-target,
+.github-solution-result {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.github-repository-target > span:first-child {
+  color: var(--color-ink-soft);
+  font-weight: 700;
+}
+
+.github-link {
+  color: var(--color-accent);
+  overflow-wrap: anywhere;
+}
+
+.github-solution-result p {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+.github-solution-result[data-tone="saved"] p {
+  color: var(--color-status-success-text);
+}
+
+.github-solution-result[data-tone="failed"] p {
+  color: var(--color-status-danger-text);
+}
+
 .secondary-button {
   width: 100%;
   border: 1px solid var(--color-border-accent);
