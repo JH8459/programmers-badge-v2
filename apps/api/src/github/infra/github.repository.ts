@@ -193,7 +193,7 @@ export class GitHubRepository {
               "WHERE s.session_hash = ? AND s.expires_at > ?",
             ].join(" ")
           )
-          .get(hashSecret(token), now)
+          .get(hashSecret(token), now) ?? null
       );
 
     if (!row) {
@@ -361,7 +361,7 @@ export class GitHubRepository {
         this.databaseService
           .getConnection()
           .prepare("SELECT * FROM solution_records WHERE submission_id = ?")
-          .get(submissionId)
+        .get(submissionId) ?? null
       );
   }
 

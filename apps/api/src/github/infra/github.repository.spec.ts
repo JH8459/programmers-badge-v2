@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { GitHubRepository as GitHubRepositoryModel, SolutionRecordPayload } from "@programmers-badge/shared-types";
 
