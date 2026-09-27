@@ -1,12 +1,20 @@
 import { ForbiddenException, UnauthorizedException, type ExecutionContext } from "@nestjs/common";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { GitHubSessionGuard, getGitHubSessionToken } from "./github-session.guard";
+import {
+  GitHubSessionGuard,
+  getGitHubSessionToken,
+  type GitHubHttpRequest,
+} from "./github-session.guard";
+
+vi.mock("../../application/use-case/http/github.use-case", () => ({
+  GitHubUseCase: class GitHubUseCase {},
+}));
 
 const allowedOrigin = "chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf";
 const sessionToken = "s".repeat(43);
 
-const createContext = (request: { headers: { origin?: string; cookie?: string }; secure: boolean }) =>
+const createContext = (request: GitHubHttpRequest) =>
   ({
     switchToHttp: () => ({ getRequest: () => request }),
   }) as unknown as ExecutionContext;
@@ -32,14 +40,11 @@ describe("GitHubSessionGuard", () => {
     ).toBe(sessionToken);
   });
 
-  it("rejects requests with no origin or an invalid Chrome extension origin", async () => {
+  it("rejects requests with an invalid Chrome extension origin", async () => {
     process.env.ALLOWED_EXTENSION_ORIGINS = allowedOrigin;
     const useCase = { getConnection: vi.fn() };
     const guard = new GitHubSessionGuard(useCase as never);
 
-    await expect(
-      guard.canActivate(createContext({ headers: {}, secure: false }))
-    ).rejects.toBeInstanceOf(ForbiddenException);
     await expect(
       guard.canActivate(createContext({ headers: { origin: "https://example.com" }, secure: false }))
     ).rejects.toBeInstanceOf(ForbiddenException);
@@ -47,6 +52,68 @@ describe("GitHubSessionGuard", () => {
       guard.canActivate(
         createContext({
           headers: { origin: `chrome-extension://${"q".repeat(32)}` },
+          secure: false,
+        })
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(useCase.getConnection).not.toHaveBeenCalled();
+  });
+
+  it("allows an originless GET from the observed extension fetch context", async () => {
+    process.env.ALLOWED_EXTENSION_ORIGINS = allowedOrigin;
+    const connection = { githubAccountId: "42", installationId: 12 };
+    const useCase = { getConnection: vi.fn().mockResolvedValue(connection) };
+    const guard = new GitHubSessionGuard(useCase as never);
+    const request: GitHubHttpRequest = {
+      method: "GET",
+      headers: {
+        cookie: `programmers_badge_github_session=${sessionToken}`,
+        "sec-fetch-site": "none",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-dest": "empty",
+      },
+      secure: true,
+    };
+
+    await expect(guard.canActivate(createContext(request))).resolves.toBe(true);
+    expect(request).toHaveProperty("githubConnection", connection);
+  });
+
+  it("rejects originless non-GET requests even with the observed extension fetch context", async () => {
+    process.env.ALLOWED_EXTENSION_ORIGINS = allowedOrigin;
+    const useCase = { getConnection: vi.fn() };
+    const guard = new GitHubSessionGuard(useCase as never);
+
+    await expect(
+      guard.canActivate(
+        createContext({
+          method: "POST",
+          headers: {
+            "sec-fetch-site": "none",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-dest": "empty",
+          },
+          secure: false,
+        })
+      )
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(useCase.getConnection).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { "sec-fetch-site": "same-origin", "sec-fetch-mode": "cors", "sec-fetch-dest": "empty" },
+    { "sec-fetch-site": "none", "sec-fetch-mode": "no-cors", "sec-fetch-dest": "empty" },
+    { "sec-fetch-site": "none", "sec-fetch-mode": "cors", "sec-fetch-dest": "document" },
+  ])("rejects an originless GET when fetch metadata does not match", async (fetchMetadata) => {
+    process.env.ALLOWED_EXTENSION_ORIGINS = allowedOrigin;
+    const useCase = { getConnection: vi.fn() };
+    const guard = new GitHubSessionGuard(useCase as never);
+
+    await expect(
+      guard.canActivate(
+        createContext({
+          method: "GET",
+          headers: fetchMetadata,
           secure: false,
         })
       )
