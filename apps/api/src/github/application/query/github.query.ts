@@ -16,7 +16,7 @@ export class FindGitHubConnectionBySessionQueryHandler
   implements IQueryHandler<FindGitHubConnectionBySessionQuery>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(query: FindGitHubConnectionBySessionQuery) {
+  async execute(query: FindGitHubConnectionBySessionQuery) {
     return this.repository.findConnectionBySession({ token: query.token, now: query.now });
   }
 }
@@ -28,7 +28,7 @@ export class FindGitHubSolutionQuery extends Query<StoredSolutionRecord | null> 
 @QueryHandler(FindGitHubSolutionQuery)
 export class FindGitHubSolutionQueryHandler implements IQueryHandler<FindGitHubSolutionQuery> {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(query: FindGitHubSolutionQuery) {
+  async execute(query: FindGitHubSolutionQuery) {
     return this.repository.findSolution({
       submissionId: query.submissionId,
       githubAccountId: query.githubAccountId,
@@ -45,7 +45,7 @@ export class ListFailedGitHubSolutionsQueryHandler
   implements IQueryHandler<ListFailedGitHubSolutionsQuery>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(query: ListFailedGitHubSolutionsQuery) {
+  async execute(query: ListFailedGitHubSolutionsQuery) {
     return this.repository.listFailedSolutions({
       githubAccountId: query.githubAccountId,
       limit: query.limit,

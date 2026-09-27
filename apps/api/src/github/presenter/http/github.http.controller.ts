@@ -13,7 +13,6 @@ import {
   Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Request, Response } from "express";
 import {
   githubRepositorySettingsSchema,
   solutionRecordPayloadSchema,
@@ -24,7 +23,27 @@ import { z } from "zod";
 
 import { ZodValidationPipe } from "../../../common/zod-validation.pipe";
 import { GitHubUseCase } from "../../application/use-case/http/github.use-case";
-import { getGitHubSessionToken, GitHubSessionGuard, SESSION_COOKIE_NAME, type GitHubAuthenticatedRequest } from "./github-session.guard";
+import {
+  getGitHubSessionToken,
+  GitHubSessionGuard,
+  SESSION_COOKIE_NAME,
+  type GitHubAuthenticatedRequest,
+  type GitHubHttpRequest,
+} from "./github-session.guard";
+
+interface GitHubHttpResponse {
+  redirect(statusCode: number, url: string): unknown;
+  cookie(
+    name: string,
+    value: string,
+    options: { httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string; maxAge: number }
+  ): unknown;
+  clearCookie(
+    name: string,
+    options: { httpOnly: boolean; secure: boolean; sameSite: "strict"; path: string }
+  ): unknown;
+  status(statusCode: number): { send(): unknown };
+}
 
 const callbackQuerySchema = z.object({
   state: z.string().min(1).optional(),
@@ -40,7 +59,7 @@ export class GitHubHttpController {
   constructor(@Inject(GitHubUseCase) private readonly githubUseCase: GitHubUseCase) {}
 
   @Get("connect")
-  async connect(@Res() response: Response): Promise<void> {
+  async connect(@Res() response: GitHubHttpResponse): Promise<void> {
     const connection = await this.githubUseCase.startConnection({ now: new Date().toISOString() });
     response.redirect(302, connection.url);
   }
@@ -48,8 +67,8 @@ export class GitHubHttpController {
   @Get("callback")
   async callback(
     @Query() input: unknown,
-    @Req() request: Request,
-    @Res() response: Response
+    @Req() request: GitHubHttpRequest,
+    @Res() response: GitHubHttpResponse
   ): Promise<void> {
     const destination = new URL("/github/connected", this.githubUseCase.getPublicWebOrigin());
     const parsedQuery = callbackQuerySchema.safeParse(input);
@@ -93,7 +112,7 @@ export class GitHubHttpController {
   }
 
   @Get("connection")
-  async getConnection(@Req() request: Request) {
+  async getConnection(@Req() request: GitHubHttpRequest) {
     const connection = await this.githubUseCase.getConnection({
       sessionToken: getGitHubSessionToken(request.headers.cookie),
       now: new Date().toISOString(),
@@ -132,7 +151,7 @@ export class GitHubHttpController {
   @UseGuards(GitHubSessionGuard)
   async disconnect(
     @Req() request: GitHubAuthenticatedRequest,
-    @Res() response: Response
+    @Res() response: GitHubHttpResponse
   ): Promise<void> {
     await this.githubUseCase.disconnect({ connection: request.githubConnection });
     response.clearCookie(SESSION_COOKIE_NAME, {

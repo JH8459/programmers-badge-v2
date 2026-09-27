@@ -5,7 +5,7 @@ import { z } from "zod";
 import {
   solutionRecordMetadataSchema,
   type GitHubRepositorySettings,
-  type GitHubRepository,
+  type GitHubRepository as GitHubRepositoryModel,
   type SolutionRecordMetadata,
   type SolutionRecordPayload,
 } from "@programmers-badge/shared-types";
@@ -57,7 +57,7 @@ export interface GitHubConnectionRecord {
   githubAccountId: string;
   accountLogin: string;
   installationId: number;
-  settings: GitHubRepositorySettings & { repository: GitHubRepository } | null;
+  settings: GitHubRepositorySettings & { repository: GitHubRepositoryModel } | null;
   connectedAt: string;
 }
 
@@ -88,7 +88,7 @@ interface ConnectInstallationInput {
 
 interface SaveRepositorySettingsInput {
   githubAccountId: string;
-  repository: GitHubRepository;
+  repository: GitHubRepositoryModel;
   branch: string;
   basePath: string;
   updatedAt: string;
@@ -221,7 +221,7 @@ export class GitHubRepository {
             repositoryId: row.repository_id,
             branch: row.target_branch,
             basePath: row.base_path,
-          } satisfies GitHubRepositorySettings & { repository: GitHubRepository }
+          } satisfies GitHubRepositorySettings & { repository: GitHubRepositoryModel }
         : null;
 
     return {

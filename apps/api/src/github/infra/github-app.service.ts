@@ -145,7 +145,11 @@ export const normalizeGitHubBasePath = (basePath: string): string => {
         segment === ".." ||
         segment.toLowerCase() === ".git" ||
         segment.toLowerCase() === ".github" ||
-        /[\\\u0000-\u001f\u007f]/u.test(segment)
+        segment.includes("\\") ||
+        [...segment].some((character) => {
+          const codePoint = character.charCodeAt(0);
+          return codePoint <= 0x1f || codePoint === 0x7f;
+        })
     )
   ) {
     throw new Error("기록 경로에 .git, .github, 상대 경로 또는 제어 문자를 사용할 수 없습니다.");

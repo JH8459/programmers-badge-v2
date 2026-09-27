@@ -24,6 +24,7 @@ describe("main bootstrap", () => {
     };
     const app = {
       set: vi.fn(),
+      useBodyParser: vi.fn(),
       listen: vi.fn().mockResolvedValue(undefined),
     };
     const create = vi.fn().mockResolvedValue(app);
@@ -50,6 +51,7 @@ describe("main bootstrap", () => {
     expect(readApiRuntimeConfig).toHaveBeenCalled();
     expect(create).toHaveBeenCalled();
     expect(app.set).toHaveBeenCalledWith("trust proxy", 1);
+    expect(app.useBodyParser).toHaveBeenCalledWith("json", { limit: "2mb" });
     expect(setupApiHttpApplication).toHaveBeenCalledWith({ app, runtimeConfig });
   });
 });

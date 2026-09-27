@@ -6,13 +6,16 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { Request } from "express";
-
 import { readApiRuntimeConfig } from "../../../common/runtime-config";
 import type { GitHubConnectionRecord } from "../../infra/github.repository";
 import { GitHubUseCase } from "../../application/use-case/http/github.use-case";
 
-export interface GitHubAuthenticatedRequest extends Request {
+export interface GitHubHttpRequest {
+  headers: { origin?: string; cookie?: string };
+  secure: boolean;
+}
+
+export interface GitHubAuthenticatedRequest extends GitHubHttpRequest {
   githubConnection: GitHubConnectionRecord;
 }
 

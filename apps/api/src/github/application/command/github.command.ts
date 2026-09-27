@@ -18,7 +18,7 @@ export class CreateGitHubAuthFlowCommandHandler
   implements ICommandHandler<CreateGitHubAuthFlowCommand>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: CreateGitHubAuthFlowCommand) {
+  async execute(command: CreateGitHubAuthFlowCommand) {
     return this.repository.createAuthFlow({ now: command.now });
   }
 }
@@ -32,7 +32,7 @@ export class ConsumeGitHubAuthFlowCommandHandler
   implements ICommandHandler<ConsumeGitHubAuthFlowCommand>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: ConsumeGitHubAuthFlowCommand) {
+  async execute(command: ConsumeGitHubAuthFlowCommand) {
     return this.repository.consumeAuthFlow({ state: command.state, now: command.now });
   }
 }
@@ -51,7 +51,7 @@ export class ConnectGitHubInstallationCommandHandler
   implements ICommandHandler<ConnectGitHubInstallationCommand>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: ConnectGitHubInstallationCommand) {
+  async execute(command: ConnectGitHubInstallationCommand) {
     return this.repository.connectInstallation(command);
   }
 }
@@ -63,7 +63,7 @@ export class CreateGitHubSessionCommand extends Command<{ token: string; expires
 @CommandHandler(CreateGitHubSessionCommand)
 export class CreateGitHubSessionCommandHandler implements ICommandHandler<CreateGitHubSessionCommand> {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: CreateGitHubSessionCommand) {
+  async execute(command: CreateGitHubSessionCommand) {
     return this.repository.createSession({ githubAccountId: command.githubAccountId, now: command.now });
   }
 }
@@ -83,7 +83,7 @@ export class SaveGitHubRepositorySettingsCommandHandler
   implements ICommandHandler<SaveGitHubRepositorySettingsCommand>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repositoryStore: GitHubRepositoryStore) {}
-  execute(command: SaveGitHubRepositorySettingsCommand) {
+  async execute(command: SaveGitHubRepositorySettingsCommand) {
     return this.repositoryStore.saveRepositorySettings({
       githubAccountId: command.githubAccountId,
       repository: command.repository,
@@ -101,7 +101,7 @@ export class DisconnectGitHubCommand extends Command<void> {
 @CommandHandler(DisconnectGitHubCommand)
 export class DisconnectGitHubCommandHandler implements ICommandHandler<DisconnectGitHubCommand> {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: DisconnectGitHubCommand) {
+  async execute(command: DisconnectGitHubCommand) {
     return this.repository.disconnect({ githubAccountId: command.githubAccountId });
   }
 }
@@ -118,7 +118,7 @@ export class InsertGitHubSolutionCommand extends Command<StoredSolutionRecord> {
 @CommandHandler(InsertGitHubSolutionCommand)
 export class InsertGitHubSolutionCommandHandler implements ICommandHandler<InsertGitHubSolutionCommand> {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: InsertGitHubSolutionCommand) {
+  async execute(command: InsertGitHubSolutionCommand) {
     return this.repository.insertSolution(command);
   }
 }
@@ -139,7 +139,7 @@ export class UpdateGitHubSolutionStatusCommandHandler
   implements ICommandHandler<UpdateGitHubSolutionStatusCommand>
 {
   constructor(@Inject(GitHubRepositoryStore) private readonly repository: GitHubRepositoryStore) {}
-  execute(command: UpdateGitHubSolutionStatusCommand) {
+  async execute(command: UpdateGitHubSolutionStatusCommand) {
     return this.repository.updateSolutionStatus({
       submissionId: command.submissionId,
       status: command.status,
