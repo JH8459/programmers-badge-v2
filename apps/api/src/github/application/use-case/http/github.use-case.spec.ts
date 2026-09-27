@@ -57,6 +57,7 @@ const storedRecord = (overrides: Partial<StoredSolutionRecord> = {}): StoredSolu
   branch: "main",
   basePath: "solutions",
   metadata: {
+    submissionId: payload.submissionId,
     problemId: payload.problemId,
     problemName: payload.problemName,
     difficulty: payload.difficulty,

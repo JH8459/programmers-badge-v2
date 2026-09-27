@@ -41,6 +41,7 @@ const record = (overrides: Partial<StoredSolutionRecord> = {}): StoredSolutionRe
   branch: "feature/solution",
   basePath: "solutions",
   metadata: {
+    submissionId: "00000000-0000-4000-8000-000000000001",
     problemId: "1234",
     problemName: "Test Problem",
     difficulty: "Lv.2",
