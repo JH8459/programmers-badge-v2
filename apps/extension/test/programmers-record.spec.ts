@@ -53,14 +53,20 @@ describe("programmers record normalization", () => {
     ).toThrow();
   });
 
-  it("rejects upstream records without a stable user identifier", () => {
-    expect(() =>
-      parseProgrammersRecord({
-        name: "Programmers User",
-        skillCheck: { level: 3 },
-        ranking: { score: 9876, rank: 12 },
-        codingTest: { solved: 123, total: 456 },
+  it("falls back to the account name when no stable user identifier is available", () => {
+    expect(
+      toBadgeSyncPayload({
+        input: {
+          name: "Programmers User",
+          skillCheck: { level: 3 },
+          ranking: { score: 9876, rank: 12 },
+          codingTest: { solved: 123, total: 456 },
+        },
+        syncedAt: "2026-04-19T10:00:00.000Z",
       })
-    ).toThrow();
+    ).toMatchObject({
+      programmerId: "Programmers User",
+      displayName: "Programmers User",
+    });
   });
 });
