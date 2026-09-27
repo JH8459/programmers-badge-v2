@@ -210,7 +210,7 @@ const renderSolutionReadme = ({
     "",
     "## 풀이 파일",
     "",
-    solutionLinks || `- [${language}](${encodeURIComponent(`${language}.${SOLUTION_LANGUAGE_EXTENSIONS[metadata.language]}`)})`,
+    solutionLinks,
     "",
   ];
 
@@ -338,7 +338,7 @@ export class GitHubAppService {
       repositoryId: repository.id,
       permissions: { contents: "write", metadata: "read" },
     });
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; ; attempt += 1) {
       const existingSource = await this.getRepositoryFile({
         repository,
         path: solutionPath,
@@ -446,7 +446,6 @@ export class GitHubAppService {
       }
     }
 
-    throw new Error("GitHub branch update could not be completed.");
   }
 
   getFailureMessage(error: unknown): string {
