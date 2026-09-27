@@ -3,7 +3,7 @@
 ## Endpoint Defaults
 
 - sync 응답은 `BadgeSyncResponse`를 반환한다.
-- sync request는 안정적인 Programmers 계정 ID와 검증된 전체 통계 snapshot을 받는다. 기존 확장 프로그램에서 넘어오는 `legacyProgrammerHandle`은 이전 public slug를 한 번 이어받는 데만 사용한다.
+- sync request는 Programmers 계정 ID 또는 이전 extension과 호환되는 계정 `name` 식별자와 검증된 전체 통계 snapshot을 받는다. 기존 확장 프로그램에서 넘어오는 `legacyProgrammerHandle`은 이전 public slug를 한 번 이어받는 데만 사용한다.
 - 기존 확장 버전 호환을 위해 `/api/sync` payload/response와 기존 badge·health route는 유지하고, 새 기능은 별도 route와 additive persistence migration으로 추가한다.
 - sync 응답에는 내부 계정 ID를 포함하지 않는다.
 - public badge는 full SVG와 mini SVG를 제공한다.

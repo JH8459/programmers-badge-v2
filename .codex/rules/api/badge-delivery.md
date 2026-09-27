@@ -2,7 +2,7 @@
 
 ## Badge And Persistence Defaults
 
-- re-sync 시 같은 안정적인 `programmerId`이면 표시 이름이 바뀌어도 기존 `publicSlug`를 유지한다.
+- re-sync 시 같은 `programmerId`이면 표시 이름이 바뀌어도 기존 `publicSlug`를 유지한다. Upstream stable ID가 없어 extension이 `name`을 fallback으로 쓴 계정은 이름 변경 시 새 identity가 될 수 있다.
 - 기존 DB row는 username key를 stable ID로 backfill하고, 구버전 extension이 전달하는 이전 handle 또는 유일하게 일치하는 이전 표시 이름으로 첫 stable ID sync에 채택한다.
 - 오래된 `syncedAt` snapshot은 최신 row를 덮어쓰지 않는다.
 - sync 시 동일 slug의 full/mini SVG asset을 pre-render하며, 렌더 결과가 같으면 파일을 다시 쓰지 않는다.

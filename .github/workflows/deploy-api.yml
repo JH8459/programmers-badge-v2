@@ -243,6 +243,7 @@ jobs:
 
             COMPOSE_STANDALONE="/usr/local/bin/docker-compose"
             COMPOSE_FILE="${NAS_DEPLOY_DIR}/docker-compose.api.yml"
+            PROJECT_NAME="programmers-badge"
 
             if [ -z "${DOCKER_BIN}" ]; then
               echo "docker binary not found on NAS" >&2
@@ -267,10 +268,22 @@ jobs:
             . ./.env.api.deploy
             set +a
             API_PORT="${API_PORT:-5010}"
+            API_CONTAINER_ID="$(docker_cmd ps -aq --filter "name=programmers-badge-api" | head -n 1)"
+
+            if [ -n "${API_CONTAINER_ID}" ]; then
+              BADGE_DATA_VOLUME_NAME="$(docker_cmd inspect --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Name}}{{end}}{{end}}' "${API_CONTAINER_ID}")"
+              if [ -z "${BADGE_DATA_VOLUME_NAME}" ]; then
+                echo "could not resolve the existing API data volume" >&2
+                exit 1
+              fi
+            else
+              BADGE_DATA_VOLUME_NAME="programmers-badge_badge-data"
+            fi
+            export BADGE_DATA_VOLUME_NAME
 
             echo "${DOCKERHUB_PASSWORD}" | docker_cmd login -u "${DOCKERHUB_USERNAME}" --password-stdin
-            compose_cmd -f "${COMPOSE_FILE}" pull api
-            compose_cmd -f "${COMPOSE_FILE}" up -d --no-deps api
+            compose_cmd -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" pull api
+            compose_cmd -p "${PROJECT_NAME}" -f "${COMPOSE_FILE}" up -d --no-deps api
 
             for attempt in $(seq 1 30); do
               if curl -fsS "http://127.0.0.1:${API_PORT}/api/health" >/dev/null; then

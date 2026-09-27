@@ -1,3 +1,5 @@
+name: programmers-badge
+
 services:
   api:
     image: ${DOCKER_IMAGE:?DOCKER_IMAGE is required}
@@ -37,3 +39,4 @@ services:
 
 volumes:
   badge-data:
+    name: ${BADGE_DATA_VOLUME_NAME:-programmers-badge_badge-data}

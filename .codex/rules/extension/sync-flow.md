@@ -21,6 +21,6 @@
 
 - sync state를 바꾸면 popup view-model, background 메시지 처리, 테스트를 함께 갱신한다.
 - Programmers record 파싱을 바꾸면 external payload zod schema, contract 영향, fallback 동작을 함께 확인한다.
-- 외부 record에는 stable user ID와 모든 badge 통계 필드가 있어야 하며 부분 응답을 0으로 보정하지 않는다.
+- 외부 record에는 모든 badge 통계 필드가 있어야 하며 부분 응답을 0으로 보정하지 않는다. stable user ID가 없으면 v0.1.1 호환성을 위해 기존 `name`을 `programmerId` fallback으로 사용한다.
 - 페이지 감지나 auto-sync 로직을 바꿀 때는 오탐/중복 sync 방지 규칙을 같이 검토한다.
 - popup copy flow를 바꾸면 API response와 badge URL/Markdown copy format을 함께 확인한다.

@@ -10,15 +10,26 @@ const programmerIdSchema = z.union([
   z.number().int().nonnegative().transform(String),
 ]);
 
+const optionalProgrammerIdSchema = z.preprocess((value) => {
+  const result = programmerIdSchema.safeParse(value);
+  return result.success ? result.data : undefined;
+}, z.string().optional());
+
+const optionalProgrammerUserSchema = z.preprocess(
+  (value) =>
+    typeof value === "object" && value !== null && !Array.isArray(value) ? value : undefined,
+  z.looseObject({ id: optionalProgrammerIdSchema }).optional()
+);
+
 // upstream 필드는 늘 수 있지만, badge snapshot에 필요한 값은 전부 필수로 검증한다.
 export const programmersRecordSchema = z
   .looseObject({
-    id: programmerIdSchema.optional(),
-    userId: programmerIdSchema.optional(),
-    user_id: programmerIdSchema.optional(),
-    programmerId: programmerIdSchema.optional(),
-    programmer_id: programmerIdSchema.optional(),
-    user: z.looseObject({ id: programmerIdSchema }).optional(),
+    id: optionalProgrammerIdSchema,
+    userId: optionalProgrammerIdSchema,
+    user_id: optionalProgrammerIdSchema,
+    programmerId: optionalProgrammerIdSchema,
+    programmer_id: optionalProgrammerIdSchema,
+    user: optionalProgrammerUserSchema,
     name: z.string().trim().min(1),
     skillCheck: z.looseObject({
       level: z.number().int().nonnegative(),
@@ -32,19 +43,6 @@ export const programmersRecordSchema = z
       total: z.number().int().nonnegative(),
     }),
   })
-  .refine(
-    ({ id, userId, user_id, programmerId, programmer_id, user }) =>
-      id !== undefined ||
-      userId !== undefined ||
-      user_id !== undefined ||
-      programmerId !== undefined ||
-      programmer_id !== undefined ||
-      user?.id !== undefined,
-    {
-      path: ["id"],
-      message: "Programmers user identifier is required.",
-    }
-  )
   .refine(({ codingTest }) => codingTest.solved <= codingTest.total, {
     path: ["codingTest", "total"],
     message: "Solved problem count cannot exceed the total problem count.",
@@ -67,17 +65,15 @@ export const toBadgeSyncPayload = ({
   legacyProgrammerHandle,
 }: BadgeSyncPayloadInput): BadgeSyncPayload => {
   const record = parseProgrammersRecord(input);
+  // upstream ID가 없을 때는 이전 extension이 programmerHandle로 쓰던 name을 식별자로 사용한다.
   const programmerId =
     record.userId ??
     record.user_id ??
     record.programmerId ??
     record.programmer_id ??
     record.user?.id ??
-    record.id;
-
-  if (!programmerId) {
-    throw new Error("Programmers 사용자 식별 정보를 확인하지 못했습니다.");
-  }
+    record.id ??
+    record.name;
 
   const skillLevel = record.skillCheck.level;
 

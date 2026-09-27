@@ -85,6 +85,8 @@ GitHub App 연동용 private key는 저장소 전체 workflow에서 참조할 �
 - `docker-compose.api.yml`: NAS production API deploy 파일
 - `docker-compose.web.yml`: NAS production web deploy 파일
 - `docker-compose.local.yml`: 로컬 개발/검증용 compose 파일
+- NAS API Compose project name은 `programmers-badge`로 고정한다. deploy workflow도 `-p programmers-badge`를 전달해 `NAS_DEPLOY_DIR` 경로에서 이름을 추론하지 않는다.
+- API deploy workflow는 재생성 전에 기존 API 컨테이너의 `/data` named volume을 찾아 고정 project name에서도 재사용한다. 첫 배포의 기본 볼륨 이름은 `programmers-badge_badge-data`다.
 
 `docker-compose.local.yml`은 API와 web service를 source bind mount와 dev server/watch mode로 실행한다.
 host port 기본값은 NAS 기본값과 같은 `5010`/`5020`이며, 필요하면 shell env로 override한다.
