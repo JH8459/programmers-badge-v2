@@ -10,7 +10,7 @@ export class BadgeSyncRequestDto implements BadgeSyncPayload {
   @ApiProperty({
     type: String,
     example: "83164003",
-    description: "Stable Programmers user identifier from the signed-in record.",
+    description: "Programmers user ID, or name when no stable ID is present.",
   })
   readonly programmerId!: string;
 
