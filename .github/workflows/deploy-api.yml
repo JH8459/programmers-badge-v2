@@ -128,8 +128,8 @@ jobs:
       ALLOWED_EXTENSION_ORIGINS: ${{ vars.ALLOWED_EXTENSION_ORIGINS || '' }}
       ALLOW_LOCALHOST_ORIGINS: ${{ vars.ALLOW_LOCALHOST_ORIGINS || 'false' }}
       ENABLE_SWAGGER: ${{ vars.ENABLE_SWAGGER || 'true' }}
-      GITHUB_APP_ID: ${{ vars.GITHUB_APP_ID || '' }}
-      GITHUB_APP_SLUG: ${{ vars.GITHUB_APP_SLUG || '' }}
+      GITHUB_APP_ID: ${{ vars.PROGRAMMERS_BADGE_GITHUB_APP_ID || '' }}
+      GITHUB_APP_SLUG: ${{ vars.PROGRAMMERS_BADGE_GITHUB_APP_SLUG || '' }}
 
     steps:
       - name: Checkout repository
@@ -145,7 +145,7 @@ jobs:
         id: github-app-key
         shell: bash
         env:
-          GITHUB_APP_PRIVATE_KEY: ${{ secrets.GITHUB_APP_PRIVATE_KEY }}
+          GITHUB_APP_PRIVATE_KEY: ${{ secrets.PROGRAMMERS_BADGE_GITHUB_APP_PRIVATE_KEY }}
         run: |
           private_key_b64="$(printf '%s' "$GITHUB_APP_PRIVATE_KEY" | base64 | tr -d '\n')"
           if [ -n "$private_key_b64" ]; then

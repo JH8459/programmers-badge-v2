@@ -42,7 +42,11 @@ app별 runtime env, domain, permission 세부값은 각 app rule을 함께 본�
 - `NAS_DEPLOY_DIR`: NAS에 배포용 service별 compose와 env 파일을 둘 디렉터리
 - `SWAGGER_USERNAME`: production Swagger Basic Auth username
 - `SWAGGER_PASSWORD`: production Swagger Basic Auth password
-- `GITHUB_APP_PRIVATE_KEY`: 선택형 GitHub App private key. GitHub 연동을 켜는 경우에만 설정한다.
+
+GitHub App 연동용 private key는 저장소 전체 workflow에서 참조할 수 있도록 Repository secret으로 관리한다.
+
+- `PROGRAMMERS_BADGE_GITHUB_APP_PRIVATE_KEY`: 선택형 GitHub App private key. API workflow에서 서버 runtime `GITHUB_APP_PRIVATE_KEY`로 전달한다.
+- 동일한 이름을 `production` environment secret에도 등록하면 environment secret이 우선하므로 중복 등록하지 않는다.
 
 `production` environment 또는 repository variables:
 
@@ -51,8 +55,8 @@ app별 runtime env, domain, permission 세부값은 각 app rule을 함께 본�
 - `PUBLIC_BASE_URL`: badge URL 생성용 public API origin, 기본값 `https://api.programmers-badge.jh8459.com`
 - `ALLOWED_WEB_ORIGINS`: API CORS 허용 web origin list, 기본값 `https://programmers-badge.jh8459.com`
 - `ALLOWED_EXTENSION_ORIGINS`: 추가로 허용할 credentialed API CORS extension origin 목록. production deploy는 기존 Chrome Web Store origin `chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf`를 항상 포함한다.
-- `GITHUB_APP_ID`: 선택형 GitHub App ID
-- `GITHUB_APP_SLUG`: 선택형 GitHub App slug, 설치 URL에 사용
+- `PROGRAMMERS_BADGE_GITHUB_APP_ID`: 선택형 GitHub App ID. API workflow가 runtime `GITHUB_APP_ID`로 전달한다.
+- `PROGRAMMERS_BADGE_GITHUB_APP_SLUG`: 선택형 GitHub App slug. API workflow가 runtime `GITHUB_APP_SLUG`로 전달한다.
 - `ALLOW_LOCALHOST_ORIGINS`: localhost 동적 포트 CORS 허용 여부, production 기본값 `false`
 - `ENABLE_SWAGGER`: Swagger UI/OpenAPI JSON 노출 여부, production 기본값 `true`
 
@@ -94,7 +98,7 @@ host port 기본값은 NAS 기본값과 같은 `5010`/`5020`이며, 필요하면
 ## First-Time Setup
 
 1. GitHub `production` environment에 필수 secrets와 variables를 설정한다.
-2. GitHub App 연동을 켜려면 App setup URL을 `https://api.programmers-badge.jh8459.com/api/github/callback`으로 설정하고 `Contents: write`, `Metadata: read` repository permissions를 지정한다. `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`는 모두 설정하거나 모두 비워 둔다.
+2. GitHub App 연동을 켜려면 App setup URL을 `https://api.programmers-badge.jh8459.com/api/github/callback`으로 설정하고 `Contents: write`, `Metadata: read` repository permissions를 지정한다. `PROGRAMMERS_BADGE_GITHUB_APP_ID`, `PROGRAMMERS_BADGE_GITHUB_APP_SLUG` 변수와 `PROGRAMMERS_BADGE_GITHUB_APP_PRIVATE_KEY` Repository secret을 모두 설정하거나 모두 비워 둔다. workflow는 이를 각각 runtime `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`로 전달한다.
 3. NAS에 `NAS_DEPLOY_DIR` 디렉터리를 만든다.
 4. `NAS_USER`가 `NAS_DEPLOY_DIR`에 쓸 수 있게 한다.
 5. `NAS_USER`가 `docker ...` 또는 `/usr/local/bin/docker-compose ...`를 직접 실행할 수 있게 한다.
