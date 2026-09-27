@@ -72,13 +72,16 @@ describe("setupApiHttpApplication", () => {
     const allowedCallback = vi.fn();
     const sameOriginCallback = vi.fn();
     const rejectedCallback = vi.fn();
+    const extensionCallback = vi.fn();
 
     corsOptions.origin(undefined, sameOriginCallback);
     corsOptions.origin("https://programmers-badge.jh8459.com", allowedCallback);
     corsOptions.origin("https://example.com", rejectedCallback);
+    corsOptions.origin(`chrome-extension://${"a".repeat(32)}`, extensionCallback);
 
     expect(sameOriginCallback).toHaveBeenCalledWith(null, true);
     expect(allowedCallback).toHaveBeenCalledWith(null, true);
     expect(rejectedCallback).toHaveBeenCalledWith(expect.any(Error), false);
+    expect(extensionCallback).toHaveBeenCalledWith(null, true);
   });
 });

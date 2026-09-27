@@ -8,6 +8,9 @@ interface IsAllowedCorsOriginInput {
   >;
 }
 
+export const isChromeExtensionOrigin = (origin: string): boolean =>
+  /^chrome-extension:\/\/[a-p]{32}$/.test(origin);
+
 const isLocalDevelopmentOrigin = (origin: string): boolean => {
   try {
     const { hostname, port, protocol } = new URL(origin);
@@ -35,5 +38,5 @@ export const isAllowedCorsOrigin = ({
     return true;
   }
 
-  return runtimeConfig.allowedExtensionOrigins.includes(origin);
+  return isChromeExtensionOrigin(origin) || runtimeConfig.allowedExtensionOrigins.includes(origin);
 };

@@ -148,14 +148,6 @@ export const apiRuntimeConfigSchema = z
       });
     }
 
-    if (env.GITHUB_APP_ID !== undefined && env.ALLOWED_EXTENSION_ORIGINS === undefined) {
-      context.addIssue({
-        code: "custom",
-        path: ["ALLOWED_EXTENSION_ORIGINS"],
-        message: "ALLOWED_EXTENSION_ORIGINS is required when GitHub integration is enabled.",
-      });
-    }
-
     if (!env.ENABLE_SWAGGER) {
       return;
     }

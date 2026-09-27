@@ -127,14 +127,21 @@ describe("readApiRuntimeConfig", () => {
     ).toThrowError(/GITHUB_APP_ID, GITHUB_APP_SLUG, and GITHUB_APP_PRIVATE_KEY are required together/);
   });
 
-  it("requires an extension origin when GitHub integration is enabled", () => {
-    expect(() =>
+  it("allows GitHub integration without an extension origin allowlist", () => {
+    expect(
       readApiRuntimeConfig({
         GITHUB_APP_ID: "12345",
         GITHUB_APP_SLUG: "programmers-badge",
         GITHUB_APP_PRIVATE_KEY: "private-key",
       })
-    ).toThrowError(/ALLOWED_EXTENSION_ORIGINS is required when GitHub integration is enabled/);
+    ).toMatchObject({
+      githubApp: {
+        appId: 12345,
+        slug: "programmers-badge",
+        privateKey: "private-key",
+      },
+      allowedExtensionOrigins: [],
+    });
   });
 
   it("rejects non-origin URLs and invalid Chrome extension origins", () => {

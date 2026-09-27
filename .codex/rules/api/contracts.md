@@ -26,8 +26,8 @@
 - HTTP boundary에서는 Nest pipe로 zod parse 결과를 받고, normalization은 shared schema 기준을 따른다.
 - `PORT`, `PUBLIC_BASE_URL`, `PUBLIC_BADGE_PATH_PREFIX`, `DATABASE_PATH`, `BADGE_OUTPUT_DIR`는 app-local runtime config zod schema로 검증한다.
 - CORS web origin은 `ALLOWED_WEB_ORIGINS` env의 comma-separated origin list를 기준으로 허용한다.
-- extension CORS origin은 `ALLOWED_EXTENSION_ORIGINS`의 exact Chrome extension origin만 허용한다.
-- production `ALLOWED_EXTENSION_ORIGINS`에는 기존 Chrome Web Store extension ID를 유지한다. 같은 Store 항목의 이전·신규 버전은 같은 origin으로 API를 호출한다.
+- extension CORS와 GitHub session route는 `chrome-extension://` 뒤에 유효한 32자 Chrome extension ID가 오는 origin을 허용한다. 특정 extension ID를 사전에 등록하지 않아도 된다.
+- `ALLOWED_EXTENSION_ORIGINS`에 등록된 기존 Chrome extension origin은 계속 지원하며, GitHub 연동에는 이 변수가 필요하지 않다.
 - GitHub mutation/session routes는 credentialed cookie와 함께 extension `Origin`을 검증해 CSRF 요청을 거부한다.
 - local development에서만 `ALLOW_LOCALHOST_ORIGINS=true`로 explicit port가 있는 `http://localhost:*`, `http://127.0.0.1:*` origin을 허용한다.
 - public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
