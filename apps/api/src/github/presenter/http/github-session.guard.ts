@@ -11,7 +11,14 @@ import type { GitHubConnectionRecord } from "../../infra/github.repository";
 import { GitHubUseCase } from "../../application/use-case/http/github.use-case";
 
 export interface GitHubHttpRequest {
-  headers: { origin?: string; cookie?: string };
+  method?: string;
+  headers: {
+    origin?: string;
+    cookie?: string;
+    "sec-fetch-site"?: string;
+    "sec-fetch-mode"?: string;
+    "sec-fetch-dest"?: string;
+  };
   secure: boolean;
 }
 
@@ -20,6 +27,27 @@ export interface GitHubAuthenticatedRequest extends GitHubHttpRequest {
 }
 
 const SESSION_COOKIE_NAME = "programmers_badge_github_session";
+
+const isAllowedGitHubRequestContext = ({
+  request,
+}: {
+  request: GitHubHttpRequest;
+}): boolean => {
+  if (request.headers.origin !== undefined) {
+    return isChromeExtensionOrigin(request.headers.origin);
+  }
+
+  if (request.method !== "GET") {
+    return false;
+  }
+
+  // Origin이 생략된 읽기 요청은 관측된 Chrome extension fetch 맥락만 허용한다.
+  return (
+    request.headers["sec-fetch-site"] === "none" &&
+    request.headers["sec-fetch-mode"] === "cors" &&
+    request.headers["sec-fetch-dest"] === "empty"
+  );
+};
 
 export const getGitHubSessionToken = (cookieHeader: string | undefined): string | undefined => {
   const cookie = cookieHeader
@@ -36,8 +64,7 @@ export class GitHubSessionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<GitHubAuthenticatedRequest>();
-    const origin = request.headers.origin;
-    if (!origin || !isChromeExtensionOrigin(origin)) {
+    if (!isAllowedGitHubRequestContext({ request })) {
       throw new ForbiddenException("GitHub API 요청은 허용된 확장 프로그램에서만 실행할 수 있습니다.");
     }
 

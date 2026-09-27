@@ -28,7 +28,7 @@
 - CORS web origin은 `ALLOWED_WEB_ORIGINS` env의 comma-separated origin list를 기준으로 허용한다.
 - extension CORS와 GitHub session route는 `chrome-extension://` 뒤에 유효한 32자 Chrome extension ID가 오는 origin을 허용한다. 특정 extension ID를 사전에 등록하지 않아도 된다.
 - `ALLOWED_EXTENSION_ORIGINS`에 등록된 기존 Chrome extension origin은 계속 지원하며, GitHub 연동에는 이 변수가 필요하지 않다.
-- GitHub mutation/session routes는 credentialed cookie와 함께 extension `Origin`을 검증해 CSRF 요청을 거부한다.
+- GitHub session routes는 credentialed cookie를 검증한다. `Origin`이 있으면 유효한 Chrome extension origin이어야 한다. `Origin`이 생략된 경우에는 읽기 `GET` 요청에 한해 `Sec-Fetch-Site: none`, `Sec-Fetch-Mode: cors`, `Sec-Fetch-Dest: empty` 조합을 요구한다. 쓰기 요청은 계속 extension `Origin`을 요구해 CSRF 요청을 거부한다.
 - local development에서만 `ALLOW_LOCALHOST_ORIGINS=true`로 explicit port가 있는 `http://localhost:*`, `http://127.0.0.1:*` origin을 허용한다.
 - public response에는 public badge 제공에 필요 없는 민감 정보를 넣지 않는다.
 - solved count는 total을 넘을 수 없고, badge tier는 skill level에서 계산한 값과 일치해야 한다.

@@ -52,7 +52,7 @@ let githubConnection: GitHubConnectionResponse = {
   settings: null,
 };
 let githubRepositories: GitHubRepository[] = [];
-let githubRepositoriesLoaded = false;
+let githubRepositoriesStatus: "idle" | "loading" | "loaded" | "error" = "idle";
 let failedSolutions: FailedSolutionRecord[] = [];
 let githubStatusMessage = "";
 let selectedPreviewVariant: BadgePreviewVariant = "standard";
@@ -90,6 +90,7 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
 };
 
 const refreshGitHubData = async (): Promise<void> => {
+  githubRepositoriesStatus = "loading";
   const [repositoriesResult, failedSolutionsResult] = await Promise.allSettled([
     sendMessage<GitHubRepository[]>({ type: "get-github-repositories" }),
     sendMessage<FailedSolutionRecord[]>({ type: "get-failed-github-solutions" }),
@@ -98,8 +99,10 @@ const refreshGitHubData = async (): Promise<void> => {
 
   if (repositoriesResult.status === "fulfilled") {
     githubRepositories = repositoriesResult.value;
-    githubRepositoriesLoaded = true;
+    githubRepositoriesStatus = "loaded";
   } else {
+    githubRepositories = [];
+    githubRepositoriesStatus = "error";
     errors.push(
       repositoriesResult.reason instanceof Error
         ? repositoriesResult.reason.message
@@ -117,7 +120,7 @@ const refreshGitHubData = async (): Promise<void> => {
     );
   }
 
-  githubStatusMessage = errors.join(" ");
+  githubStatusMessage = [...new Set(errors)].join(" ");
 };
 
 const render = (): void => {
@@ -232,13 +235,17 @@ const render = (): void => {
   const selectedRepository =
     githubRepositories.find(({ id }) => id === selectedRepositoryId) ?? githubSettings?.repository;
   const selectedRepositoryUrl = selectedRepository ? getGitHubRepositoryUrl(selectedRepository) : undefined;
-  const selectedRepositoryIsAvailable = githubSettings
+  const selectedRepositoryIsAvailable = githubRepositoriesStatus === "loaded" && githubSettings
     ? githubRepositories.some(({ id }) => id === githubSettings.repositoryId)
     : true;
   const repositoryGuidance =
-    githubRepositoriesLoaded && githubSettings && !selectedRepositoryIsAvailable
+    githubRepositoriesStatus === "loading"
+      ? "GitHub App 접근 저장소를 불러오고 있습니다."
+      : githubRepositoriesStatus === "error"
+      ? "저장소 목록을 불러오지 못했습니다. 오류를 확인한 뒤 목록을 새로고침하세요."
+      : githubRepositoriesStatus === "loaded" && githubSettings && !selectedRepositoryIsAvailable
       ? "현재 GitHub App에서 이 저장소에 접근할 수 없습니다. GitHub App 설정에서 저장소 권한을 확인해 주세요."
-      : githubRepositoriesLoaded && githubRepositories.length === 0
+      : githubRepositoriesStatus === "loaded" && githubRepositories.length === 0
         ? "GitHub App이 접근할 수 있는 저장소가 없습니다. GitHub App 설정에서 저장소를 공유한 뒤 목록을 새로고침하세요."
         : githubSettings
           ? "정답 제출이 확인되면 이 저장소에 풀이를 자동 기록합니다."
@@ -249,6 +256,12 @@ const render = (): void => {
         `<option value="${repository.id}" ${repository.id === selectedRepositoryId ? "selected" : ""}>${escapeHtml(repository.fullName)}${repository.isPrivate ? " · 비공개" : ""}</option>`
     )
     .join("");
+  const repositoryPlaceholder =
+    githubRepositoriesStatus === "loading"
+      ? "저장소 목록을 불러오는 중입니다."
+      : githubRepositoriesStatus === "error"
+        ? "저장소 목록 조회에 실패했습니다."
+        : "권한이 있는 저장소가 없습니다.";
   const failedSolutionMarkup = failedSolutions.length
     ? `
       <div class="failed-solutions">
@@ -280,14 +293,14 @@ const render = (): void => {
         <label class="github-field">
           <span>GitHub App 접근 저장소</span>
           <select class="github-repository" ${githubRepositories.length ? "" : "disabled"}>
-            ${repositoryMarkup || "<option value=\"\">권한이 있는 저장소가 없습니다.</option>"}
+            ${repositoryMarkup || `<option value="">${escapeHtml(repositoryPlaceholder)}</option>`}
           </select>
         </label>
         <div class="github-repository-target">
           <span class="github-repository-target-label">${githubSettings ? "저장된 풀이 기록 대상 주소" : "선택한 저장소 주소"}</span>
           ${selectedRepositoryUrl
             ? `<a class="github-link github-repository-link" href="${escapeHtml(selectedRepositoryUrl)}" target="_blank" rel="noreferrer">${escapeHtml(selectedRepositoryUrl)}</a>`
-            : `<span class="github-note">공유된 저장소가 없습니다.</span>`}
+            : `<span class="github-note">${githubRepositoriesStatus === "loading" ? "저장소 목록을 조회하고 있습니다." : githubRepositoriesStatus === "error" ? "조회 오류로 저장소 주소를 확인하지 못했습니다." : "공유된 저장소가 없습니다."}</span>`}
           <p class="github-note github-repository-notice">${escapeHtml(repositoryGuidance)}</p>
         </div>
         <button type="button" class="text-button github-refresh">저장소 목록 새로고침</button>
@@ -403,6 +416,7 @@ const render = (): void => {
   });
 
   root.querySelector<HTMLButtonElement>(".github-refresh")?.addEventListener("click", () => {
+    githubRepositoriesStatus = "loading";
     githubStatusMessage = "GitHub App 접근 저장소를 새로 조회하고 있습니다.";
     render();
     void refreshGitHubData().then(render);
@@ -440,7 +454,7 @@ const render = (): void => {
       .then((nextConnection) => {
         githubConnection = nextConnection;
         githubRepositories = [];
-        githubRepositoriesLoaded = false;
+        githubRepositoriesStatus = "idle";
         failedSolutions = [];
         githubStatusMessage = "이 서비스의 연결과 실패 기록을 삭제했습니다.";
         render();
