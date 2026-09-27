@@ -19,6 +19,7 @@ packages/config     shared lint/prettier/tsconfig config
 ### `apps/api`
 
 - sync endpoint와 public badge endpoint를 제공한다.
+- 선택형 GitHub App 연결, 저장소 설정, Programmers 풀이 기록 API를 제공한다.
 - persistence, badge asset storage adapter, env/runtime wiring을 소유한다.
 - 내부 구조는 domain aggregate별 Nest module과 `@nestjs/cqrs` bus를 기준으로 `presenter/http -> application/use-case/http -> application/{command,query} -> infra` 흐름을 따른다.
 - sync 시 저장된 badge data를 `packages/badge-core`에 전달해 full/mini pre-rendered SVG asset을 생성한다.
@@ -29,6 +30,7 @@ packages/config     shared lint/prettier/tsconfig config
 
 - Chrome APIs와 browser UX를 소유한다.
 - 로그인된 Programmers 세션을 활용해 sync payload를 준비한다.
+- 성공 제출을 감지하면 문제 정보와 editor source를 수집해 선택형 GitHub 연동으로 보낸다.
 - 사용자 트리거 기반 sync와 full/mini badge copy flow를 제공한다.
 
 ### `apps/web`
@@ -63,6 +65,7 @@ packages/config     shared lint/prettier/tsconfig config
 6. API가 `/badge/*.svg`를 정적으로 서빙한다.
 7. deploy/release workflow, environment, secret ownership은 `.codex/rules/deployment.md`를 따른다.
 8. `programmers-badge.jh8459.com`은 web route를 제공하고, `api.programmers-badge.jh8459.com`은 API와 `/badge/*.svg` public badge route를 제공한다.
+9. GitHub 연결 시 API가 설치를 검증하고 선택 저장소 범위의 단기 installation token을 발급해 Programmers README와 언어별 풀이 파일을 한 커밋으로 기록한다.
 
 ## Current Monorepo Defaults
 

@@ -12,6 +12,9 @@
 - background API client는 manifest `host_permissions`의 hosted API origin을 우선 사용하고, 없으면 hosted default URL로 fallback한다.
 - external Programmers record와 hosted sync response는 runtime에서 zod parse를 거친다.
 - page context에서 가져온 Programmers record는 raw JSON으로 반환하고, extension context에서 다시 zod parse 한다.
+- 정답 제출 감지 후 사용자가 GitHub App을 연결한 경우에만 현재 Programmers 문제의 metadata와 편집기 source를 API로 보낸다.
+- GitHub 문제 파일은 `프로그래머스/<레벨>/<문제번호>-<정규화된-문제명>/` 아래에 저장한다. 레벨은 `0`, `1`처럼 숫자만 사용한다. 언어별 파일은 독립적으로 유지하고, 같은 언어의 내용이 다르면 덮어쓰며 같으면 커밋을 생략한다.
+- GitHub 설정과 재시도 UX는 popup 소유다. Badge 자동 동기화 실패와 GitHub 기록 실패는 서로 독립적으로 처리한다.
 
 ## When Editing
 

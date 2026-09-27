@@ -2,6 +2,8 @@
 
 Hosted badge product for sharing Programmers badge data through public badge URLs.
 
+The Chrome extension can optionally connect a GitHub App and commit README and solution files for accepted Programmers submissions to a repository selected by the user. Files are organized under `프로그래머스/<level>/<problem-number>-<normalized-name>/`.
+
 ## Workspace Layout
 
 ```text
@@ -94,4 +96,4 @@ pnpm dev:web
 
 ## Local Dynamic Ports
 
-`docker-compose.local.yml` supports `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, `ENABLE_SWAGGER`, `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`, and `COMPOSE_PROJECT_NAME` environment overrides for running isolated local stacks.
+`docker-compose.local.yml` supports `API_PORT`, `WEB_PORT`, `PUBLIC_BASE_URL`, `VITE_API_BASE_URL`, `ALLOWED_WEB_ORIGINS`, `ALLOWED_EXTENSION_ORIGINS`, `ALLOW_LOCALHOST_ORIGINS`, `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_PRIVATE_KEY`, `ENABLE_SWAGGER`, `SWAGGER_USERNAME`, `SWAGGER_PASSWORD`, and `COMPOSE_PROJECT_NAME` environment overrides for running isolated local stacks. For local GitHub testing, use a separate development GitHub App whose setup URL points to the local API callback, and set the unpacked extension's exact `chrome-extension://` origin in `ALLOWED_EXTENSION_ORIGINS`.

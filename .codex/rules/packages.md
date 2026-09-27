@@ -29,6 +29,7 @@
 - sync request의 identity는 stable `programmerId`이고, response에는 이 내부 identity를 포함하지 않는다.
 - sync payload schema는 필수 통계, solved/total 관계, skill/tier 일관성, ISO datetime을 검증한다.
 - shared contract의 runtime validation schema가 필요하면 zod schema와 parse helper를 여기 둔다.
+- GitHub 풀이 전송 계약은 Programmers-only payload와 repository/settings/result schema로 정의한다.
 - API와 extension이 함께 쓰는 zod boundary helper는 `packages/shared-types`에 둘 수 있다.
 - app-specific external payload schema나 framework wiring은 여기 두지 않는다.
 - field rename/add/remove는 API, extension, 테스트, 문서를 함께 움직이는 breaking point로 취급한다.
