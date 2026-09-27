@@ -15,6 +15,14 @@ import type {
 import type { GitHubConnectionRecord, StoredSolutionRecord } from "../../../infra/github.repository";
 import { GitHubUseCase } from "./github.use-case";
 
+const normalizeGitHubBasePathMock = vi.hoisted(() => vi.fn<(basePath: string) => string>());
+
+vi.mock("../../../infra/github-app.service", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../../infra/github-app.service")>();
+  normalizeGitHubBasePathMock.mockImplementation(actual.normalizeGitHubBasePath);
+  return { ...actual, normalizeGitHubBasePath: normalizeGitHubBasePathMock };
+});
+
 const now = "2026-09-27T00:00:00.000Z";
 const repository: GitHubRepository = {
   id: 77,
@@ -183,6 +191,18 @@ describe("GitHubUseCase", () => {
       ConflictException
     );
     expect(harness.githubAppService.getFailureMessage).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it("uses a fallback message when path normalization throws a non-Error value", async () => {
+    const harness = createHarness();
+    const thrownValue: unknown = { reason: "unexpected failure" };
+    normalizeGitHubBasePathMock.mockImplementationOnce(() => {
+      throw thrownValue;
+    });
+
+    await expect(harness.useCase.saveSettings({ connection, settings, now })).rejects.toThrow(
+      "기록 경로를 사용할 수 없습니다."
+    );
   });
 
   it("normalizes and persists valid repository settings", async () => {
