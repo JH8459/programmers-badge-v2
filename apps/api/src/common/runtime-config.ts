@@ -14,7 +14,11 @@ interface ApiRuntimeEnvInput {
   DATABASE_PATH?: string;
   BADGE_OUTPUT_DIR?: string;
   ALLOWED_WEB_ORIGINS?: string;
+  ALLOWED_EXTENSION_ORIGINS?: string;
   ALLOW_LOCALHOST_ORIGINS?: string;
+  GITHUB_APP_ID?: string;
+  GITHUB_APP_SLUG?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
   ENABLE_SWAGGER?: string;
   SWAGGER_USERNAME?: string;
   SWAGGER_PASSWORD?: string;
@@ -25,6 +29,12 @@ export interface SwaggerAuthConfig {
   password: string;
 }
 
+export interface GitHubAppConfig {
+  appId: number;
+  slug: string;
+  privateKey: string;
+}
+
 interface ApiRuntimeConfigShape {
   port: number;
   publicBaseUrl: string;
@@ -32,7 +42,9 @@ interface ApiRuntimeConfigShape {
   databasePath: string;
   badgeOutputDirectory: string;
   allowedWebOrigins: string[];
+  allowedExtensionOrigins: string[];
   allowLocalhostOrigins: boolean;
+  githubApp: GitHubAppConfig | null;
   swaggerEnabled: boolean;
   swaggerAuth: SwaggerAuthConfig | null;
 }
@@ -101,6 +113,7 @@ const originSchema = z.string().url().refine((origin) => {
 
   return parsedOrigin.origin === origin;
 }, "Origin must include only protocol, host, and optional port.");
+const chromeExtensionOriginSchema = z.string().regex(/^chrome-extension:\/\/[a-p]{32}$/);
 
 export const apiRuntimeConfigSchema = z
   .object({
@@ -111,12 +124,38 @@ export const apiRuntimeConfigSchema = z
     DATABASE_PATH: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
     BADGE_OUTPUT_DIR: z.preprocess(normalizeOptionalEnvString, z.string()).optional(),
     ALLOWED_WEB_ORIGINS: z.preprocess(normalizeOptionalEnvString, z.string().optional()),
+    ALLOWED_EXTENSION_ORIGINS: z.preprocess(normalizeOptionalEnvString, z.string().optional()),
     ALLOW_LOCALHOST_ORIGINS: booleanEnvSchema,
+    GITHUB_APP_ID: z.preprocess(normalizeOptionalEnvString, z.coerce.number().int().positive().optional()),
+    GITHUB_APP_SLUG: optionalNonEmptyEnvStringSchema,
+    GITHUB_APP_PRIVATE_KEY: optionalNonEmptyEnvStringSchema,
     ENABLE_SWAGGER: booleanEnvSchema,
     SWAGGER_USERNAME: optionalNonEmptyEnvStringSchema,
     SWAGGER_PASSWORD: optionalNonEmptyEnvStringSchema,
   })
   .superRefine((env, context) => {
+    const githubAppValues = [
+      env.GITHUB_APP_ID,
+      env.GITHUB_APP_SLUG,
+      env.GITHUB_APP_PRIVATE_KEY,
+    ];
+
+    if (githubAppValues.some((value) => value !== undefined) && githubAppValues.some((value) => value === undefined)) {
+      context.addIssue({
+        code: "custom",
+        path: ["GITHUB_APP_ID"],
+        message: "GITHUB_APP_ID, GITHUB_APP_SLUG, and GITHUB_APP_PRIVATE_KEY are required together.",
+      });
+    }
+
+    if (env.GITHUB_APP_ID !== undefined && env.ALLOWED_EXTENSION_ORIGINS === undefined) {
+      context.addIssue({
+        code: "custom",
+        path: ["ALLOWED_EXTENSION_ORIGINS"],
+        message: "ALLOWED_EXTENSION_ORIGINS is required when GitHub integration is enabled.",
+      });
+    }
+
     if (!env.ENABLE_SWAGGER) {
       return;
     }
@@ -158,7 +197,21 @@ export const apiRuntimeConfigSchema = z
       allowedWebOrigins: normalizeOriginList({
         configuredOrigins: env.ALLOWED_WEB_ORIGINS,
       }),
+      allowedExtensionOrigins: (env.ALLOWED_EXTENSION_ORIGINS ?? "")
+        .split(",")
+        .map((origin) => origin.trim().replace(/\/$/, ""))
+        .filter((origin) => origin.length > 0),
       allowLocalhostOrigins: env.ALLOW_LOCALHOST_ORIGINS,
+      githubApp:
+        env.GITHUB_APP_ID !== undefined &&
+        env.GITHUB_APP_SLUG !== undefined &&
+        env.GITHUB_APP_PRIVATE_KEY !== undefined
+          ? {
+              appId: env.GITHUB_APP_ID,
+              slug: env.GITHUB_APP_SLUG,
+              privateKey: env.GITHUB_APP_PRIVATE_KEY.replace(/\\n/g, "\n"),
+            }
+          : null,
       swaggerEnabled: env.ENABLE_SWAGGER,
       swaggerAuth,
     };
@@ -167,6 +220,13 @@ export const apiRuntimeConfigSchema = z
     (config: ApiRuntimeConfigShape) =>
       config.allowedWebOrigins.every((origin) => originSchema.safeParse(origin).success),
     "ALLOWED_WEB_ORIGINS must be a comma-separated list of URL origins."
+  )
+  .refine(
+    (config: ApiRuntimeConfigShape) =>
+      config.allowedExtensionOrigins.every(
+        (origin) => chromeExtensionOriginSchema.safeParse(origin).success
+      ),
+    "ALLOWED_EXTENSION_ORIGINS must be a comma-separated list of Chrome extension origins."
   )
   .refine(
     (config: ApiRuntimeConfigShape) => config.publicBadgePathPrefix.length > 0,
@@ -183,7 +243,11 @@ export const readApiRuntimeConfig = (env: NodeJS.ProcessEnv = process.env): ApiR
     DATABASE_PATH: env.DATABASE_PATH,
     BADGE_OUTPUT_DIR: env.BADGE_OUTPUT_DIR,
     ALLOWED_WEB_ORIGINS: env.ALLOWED_WEB_ORIGINS,
+    ALLOWED_EXTENSION_ORIGINS: env.ALLOWED_EXTENSION_ORIGINS,
     ALLOW_LOCALHOST_ORIGINS: env.ALLOW_LOCALHOST_ORIGINS,
+    GITHUB_APP_ID: env.GITHUB_APP_ID,
+    GITHUB_APP_SLUG: env.GITHUB_APP_SLUG,
+    GITHUB_APP_PRIVATE_KEY: env.GITHUB_APP_PRIVATE_KEY,
     ENABLE_SWAGGER: env.ENABLE_SWAGGER,
     SWAGGER_USERNAME: env.SWAGGER_USERNAME,
     SWAGGER_PASSWORD: env.SWAGGER_PASSWORD,

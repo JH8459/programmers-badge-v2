@@ -13,7 +13,9 @@ describe("readApiRuntimeConfig", () => {
       databasePath: resolve(process.cwd(), "data", "programmers-badge.sqlite"),
       badgeOutputDirectory: resolve(process.cwd(), "data/badges"),
       allowedWebOrigins: [],
+      allowedExtensionOrigins: [],
       allowLocalhostOrigins: false,
+      githubApp: null,
       swaggerEnabled: false,
       swaggerAuth: null,
     });
@@ -23,6 +25,7 @@ describe("readApiRuntimeConfig", () => {
     expect(
       readApiRuntimeConfig({
         ALLOWED_WEB_ORIGINS: " ",
+        ALLOWED_EXTENSION_ORIGINS: " ",
         ALLOW_LOCALHOST_ORIGINS: " ",
         ENABLE_SWAGGER: " ",
       })
@@ -33,7 +36,9 @@ describe("readApiRuntimeConfig", () => {
       databasePath: resolve(process.cwd(), "data", "programmers-badge.sqlite"),
       badgeOutputDirectory: resolve(process.cwd(), "data/badges"),
       allowedWebOrigins: [],
+      allowedExtensionOrigins: [],
       allowLocalhostOrigins: false,
+      githubApp: null,
       swaggerEnabled: false,
       swaggerAuth: null,
     });
@@ -49,6 +54,7 @@ describe("readApiRuntimeConfig", () => {
         BADGE_OUTPUT_DIR: " /tmp/programmers-badge-assets ",
         ALLOWED_WEB_ORIGINS:
           " https://programmers-badge.jh8459.com/ , http://localhost:5020/ ",
+        ALLOWED_EXTENSION_ORIGINS: " chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf/ ",
         ALLOW_LOCALHOST_ORIGINS: "true",
         ENABLE_SWAGGER: "1",
         SWAGGER_USERNAME: " docs-user ",
@@ -61,7 +67,9 @@ describe("readApiRuntimeConfig", () => {
       databasePath: "/tmp/programmers-badge.sqlite",
       badgeOutputDirectory: "/tmp/programmers-badge-assets",
       allowedWebOrigins: ["https://programmers-badge.jh8459.com", "http://localhost:5020"],
+      allowedExtensionOrigins: ["chrome-extension://nfaknmfniiemabicmcbdkajapapdglaf"],
       allowLocalhostOrigins: true,
+      githubApp: null,
       swaggerEnabled: true,
       swaggerAuth: {
         username: "docs-user",

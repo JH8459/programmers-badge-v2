@@ -5,6 +5,12 @@ import {
   type ExtensionSettings,
   type ExtensionSyncState,
 } from "../shared/sync-state.js";
+import type {
+  FailedSolutionRecord,
+  GitHubConnectionResponse,
+  GitHubRepository,
+  SolutionRecordResult,
+} from "@programmers-badge/shared-types";
 import { getPopupViewModel } from "./view-model.js";
 import type { BadgePreviewVariant } from "./view-model.js";
 
@@ -22,12 +28,31 @@ const sendMessage = async <Response>(message: ExtensionMessage): Promise<Respons
         return;
       }
 
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        "error" in response &&
+        typeof response.error === "string"
+      ) {
+        reject(new Error(response.error));
+        return;
+      }
+
       resolve(response);
     });
   });
 
 let currentState = createIdleSyncState();
 let currentSettings: ExtensionSettings = DEFAULT_EXTENSION_SETTINGS;
+let githubConnection: GitHubConnectionResponse = {
+  connected: false,
+  accountLogin: null,
+  installationId: null,
+  settings: null,
+};
+let githubRepositories: GitHubRepository[] = [];
+let failedSolutions: FailedSolutionRecord[] = [];
+let githubStatusMessage = "";
 let selectedPreviewVariant: BadgePreviewVariant = "standard";
 
 const escapeHtml = (value: string): string =>
@@ -44,6 +69,19 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
   }
 
   await navigator.clipboard.writeText(text);
+};
+
+const refreshGitHubData = async (): Promise<void> => {
+  try {
+    const [repositories, records] = await Promise.all([
+      sendMessage<GitHubRepository[]>({ type: "get-github-repositories" }),
+      sendMessage<FailedSolutionRecord[]>({ type: "get-failed-github-solutions" }),
+    ]);
+    githubRepositories = repositories;
+    failedSolutions = records;
+  } catch (error) {
+    githubStatusMessage = error instanceof Error ? error.message : "GitHub 설정을 읽지 못했습니다.";
+  }
 };
 
 const render = (): void => {
@@ -144,6 +182,79 @@ const render = (): void => {
         </section>
       `
     : "";
+  const githubSettings = githubConnection.settings;
+  const latestSolutionMarkup = currentState.solutionRecord
+    ? `<p class="github-feedback" data-tone="${currentState.solutionRecord.status}">${escapeHtml(currentState.solutionRecord.message)}</p>`
+    : "";
+  const selectedRepositoryId = githubSettings?.repositoryId ?? githubRepositories[0]?.id;
+  const selectedRepository = githubRepositories.find(({ id }) => id === selectedRepositoryId);
+  const repositoryMarkup = githubRepositories
+    .map(
+      (repository) =>
+        `<option value="${repository.id}" ${repository.id === selectedRepositoryId ? "selected" : ""}>${escapeHtml(repository.fullName)}${repository.isPrivate ? " · 비공개" : ""}</option>`
+    )
+    .join("");
+  const failedSolutionMarkup = failedSolutions.length
+    ? `
+      <div class="failed-solutions">
+        <strong>재시도할 기록 ${failedSolutions.length}건</strong>
+        ${failedSolutions
+          .map(
+            (record) => `
+              <div class="failed-solution">
+                <span>${escapeHtml(`#${record.problemId} ${record.problemName}`)} · ${escapeHtml(record.language)}</span>
+                <p>${escapeHtml(record.errorMessage)}</p>
+                <button type="button" class="text-button github-retry" data-submission-id="${escapeHtml(record.submissionId)}">재시도</button>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `
+    : "";
+  const githubMarkup = githubConnection.connected
+    ? `
+      <section class="settings-panel github-panel" aria-label="GitHub 풀이 기록">
+        <div class="github-heading">
+          <div>
+            <strong>GitHub 풀이 기록</strong>
+            <span>@${escapeHtml(githubConnection.accountLogin ?? "")}</span>
+          </div>
+          <button type="button" class="text-button github-disconnect">연결 해제</button>
+        </div>
+        <label class="github-field">
+          <span>저장소</span>
+          <select class="github-repository" ${githubRepositories.length ? "" : "disabled"}>
+            ${repositoryMarkup || "<option value=\"\">권한이 있는 저장소가 없습니다.</option>"}
+          </select>
+        </label>
+        <label class="github-field">
+          <span>브랜치</span>
+          <input class="github-branch" value="${escapeHtml(githubSettings?.branch ?? selectedRepository?.defaultBranch ?? "main")}" maxlength="255" />
+        </label>
+        <label class="github-field">
+          <span>기록 경로</span>
+          <input class="github-base-path" value="${escapeHtml(githubSettings?.basePath ?? "")}" placeholder="저장소 루트 기준, 선택 입력" maxlength="500" />
+        </label>
+        <button type="button" class="secondary-button github-save" ${githubRepositories.length ? "" : "disabled"}>저장소 설정 저장</button>
+        ${latestSolutionMarkup}
+        <p class="github-note">GitHub 연결을 해제하면 이 서비스의 실패 기록도 삭제됩니다. App 권한은 GitHub 설정에서 취소할 수 있습니다.</p>
+        ${githubStatusMessage ? `<p class="github-feedback" role="status">${escapeHtml(githubStatusMessage)}</p>` : ""}
+        ${failedSolutionMarkup}
+      </section>
+    `
+    : `
+      <section class="settings-panel github-panel" aria-label="GitHub 풀이 기록">
+        <div class="github-heading">
+          <div>
+            <strong>GitHub 풀이 기록</strong>
+            <span>연결 후 정답 제출을 자동으로 기록합니다.</span>
+          </div>
+        </div>
+        <button type="button" class="secondary-button github-connect">GitHub 저장소 연결</button>
+        ${githubStatusMessage ? `<p class="github-feedback" role="status">${escapeHtml(githubStatusMessage)}</p>` : ""}
+      </section>
+    `;
 
   root.innerHTML = `
     <section class="shell">
@@ -173,6 +284,7 @@ const render = (): void => {
         </label>
         ${lastSyncMarkup}
       </section>
+      ${githubMarkup}
       ${summaryMarkup}
       ${copyMarkup}
     </section>
@@ -180,6 +292,86 @@ const render = (): void => {
 
   root.querySelector<HTMLButtonElement>(".primary-button")?.addEventListener("click", () => {
     void runSync();
+  });
+
+  root.querySelector<HTMLButtonElement>(".github-connect")?.addEventListener("click", () => {
+    githubStatusMessage = "GitHub App 설치 화면을 열었습니다. 권한 승인 후 popup으로 돌아오세요.";
+    render();
+    void sendMessage({ type: "connect-github" }).catch((error) => {
+      githubStatusMessage = error instanceof Error ? error.message : "GitHub 연결을 시작하지 못했습니다.";
+      render();
+    });
+  });
+
+  root.querySelector<HTMLSelectElement>(".github-repository")?.addEventListener("change", (event) => {
+    const repositoryId = Number((event.currentTarget as HTMLSelectElement).value);
+    const repository = githubRepositories.find(({ id }) => id === repositoryId);
+    const branchElement = root.querySelector<HTMLInputElement>(".github-branch");
+    if (repository && branchElement) {
+      branchElement.value = repository.defaultBranch;
+    }
+  });
+
+  root.querySelector<HTMLButtonElement>(".github-save")?.addEventListener("click", () => {
+    const repositoryId = Number(root.querySelector<HTMLSelectElement>(".github-repository")?.value);
+    const branch = root.querySelector<HTMLInputElement>(".github-branch")?.value.trim() ?? "";
+    const basePath = root.querySelector<HTMLInputElement>(".github-base-path")?.value.trim() ?? "";
+    if (!Number.isInteger(repositoryId) || !branch) {
+      githubStatusMessage = "저장소와 브랜치를 입력해 주세요.";
+      render();
+      return;
+    }
+
+    githubStatusMessage = "저장소 설정을 확인하고 있습니다.";
+    render();
+    void sendMessage<GitHubConnectionResponse>({
+      type: "save-github-settings",
+      settings: { repositoryId, branch, basePath },
+    })
+      .then((nextConnection) => {
+        githubConnection = nextConnection;
+        githubStatusMessage = "저장소 설정을 저장했습니다.";
+        render();
+      })
+      .catch((error) => {
+        githubStatusMessage = error instanceof Error ? error.message : "저장소 설정을 저장하지 못했습니다.";
+        render();
+      });
+  });
+
+  root.querySelector<HTMLButtonElement>(".github-disconnect")?.addEventListener("click", () => {
+    void sendMessage<GitHubConnectionResponse>({ type: "disconnect-github" })
+      .then((nextConnection) => {
+        githubConnection = nextConnection;
+        githubRepositories = [];
+        failedSolutions = [];
+        githubStatusMessage = "이 서비스의 연결과 실패 기록을 삭제했습니다.";
+        render();
+      })
+      .catch((error) => {
+        githubStatusMessage = error instanceof Error ? error.message : "GitHub 연결을 해제하지 못했습니다.";
+        render();
+      });
+  });
+
+  root.querySelectorAll<HTMLButtonElement>(".github-retry").forEach((buttonElement) => {
+    buttonElement.addEventListener("click", () => {
+      const submissionId = buttonElement.dataset.submissionId;
+      if (!submissionId) {
+        return;
+      }
+      void sendMessage<SolutionRecordResult>({ type: "retry-github-solution", submissionId })
+        .then(async (result) => {
+          await refreshGitHubData();
+          currentState = { ...currentState, solutionRecord: result };
+          githubStatusMessage = result.message;
+          render();
+        })
+        .catch((error) => {
+          githubStatusMessage = error instanceof Error ? error.message : "풀이 기록을 재시도하지 못했습니다.";
+          render();
+        });
+    });
   });
 
   root.querySelector<HTMLInputElement>(".auto-sync-toggle")?.addEventListener("change", (event) => {
@@ -237,12 +429,17 @@ const runSync = async (): Promise<void> => {
 
 const initialize = async (): Promise<void> => {
   try {
-    const [state, settings] = await Promise.all([
+    const [state, settings, connection] = await Promise.all([
       sendMessage<ExtensionSyncState>({ type: "get-sync-state" }),
       sendMessage<ExtensionSettings>({ type: "get-extension-settings" }),
+      sendMessage<GitHubConnectionResponse>({ type: "get-github-connection" }),
     ]);
     currentState = state;
     currentSettings = settings;
+    githubConnection = connection;
+    if (connection.connected) {
+      await refreshGitHubData();
+    }
   } catch {
     currentState = createIdleSyncState();
     currentSettings = DEFAULT_EXTENSION_SETTINGS;

@@ -46,6 +46,8 @@
 body {
   margin: 0;
   min-width: 320px;
+  max-height: 580px;
+  overflow-y: auto;
 }
 
 .shell {
@@ -174,6 +176,128 @@ h1 {
   border-radius: var(--radius-md);
   padding: var(--space-4);
   background: rgba(255, 255, 255, 0.72);
+}
+
+.github-panel {
+  gap: var(--space-4);
+}
+
+.github-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.github-heading > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.github-heading strong {
+  font-size: 12px;
+}
+
+.github-heading span,
+.github-note,
+.github-feedback {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.github-field {
+  display: grid;
+  gap: 5px;
+  color: var(--color-ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.github-field input,
+.github-field select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 7px 9px;
+  background: var(--color-surface);
+  color: var(--color-ink-strong);
+  font: inherit;
+  font-size: 11px;
+}
+
+.secondary-button {
+  width: 100%;
+  border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-md);
+  padding: 9px var(--space-4);
+  background: var(--color-surface-accent);
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.secondary-button:hover {
+  background: #dbeafe;
+}
+
+.secondary-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.text-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.github-feedback[data-tone="failed"] {
+  color: var(--color-status-danger-text);
+}
+
+.failed-solutions {
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border-soft);
+  padding-top: var(--space-4);
+}
+
+.failed-solutions > strong {
+  font-size: 11px;
+}
+
+.failed-solution {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  background: var(--color-surface-muted);
+}
+
+.failed-solution > span {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.failed-solution p {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: 10px;
+  line-height: 1.35;
 }
 
 .auto-sync-setting {

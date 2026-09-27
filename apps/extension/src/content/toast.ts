@@ -18,6 +18,37 @@ const TOAST_HIDE_DELAY_MS = 4_200;
 export const getAutoSyncToastViewModel = (
   state: ExtensionSyncState
 ): AutoSyncToastViewModel | null => {
+  if (state.solutionRecord?.status === "skipped") {
+    return {
+      tone: state.status === "error" ? "error" : "success",
+      title: state.status === "error" ? "GitHub 기록 생략 · 배지 동기화 실패" : "GitHub 기록 생략",
+      message:
+        state.status === "error"
+          ? `${state.solutionRecord.message} 배지 동기화: ${state.message}`
+          : state.solutionRecord.message,
+    };
+  }
+  if (state.solutionRecord?.status === "saved") {
+    return {
+      tone: state.status === "error" ? "error" : "success",
+      title: state.status === "error" ? "풀이 기록 완료 · 배지 동기화 실패" : "GitHub 풀이 기록 완료",
+      message:
+        state.status === "error"
+          ? `${state.solutionRecord.message} 배지 동기화: ${state.message}`
+          : state.solutionRecord.message,
+    };
+  }
+  if (state.solutionRecord?.status === "failed") {
+    return {
+      tone: "error",
+      title: "GitHub 풀이 기록 실패",
+      message:
+        state.status === "error"
+          ? `${state.solutionRecord.message} 배지 동기화: ${state.message}`
+          : state.solutionRecord.message,
+    };
+  }
+
   switch (state.status) {
     case "success":
       return {

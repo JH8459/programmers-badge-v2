@@ -2,9 +2,12 @@
   "manifest_version": 3,
   "name": "PROGRAMMERS-BADGE-V2",
   "version": "0.1.1",
-  "description": "Sync Programmers badge data and prepare a hosted badge URL.",
+  "description": "Sync Programmers badge data and save accepted solutions to an optional GitHub repository.",
   "permissions": ["storage", "activeTab", "tabs", "scripting"],
-  "host_permissions": ["https://api.programmers-badge.jh8459.com/*"],
+  "host_permissions": [
+    "https://api.programmers-badge.jh8459.com/*",
+    "https://school.programmers.co.kr/*"
+  ],
   "icons": {
     "16": "assets/icons/icon-16.png",
     "32": "assets/icons/icon-32.png",

@@ -32,6 +32,7 @@ export const setupApiHttpApplication = ({
   }
 
   app.enableCors({
+    credentials: true,
     origin(origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) {
       if (origin === undefined || isAllowedCorsOrigin({ origin, runtimeConfig })) {
         callback(null, true);

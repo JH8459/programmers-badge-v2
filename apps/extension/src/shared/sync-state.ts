@@ -1,4 +1,8 @@
-import type { BadgeSyncResponse } from "@programmers-badge/shared-types";
+import type {
+  BadgeSyncResponse,
+  GitHubRepositorySettings,
+  SolutionRecordResult,
+} from "@programmers-badge/shared-types";
 
 export type ExtensionSyncStatus =
   | "idle"
@@ -12,6 +16,7 @@ export interface ExtensionSyncState {
   status: ExtensionSyncStatus;
   message: string;
   lastSync: BadgeSyncResponse | null;
+  solutionRecord?: SolutionRecordResult | null;
   legacyProgrammerHandle?: string;
 }
 
@@ -24,9 +29,10 @@ export const DEFAULT_EXTENSION_SETTINGS: ExtensionSettings = {
 };
 
 export interface AutoSyncTriggerMessage {
-  type: "trigger-auto-sync";
+  type: "trigger-solved-submission";
   tabId?: number;
-  fingerprint?: string;
+  fingerprint: string;
+  resultSummary: string;
 }
 
 export type ExtensionMessage =
@@ -34,6 +40,13 @@ export type ExtensionMessage =
   | { type: "get-extension-settings" }
   | { type: "set-auto-sync-enabled"; enabled: boolean }
   | { type: "start-sync" }
+  | { type: "connect-github" }
+  | { type: "get-github-connection" }
+  | { type: "get-github-repositories" }
+  | { type: "save-github-settings"; settings: GitHubRepositorySettings }
+  | { type: "disconnect-github" }
+  | { type: "get-failed-github-solutions" }
+  | { type: "retry-github-solution"; submissionId: string }
   | AutoSyncTriggerMessage;
 
 export const createIdleSyncState = (): ExtensionSyncState => ({

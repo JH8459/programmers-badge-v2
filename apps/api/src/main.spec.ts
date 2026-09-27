@@ -16,7 +16,9 @@ describe("main bootstrap", () => {
       databasePath: ":memory:",
       badgeOutputDirectory: "/tmp/badges",
       allowedWebOrigins: [],
+      allowedExtensionOrigins: [],
       allowLocalhostOrigins: false,
+      githubApp: null,
       swaggerEnabled: false,
       swaggerAuth: null,
     };
