@@ -289,6 +289,40 @@ h1 {
   opacity: 0.55;
 }
 
+.github-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 36px;
+}
+
+.github-save[aria-busy="true"] {
+  cursor: progress;
+  opacity: 1;
+}
+
+.github-save-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: github-save-spin 0.7s linear infinite;
+}
+
+@keyframes github-save-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .github-save-spinner {
+    animation: none;
+  }
+}
+
 .text-button {
   border: 0;
   padding: 0;
@@ -299,6 +333,11 @@ h1 {
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.text-button:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
 
 .github-feedback[data-tone="failed"] {

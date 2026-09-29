@@ -55,6 +55,8 @@ let githubRepositories: GitHubRepository[] = [];
 let githubRepositoriesStatus: "idle" | "loading" | "loaded" | "error" = "idle";
 let failedSolutions: FailedSolutionRecord[] = [];
 let githubStatusMessage = "";
+let githubSettingsDraft: { repositoryId: number; basePath: string } | null = null;
+let isGitHubSavePending = false;
 let selectedPreviewVariant: BadgePreviewVariant = "standard";
 
 const escapeHtml = (value: string): string =>
@@ -87,6 +89,11 @@ const copyToClipboard = async (text: string | undefined): Promise<void> => {
   }
 
   await navigator.clipboard.writeText(text);
+};
+
+const clearGitHubFeedback = (): void => {
+  githubStatusMessage = "";
+  root.querySelector(".github-feedback")?.remove();
 };
 
 const refreshGitHubData = async (): Promise<void> => {
@@ -231,7 +238,8 @@ const render = (): void => {
       </div>
     `
     : "";
-  const selectedRepositoryId = githubSettings?.repositoryId ?? githubRepositories[0]?.id;
+  const selectedRepositoryId =
+    githubSettingsDraft?.repositoryId ?? githubSettings?.repositoryId ?? githubRepositories[0]?.id;
   const selectedRepository =
     githubRepositories.find(({ id }) => id === selectedRepositoryId) ?? githubSettings?.repository;
   const selectedRepositoryUrl = selectedRepository ? getGitHubRepositoryUrl(selectedRepository) : undefined;
@@ -239,7 +247,9 @@ const render = (): void => {
     ? githubRepositories.some(({ id }) => id === githubSettings.repositoryId)
     : true;
   const repositoryGuidance =
-    githubRepositoriesStatus === "loading"
+    isGitHubSavePending
+      ? "저장소 설정을 저장하고 있습니다."
+      : githubRepositoriesStatus === "loading"
       ? "GitHub App 접근 저장소를 불러오고 있습니다."
       : githubRepositoriesStatus === "error"
       ? "저장소 목록을 불러오지 못했습니다. 오류를 확인한 뒤 목록을 새로고침하세요."
@@ -288,29 +298,31 @@ const render = (): void => {
             <strong>GitHub 풀이 기록</strong>
             <span>@${escapeHtml(githubConnection.accountLogin ?? "")}</span>
           </div>
-          <button type="button" class="text-button github-disconnect">연결 해제</button>
+          <button type="button" class="text-button github-disconnect" ${isGitHubSavePending ? "disabled" : ""}>연결 해제</button>
         </div>
         <label class="github-field">
           <span>GitHub App 접근 저장소</span>
-          <select class="github-repository" ${githubRepositories.length ? "" : "disabled"}>
+          <select class="github-repository" ${githubRepositories.length && !isGitHubSavePending ? "" : "disabled"}>
             ${repositoryMarkup || `<option value="">${escapeHtml(repositoryPlaceholder)}</option>`}
           </select>
         </label>
         <div class="github-repository-target">
-          <span class="github-repository-target-label">${githubSettings ? "저장된 풀이 기록 대상 주소" : "선택한 저장소 주소"}</span>
+          <span class="github-repository-target-label">${githubSettings && !githubSettingsDraft ? "저장된 풀이 기록 대상 주소" : "선택한 저장소 주소"}</span>
           ${selectedRepositoryUrl
             ? `<a class="github-link github-repository-link" href="${escapeHtml(selectedRepositoryUrl)}" target="_blank" rel="noreferrer">${escapeHtml(selectedRepositoryUrl)}</a>`
             : `<span class="github-note">${githubRepositoriesStatus === "loading" ? "저장소 목록을 조회하고 있습니다." : githubRepositoriesStatus === "error" ? "조회 오류로 저장소 주소를 확인하지 못했습니다." : "공유된 저장소가 없습니다."}</span>`}
           <p class="github-note github-repository-notice">${escapeHtml(repositoryGuidance)}</p>
         </div>
-        <button type="button" class="text-button github-refresh">저장소 목록 새로고침</button>
+        <button type="button" class="text-button github-refresh" ${isGitHubSavePending ? "disabled" : ""}>저장소 목록 새로고침</button>
         <label class="github-field">
           <span>기록 경로 (선택)</span>
-          <input class="github-base-path" value="${escapeHtml(githubSettings?.basePath ?? "")}" placeholder="비우면 저장소 루트" maxlength="500" />
+          <input class="github-base-path" value="${escapeHtml(githubSettingsDraft?.basePath ?? githubSettings?.basePath ?? "")}" placeholder="비우면 저장소 루트" maxlength="500" ${isGitHubSavePending ? "disabled" : ""} />
         </label>
         <p class="github-note">비우면 저장소 루트의 프로그래머스/&lt;레벨&gt;/&lt;문제번호&gt;-&lt;정규화된-문제명&gt;/에 기록합니다. 입력한 경로는 이 구조 앞에 추가됩니다.</p>
         <p class="github-note github-branch-notice">기록 브랜치: ${escapeHtml(selectedRepository?.defaultBranch ?? "저장소 기본 브랜치")}</p>
-        <button type="button" class="secondary-button github-save" ${githubRepositories.length ? "" : "disabled"}>저장소 설정 저장</button>
+        <button type="button" class="secondary-button github-save" ${githubRepositories.length && !isGitHubSavePending ? "" : "disabled"} aria-busy="${isGitHubSavePending}">
+          ${isGitHubSavePending ? '<span class="github-save-spinner" aria-hidden="true"></span>저장 중…' : "저장소 설정 저장"}
+        </button>
         ${githubStatusMessage ? `<p class="github-feedback" role="status">${escapeHtml(githubStatusMessage)}</p>` : ""}
         ${latestSolutionMarkup}
         ${failedSolutionMarkup}
@@ -380,6 +392,13 @@ const render = (): void => {
   root.querySelector<HTMLSelectElement>(".github-repository")?.addEventListener("change", (event) => {
     const repositoryId = Number((event.currentTarget as HTMLSelectElement).value);
     const repository = githubRepositories.find(({ id }) => id === repositoryId);
+    if (repository) {
+      githubSettingsDraft = {
+        repositoryId,
+        basePath: root.querySelector<HTMLInputElement>(".github-base-path")?.value ?? "",
+      };
+      clearGitHubFeedback();
+    }
     const repositoryLink = root.querySelector<HTMLAnchorElement>(".github-repository-link");
     const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
     const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
@@ -402,6 +421,11 @@ const render = (): void => {
 
   root.querySelectorAll<HTMLInputElement>(".github-base-path").forEach((inputElement) => {
     inputElement.addEventListener("input", () => {
+      const repositoryId = Number(root.querySelector<HTMLSelectElement>(".github-repository")?.value);
+      if (githubRepositories.some(({ id }) => id === repositoryId)) {
+        githubSettingsDraft = { repositoryId, basePath: inputElement.value };
+        clearGitHubFeedback();
+      }
       const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
       const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
       if (repositoryLabel) {
@@ -421,6 +445,9 @@ const render = (): void => {
   });
 
   root.querySelector<HTMLButtonElement>(".github-save")?.addEventListener("click", () => {
+    if (isGitHubSavePending) {
+      return;
+    }
     const repositoryId = Number(root.querySelector<HTMLSelectElement>(".github-repository")?.value);
     const repository = githubRepositories.find(({ id }) => id === repositoryId);
     const basePath = root.querySelector<HTMLInputElement>(".github-base-path")?.value.trim() ?? "";
@@ -430,7 +457,9 @@ const render = (): void => {
       return;
     }
 
-    githubStatusMessage = "저장소 설정을 확인하고 있습니다.";
+    githubSettingsDraft = { repositoryId, basePath };
+    isGitHubSavePending = true;
+    githubStatusMessage = "저장소 설정을 저장하고 있습니다.";
     render();
     void sendMessage<GitHubConnectionResponse>({
       type: "save-github-settings",
@@ -438,11 +467,14 @@ const render = (): void => {
     })
       .then((nextConnection) => {
         githubConnection = nextConnection;
+        githubSettingsDraft = null;
         githubStatusMessage = "저장소 설정을 저장했습니다.";
-        render();
       })
       .catch((error) => {
         githubStatusMessage = error instanceof Error ? error.message : "저장소 설정을 저장하지 못했습니다.";
+      })
+      .finally(() => {
+        isGitHubSavePending = false;
         render();
       });
   });
