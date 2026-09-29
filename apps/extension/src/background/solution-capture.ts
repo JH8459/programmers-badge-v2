@@ -116,6 +116,30 @@ export const captureProgrammersSolution = async ({
         return null;
       };
       const getEditorSource = (): string => {
+        const fillEditor = document.querySelector(
+          ".code-section .code-editor[id^='input_code_editor_']:not([hidden]) .rouge-code pre"
+        );
+        if (fillEditor) {
+          const walker = document.createTreeWalker(
+            fillEditor,
+            NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT
+          );
+          const parts: string[] = [];
+          let node = walker.nextNode();
+          while (node) {
+            if (node instanceof HTMLInputElement) {
+              parts.push(node.value);
+            } else if (node instanceof Text) {
+              parts.push(node.textContent ?? "");
+            }
+            node = walker.nextNode();
+          }
+          const source = parts.join("");
+          if (source.trim()) {
+            return source;
+          }
+        }
+
         const pageWindow = window as typeof window & {
           monaco?: { editor?: { getModels?: () => Array<{ getValue?: () => string }> } };
           ace?: { edit?: (element: Element) => { getValue?: () => string } };
@@ -165,7 +189,12 @@ export const captureProgrammersSolution = async ({
       const pageText = document.body.innerText;
       const pageTitle = document.title.match(/코딩테스트\s*연습\s*[-–]\s*(.+?)(?:\s*[|｜]\s*프로그래머스.*)?$/)?.[1];
       const title = normalizeText(pageTitle ?? document.querySelector("main h1, h1")?.textContent ?? "");
-      const level = pageText.match(/(?:Lv\.?|난이도)\s*(\d+)/i)?.[1] ?? "unknown";
+      const challengeLevel = document
+        .querySelector(".lesson-content[data-challenge-level]")
+        ?.getAttribute("data-challenge-level");
+      const level = challengeLevel && /^\d+$/.test(challengeLevel)
+        ? challengeLevel
+        : pageText.match(/(?:Lv\.?|난이도)\s*(\d+)/i)?.[1] ?? "unknown";
       const urlLanguage = new URLSearchParams(window.location.search).get("language") ?? "";
       const language = parseLanguage(urlLanguage) ?? parseLanguage(getSelectedLanguageText());
       const code = getEditorSource();

@@ -1,6 +1,6 @@
 {
   "name": "@programmers-badge/extension",
-  "version": "0.2.5",
+  "version": "0.2.8",
   "private": true,
   "dependencies": {
     "@programmers-badge/shared-types": "workspace:*",
