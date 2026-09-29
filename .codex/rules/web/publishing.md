@@ -6,6 +6,7 @@
 - package manager는 repo 기본값인 `pnpm`을 사용한다.
 - 기본 build output은 Vite 기본값인 `dist`를 사용한다.
 - container runtime은 `apps/web/Dockerfile`에서 Vite build 결과를 Nginx 정적 파일로 서빙한다.
+- web build는 `packages/shared-types`의 빌드 결과와 소스가 필요하며, Docker image build에서도 공유 패키지를 함께 복사하고 먼저 빌드한다.
 - `vite preview`는 local build preview 용도이며 production server로 사용하지 않는다.
 
 ## Routing Defaults
