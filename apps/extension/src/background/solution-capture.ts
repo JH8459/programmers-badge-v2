@@ -166,7 +166,8 @@ export const captureProgrammersSolution = async ({
       const pageTitle = document.title.match(/코딩테스트\s*연습\s*[-–]\s*(.+?)(?:\s*[|｜]\s*프로그래머스.*)?$/)?.[1];
       const title = normalizeText(pageTitle ?? document.querySelector("main h1, h1")?.textContent ?? "");
       const level = pageText.match(/(?:Lv\.?|난이도)\s*(\d+)/i)?.[1] ?? "unknown";
-      const language = parseLanguage(getSelectedLanguageText());
+      const urlLanguage = new URLSearchParams(window.location.search).get("language") ?? "";
+      const language = parseLanguage(urlLanguage) ?? parseLanguage(getSelectedLanguageText());
       const code = getEditorSource();
       const performanceLines = pageText
         .split("\n")
