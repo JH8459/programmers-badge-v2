@@ -20,6 +20,10 @@ on:
       - "apps/web/tsconfig.json"
       - "apps/web/vite.config.ts"
       - "apps/extension/store-assets/**"
+      - "packages/shared-types/package.json"
+      - "packages/shared-types/tsconfig*.json"
+      - "packages/shared-types/src/**"
+      - "!packages/shared-types/src/**/*.spec.ts"
       - "packages/config/tsconfig/**"
       - "tsconfig.base.json"
   workflow_dispatch:
@@ -63,6 +67,7 @@ jobs:
 
       - name: Verify web package
         run: |
+          pnpm --filter @programmers-badge/shared-types build
           pnpm --filter @programmers-badge/web lint
           pnpm --filter @programmers-badge/web typecheck
           pnpm --filter @programmers-badge/web test

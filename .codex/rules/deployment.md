@@ -14,7 +14,8 @@ app별 runtime env, domain, permission 세부값은 각 app rule을 함께 본�
   - API image만 DockerHub에 push하고, root `docker-compose.api.yml`와 `.env.api.deploy`만 NAS에 반영한 뒤 `api` service만 재시작한다.
 - `.github/workflows/deploy-web.yml`
   - `master` push 또는 수동 실행 시 web production deploy를 담당한다.
-  - web runtime/image 영향 변경만 자동 trigger에 포함한다.
+  - web runtime/image와 web이 사용하는 `packages/shared-types` 변경을 자동 trigger에 포함한다.
+  - 새 runner에서 web을 검증하기 전에 `packages/shared-types`를 빌드한다.
   - web image만 DockerHub에 push하고, root `docker-compose.web.yml`와 `.env.web.deploy`만 NAS에 반영한 뒤 `web` service만 재시작한다.
 - `.github/workflows/release-extension.yml`
   - `extension-v*` tag push 또는 수동 실행 시 extension zip package release를 담당한다.

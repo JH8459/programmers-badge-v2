@@ -10,14 +10,16 @@ ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/config/package.json packages/config/package.json
+COPY packages/shared-types/package.json packages/shared-types/package.json
 
 RUN pnpm install --frozen-lockfile
 
 COPY apps/web apps/web
 COPY apps/extension/store-assets apps/extension/store-assets
 COPY packages/config/tsconfig packages/config/tsconfig
+COPY packages/shared-types packages/shared-types
 
-RUN test -n "${VITE_API_BASE_URL}" && pnpm --filter @programmers-badge/web build
+RUN test -n "${VITE_API_BASE_URL}" && pnpm --filter @programmers-badge/shared-types build && pnpm --filter @programmers-badge/web build
 
 FROM nginx:1.27-alpine AS runtime
 
