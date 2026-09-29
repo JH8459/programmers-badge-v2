@@ -56,7 +56,7 @@ describe("GitHubRepository", () => {
     repository.saveRepositorySettings({
       githubAccountId,
       repository: repositoryModel(isPrivate),
-      branch: "main",
+      branch: "legacy-branch",
       basePath: "solutions",
       updatedAt: now,
     });

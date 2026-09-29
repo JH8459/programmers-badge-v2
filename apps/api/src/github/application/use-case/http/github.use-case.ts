@@ -147,7 +147,7 @@ export class GitHubUseCase {
       await this.githubAppService.validateRepositoryBranch({
         installationId: connection.installationId,
         repository: selectedRepository,
-        branch: parsedSettings.branch,
+        branch: selectedRepository.defaultBranch,
       });
     } catch (error) {
       throw new ConflictException(this.githubAppService.getFailureMessage(error));
@@ -156,7 +156,7 @@ export class GitHubUseCase {
       new SaveGitHubRepositorySettingsCommand(
         connection.githubAccountId,
         selectedRepository,
-        parsedSettings.branch,
+        selectedRepository.defaultBranch,
         basePath,
         now
       )
@@ -169,7 +169,7 @@ export class GitHubUseCase {
       settings: {
         repository: selectedRepository,
         repositoryId: selectedRepository.id,
-        branch: parsedSettings.branch,
+        branch: selectedRepository.defaultBranch,
         basePath,
       },
     };
@@ -276,8 +276,15 @@ export class GitHubUseCase {
     );
 
     try {
+      const repositories = await this.githubAppService.listInstallationRepositories({
+        installationId: record.installationId,
+      });
+      const repository = repositories.find(({ id }) => id === record.repositoryId);
+      if (!repository) {
+        throw new Error("풀이 저장소에 대한 GitHub App 접근 권한을 확인하지 못했습니다.");
+      }
       const commit = await this.githubAppService.writeSolution({
-        record: { ...record, attemptCount: record.attemptCount + 1 },
+        record: { ...record, branch: repository.defaultBranch, attemptCount: record.attemptCount + 1 },
       });
       const status = commit.skipped ? "skipped" : "saved";
       await this.commandBus.execute(

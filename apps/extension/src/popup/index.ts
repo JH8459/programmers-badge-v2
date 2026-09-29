@@ -305,18 +305,16 @@ const render = (): void => {
         </div>
         <button type="button" class="text-button github-refresh">저장소 목록 새로고침</button>
         <label class="github-field">
-          <span>브랜치</span>
-          <input class="github-branch" value="${escapeHtml(githubSettings?.branch ?? selectedRepository?.defaultBranch ?? "main")}" maxlength="255" />
+          <span>기록 경로 (선택)</span>
+          <input class="github-base-path" value="${escapeHtml(githubSettings?.basePath ?? "")}" placeholder="비우면 저장소 루트" maxlength="500" />
         </label>
-        <label class="github-field">
-          <span>기록 경로</span>
-          <input class="github-base-path" value="${escapeHtml(githubSettings?.basePath ?? "")}" placeholder="저장소 루트 기준, 선택 입력" maxlength="500" />
-        </label>
+        <p class="github-note">비우면 저장소 루트의 프로그래머스/&lt;레벨&gt;/&lt;문제번호&gt;-&lt;정규화된-문제명&gt;/에 기록합니다. 입력한 경로는 이 구조 앞에 추가됩니다.</p>
+        <p class="github-note github-branch-notice">기록 브랜치: ${escapeHtml(selectedRepository?.defaultBranch ?? "저장소 기본 브랜치")}</p>
         <button type="button" class="secondary-button github-save" ${githubRepositories.length ? "" : "disabled"}>저장소 설정 저장</button>
-        ${latestSolutionMarkup}
-        <p class="github-note">GitHub 연결을 해제하면 이 서비스의 실패 기록도 삭제됩니다. App 권한은 GitHub 설정에서 취소할 수 있습니다.</p>
         ${githubStatusMessage ? `<p class="github-feedback" role="status">${escapeHtml(githubStatusMessage)}</p>` : ""}
+        ${latestSolutionMarkup}
         ${failedSolutionMarkup}
+        <p class="github-note github-secondary-note">연결 해제 시 이 서비스의 실패 기록이 삭제됩니다. App 권한은 GitHub 설정에서 관리할 수 있습니다.</p>
       </section>
     `
     : `
@@ -382,13 +380,10 @@ const render = (): void => {
   root.querySelector<HTMLSelectElement>(".github-repository")?.addEventListener("change", (event) => {
     const repositoryId = Number((event.currentTarget as HTMLSelectElement).value);
     const repository = githubRepositories.find(({ id }) => id === repositoryId);
-    const branchElement = root.querySelector<HTMLInputElement>(".github-branch");
     const repositoryLink = root.querySelector<HTMLAnchorElement>(".github-repository-link");
     const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
     const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
-    if (repository && branchElement) {
-      branchElement.value = repository.defaultBranch;
-    }
+    const branchNotice = root.querySelector<HTMLParagraphElement>(".github-branch-notice");
     if (repository && repositoryLink) {
       const repositoryUrl = getGitHubRepositoryUrl(repository);
       repositoryLink.href = repositoryUrl;
@@ -400,9 +395,12 @@ const render = (): void => {
     if (repositoryNotice) {
       repositoryNotice.textContent = "저장소 설정을 저장하면 다음 정답 제출부터 풀이가 자동 기록됩니다.";
     }
+    if (branchNotice) {
+      branchNotice.textContent = `기록 브랜치: ${repository?.defaultBranch ?? "저장소 기본 브랜치"}`;
+    }
   });
 
-  root.querySelectorAll<HTMLInputElement>(".github-branch, .github-base-path").forEach((inputElement) => {
+  root.querySelectorAll<HTMLInputElement>(".github-base-path").forEach((inputElement) => {
     inputElement.addEventListener("input", () => {
       const repositoryLabel = root.querySelector<HTMLSpanElement>(".github-repository-target-label");
       const repositoryNotice = root.querySelector<HTMLParagraphElement>(".github-repository-notice");
@@ -424,10 +422,10 @@ const render = (): void => {
 
   root.querySelector<HTMLButtonElement>(".github-save")?.addEventListener("click", () => {
     const repositoryId = Number(root.querySelector<HTMLSelectElement>(".github-repository")?.value);
-    const branch = root.querySelector<HTMLInputElement>(".github-branch")?.value.trim() ?? "";
+    const repository = githubRepositories.find(({ id }) => id === repositoryId);
     const basePath = root.querySelector<HTMLInputElement>(".github-base-path")?.value.trim() ?? "";
-    if (!Number.isInteger(repositoryId) || !branch) {
-      githubStatusMessage = "저장소와 브랜치를 입력해 주세요.";
+    if (!repository) {
+      githubStatusMessage = "저장소를 선택해 주세요.";
       render();
       return;
     }
@@ -436,7 +434,7 @@ const render = (): void => {
     render();
     void sendMessage<GitHubConnectionResponse>({
       type: "save-github-settings",
-      settings: { repositoryId, branch, basePath },
+      settings: { repositoryId, branch: repository.defaultBranch, basePath },
     })
       .then((nextConnection) => {
         githubConnection = nextConnection;
