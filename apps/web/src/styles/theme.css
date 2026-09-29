@@ -526,6 +526,84 @@ p {
   padding-top: 58px;
 }
 
+.github-connected-page {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.github-connected-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(24px, 5vw, 48px);
+  background: var(--panel);
+}
+
+.github-connected-panel h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.github-connected-lead {
+  margin-top: 18px;
+}
+
+.github-connected-details {
+  display: grid;
+  gap: 16px;
+  margin-top: 30px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 0;
+}
+
+.github-connected-detail {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.github-connected-detail span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.github-connected-detail strong,
+.github-connected-detail a {
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 1.02rem;
+}
+
+.github-connected-detail a,
+.github-connected-secondary {
+  color: var(--accent);
+}
+
+.github-connected-detail a:hover,
+.github-connected-secondary:hover {
+  color: var(--accent-blue);
+  text-decoration: underline;
+}
+
+.github-connected-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: center;
+  margin-top: 30px;
+}
+
+.github-connected-secondary {
+  font-size: 0.91rem;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .github-connected-actions .button {
+    width: 100%;
+  }
+}
+
 .page-intro {
   border-radius: var(--radius-xl);
   padding: clamp(30px, 5vw, 56px);

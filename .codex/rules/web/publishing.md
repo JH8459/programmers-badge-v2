@@ -13,6 +13,7 @@
 - `/`: landing page
 - `/contact`: 문의하기와 support channel 안내
 - `/privacy`: Chrome Web Store 제출용 개인정보처리방침
+- `/github/connected`: GitHub App 연결 결과와 세션으로 조회한 계정·저장된 풀이 기록 대상을 안내한다.
 - `/terms`는 명시적 필요가 생길 때 추가한다.
 
 ## Domain Defaults

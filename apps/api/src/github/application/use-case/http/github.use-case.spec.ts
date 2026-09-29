@@ -206,12 +206,14 @@ describe("GitHubUseCase", () => {
     );
   });
 
-  it("normalizes and persists valid repository settings", async () => {
+  it("normalizes valid settings and uses the repository default branch", async () => {
     const harness = createHarness();
+    const defaultRepository = { ...repository, defaultBranch: "develop" };
+    harness.githubAppService.listInstallationRepositories.mockResolvedValue([defaultRepository]);
     harness.commandBus.execute.mockResolvedValue(undefined);
     const result = await harness.useCase.saveSettings({
       connection,
-      settings: { ...settings, basePath: "/solutions/" },
+      settings: { ...settings, branch: "legacy-branch", basePath: "/solutions/" },
       now,
     });
 
@@ -219,13 +221,27 @@ describe("GitHubUseCase", () => {
       connected: true,
       accountLogin: "octocat",
       installationId: 17,
-      settings: { repository, repositoryId: 77, branch: "main", basePath: "solutions" },
+      settings: { repository: defaultRepository, repositoryId: 77, branch: "develop", basePath: "solutions" },
     });
     expect(harness.githubAppService.validateRepositoryBranch).toHaveBeenCalledWith({
       installationId: 17,
-      repository,
-      branch: "main",
+      repository: defaultRepository,
+      branch: "develop",
     });
+  });
+
+  it("saves an empty path for the repository root", async () => {
+    const harness = createHarness();
+    harness.commandBus.execute.mockResolvedValue(undefined);
+
+    await expect(harness.useCase.saveSettings({
+      connection,
+      settings: { ...settings, basePath: "" },
+      now,
+    })).resolves.toMatchObject({ settings: { branch: "main", basePath: "" } });
+    expect(harness.commandBus.execute).toHaveBeenCalledWith(
+      expect.objectContaining({ branch: "main", basePath: "" })
+    );
   });
 
   it("skips recording when no repository settings are configured", async () => {
@@ -291,6 +307,19 @@ describe("GitHubUseCase", () => {
     expect(harness.commandBus.execute).toHaveBeenCalledTimes(3);
   });
 
+  it("records a failure when the App can no longer access the solution repository", async () => {
+    const harness = createHarness();
+    harness.commandBus.execute.mockResolvedValue(storedRecord());
+    harness.githubAppService.listInstallationRepositories.mockResolvedValue([]);
+
+    await expect(harness.useCase.recordSolution({ connection, payload, now })).resolves.toMatchObject({
+      status: "failed",
+      message: "풀이 저장소에 대한 GitHub App 접근 권한을 확인하지 못했습니다.",
+    });
+    expect(harness.githubAppService.writeSolution).not.toHaveBeenCalled();
+    expect(harness.commandBus.execute).toHaveBeenCalledTimes(3);
+  });
+
   it("maps failed records with and without stored error messages", async () => {
     const harness = createHarness();
     harness.queryBus.execute.mockResolvedValue([
@@ -322,12 +351,16 @@ describe("GitHubUseCase", () => {
 
   it("retries a failed record and forwards disconnect", async () => {
     const harness = createHarness();
-    harness.queryBus.execute.mockResolvedValue(storedRecord({ status: "failed", errorMessage: "denied" }));
+    harness.githubAppService.listInstallationRepositories.mockResolvedValue([{ ...repository, defaultBranch: "develop" }]);
+    harness.queryBus.execute.mockResolvedValue(storedRecord({ status: "failed", branch: "legacy-branch", errorMessage: "denied" }));
     harness.commandBus.execute.mockResolvedValue(undefined);
 
     await expect(
       harness.useCase.retrySolution({ connection, submissionId: payload.submissionId, now })
     ).resolves.toMatchObject({ status: "saved" });
+    expect(harness.githubAppService.writeSolution).toHaveBeenCalledWith({
+      record: { ...storedRecord({ status: "failed", branch: "develop", errorMessage: "denied" }), attemptCount: 1 },
+    });
     await expect(harness.useCase.disconnect({ connection })).resolves.toBeUndefined();
     expect(harness.commandBus.execute).toHaveBeenCalled();
   });

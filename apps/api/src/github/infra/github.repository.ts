@@ -219,7 +219,7 @@ export class GitHubRepository {
               defaultBranch: row.repository_default_branch,
             },
             repositoryId: row.repository_id,
-            branch: row.target_branch,
+            branch: row.repository_default_branch,
             basePath: row.base_path,
           } satisfies GitHubRepositorySettings & { repository: GitHubRepositoryModel }
         : null;
@@ -295,7 +295,7 @@ export class GitHubRepository {
         settings.repository.id,
         settings.repository.owner,
         settings.repository.name,
-        settings.branch,
+        settings.repository.defaultBranch,
         settings.basePath,
         payload.problemId,
         payload.problemName,

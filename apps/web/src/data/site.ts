@@ -12,6 +12,8 @@ const apiBaseUrl = readRequiredViteEnv("VITE_API_BASE_URL").replace(/\/+$/, "");
 
 export const siteLinks = {
   apiHealth: `${apiBaseUrl}/api/health`,
+  githubConnection: `${apiBaseUrl}/api/github/connection`,
+  githubConnect: `${apiBaseUrl}/api/github/connect`,
   chromeStore:
     "https://chromewebstore.google.com/detail/programmers-badge-v2/nfaknmfniiemabicmcbdkajapapdglaf?authuser=0&hl=ko",
   githubIssues: "https://github.com/JH8459/programmers-badge-v2/issues",
@@ -48,7 +50,7 @@ export const privacySections = [
     clauses: [
       {
         title: "수집하는 정보",
-        body: "프로필 식별자, 표시 이름, 풀이 수, 스킬 레벨, 랭킹 정보, 동기화 시각을 처리합니다. GitHub 연결을 선택하면 GitHub 계정 ID와 로그인명, App 설치 ID, 선택한 저장소·브랜치·기록 경로, 정답 제출한 문제 정보와 풀이 코드를 처리합니다.",
+        body: "프로필 식별자, 표시 이름, 풀이 수, 스킬 레벨, 랭킹 정보, 동기화 시각을 처리합니다. GitHub 연결을 선택하면 GitHub 계정 ID와 로그인명, App 설치 ID, 선택한 저장소와 기본 브랜치·기록 경로, 정답 제출한 문제 정보와 풀이 코드를 처리합니다.",
       },
       {
         title: "수집하지 않는 정보",
