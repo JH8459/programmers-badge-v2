@@ -103,6 +103,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@programmers-badge/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       react:
         specifier: ^19.2.1
         version: 19.2.6
