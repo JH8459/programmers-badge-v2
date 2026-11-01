@@ -6,15 +6,16 @@ export function PrivacyPage() {
       <section className="terms-hero">
         <div className="terms-copy">
           <span className="section-kicker">Privacy</span>
-          <h1>배지 제공에 필요한 최소 데이터만 처리합니다.</h1>
+          <h1>배지와 선택형 GitHub 기록을 위한 데이터 이용 안내</h1>
           <p>
-            PROGRAMMERS-BADGE-V2는 프로그래머스 풀이 기록을 공개 배지 URL 링크 형태로
-            제공하기 위한 범위에서만 데이터를 취급합니다.
+            PROGRAMMERS-BADGE-V2는 공개 배지 제공과 사용자가 선택한 GitHub 풀이 기록을 위해 데이터를
+            처리합니다. 전송 항목과 서버, 공개 범위, 보관 및 삭제 기준을 아래에서 확인할 수
+            있습니다.
           </p>
         </div>
 
-        <aside className="terms-index" aria-label="terms categories">
-          <span>약관 종류</span>
+        <aside className="terms-index" aria-label="개인정보 안내 목차">
+          <span>문서 바로가기</span>
           {privacySections.map((section) => (
             <a href={`#${section.id}`} key={section.id}>
               {section.title}
@@ -32,7 +33,7 @@ export function PrivacyPage() {
                 <p>{section.description}</p>
               </div>
             </header>
-            <div className="terms-scroll">
+            <div className="terms-body">
               {section.clauses.map((clause, index) => (
                 <section className="terms-clause" key={clause.title}>
                   <h3>
