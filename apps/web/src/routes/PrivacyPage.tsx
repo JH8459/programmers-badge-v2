@@ -14,8 +14,8 @@ export function PrivacyPage() {
           </p>
         </div>
 
-        <aside className="terms-index" aria-label="terms categories">
-          <span>약관 종류</span>
+        <aside className="terms-index" aria-label="개인정보 안내 목차">
+          <span>문서 바로가기</span>
           {privacySections.map((section) => (
             <a href={`#${section.id}`} key={section.id}>
               {section.title}
@@ -33,7 +33,7 @@ export function PrivacyPage() {
                 <p>{section.description}</p>
               </div>
             </header>
-            <div className="terms-scroll">
+            <div className="terms-body">
               {section.clauses.map((clause, index) => (
                 <section className="terms-clause" key={clause.title}>
                   <h3>
