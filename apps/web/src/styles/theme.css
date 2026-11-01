@@ -59,9 +59,6 @@ code {
 }
 
 .site-header {
-  position: sticky;
-  z-index: 10;
-  top: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -808,7 +805,6 @@ p {
   }
 
   .site-header {
-    position: static;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
