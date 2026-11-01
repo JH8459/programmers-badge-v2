@@ -62,7 +62,7 @@ export function LandingPage() {
   };
 
   return (
-    <main>
+    <main className="stack-page">
       <section className="hero-section">
         <div className="hero-copy">
           <span className="section-kicker">Chrome Web Store Published</span>

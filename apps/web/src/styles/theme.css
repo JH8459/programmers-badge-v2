@@ -200,7 +200,6 @@ code {
   grid-template-columns: minmax(0, 1fr) minmax(250px, 0.34fr);
   gap: clamp(20px, 4vw, 42px);
   align-items: center;
-  margin-top: 86px;
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
   padding: clamp(28px, 5vw, 56px);
@@ -859,7 +858,6 @@ p {
 
   .hero-section {
     grid-template-columns: 1fr;
-    margin-top: 34px;
     padding: 26px;
   }
 
