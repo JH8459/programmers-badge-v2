@@ -605,7 +605,7 @@ p {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.7fr);
   gap: clamp(20px, 4vw, 42px);
-  align-items: center;
+  align-items: start;
   border-radius: var(--radius-xl);
   padding: clamp(28px, 5vw, 56px);
   background:
@@ -668,6 +668,17 @@ p {
   max-width: 690px;
   margin-top: 22px;
   font-size: 1.04rem;
+}
+
+.contact-checklist {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0 0;
+  padding-left: 24px;
+  color: var(--muted);
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 .contact-action {
