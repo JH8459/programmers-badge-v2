@@ -280,6 +280,10 @@ p {
   font-size: 1.08rem;
 }
 
+.hero-copy .service-disclaimer {
+  font-size: 0.9rem;
+}
+
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
@@ -399,36 +403,14 @@ p {
   box-shadow: none;
 }
 
-.service-preview-shot {
-  overflow: hidden;
-  width: min(100%, 260px);
-  max-height: 470px;
-  margin-left: auto;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 16px;
-  background: #f8fbff;
-  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32);
-  opacity: 0;
-  transform: translateY(14px);
-  animation: screenshot-reveal 720ms cubic-bezier(0.22, 1, 0.36, 1) 120ms forwards;
-}
-
-.service-preview-shot img {
-  display: block;
-  width: 100%;
-  height: auto;
+.badge-preview small {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .code-panel code {
   color: var(--text);
   overflow-wrap: anywhere;
-}
-
-@keyframes screenshot-reveal {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .flow-section {
@@ -462,6 +444,24 @@ p {
   color: var(--accent-blue);
 }
 
+.usage-notes {
+  display: grid;
+  gap: 24px;
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding: 24px 0 0;
+}
+
+.usage-notes h2 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.notice-panel p {
+  overflow-wrap: anywhere;
+}
+
 .step-grid,
 .terms-documents {
   display: grid;
@@ -483,16 +483,6 @@ p {
 .step-card {
   position: relative;
   overflow: hidden;
-}
-
-.step-visual {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  margin-bottom: 18px;
-  border: 1px solid rgba(127, 156, 255, 0.18);
-  border-radius: 10px;
-  object-fit: cover;
-  object-position: center;
 }
 
 .step-card strong,
@@ -867,12 +857,6 @@ p {
     padding: 26px;
   }
 
-  .service-preview-shot {
-    width: min(100%, 320px);
-    max-height: none;
-    margin: 0 auto;
-  }
-
   .step-grid {
     grid-template-columns: 1fr;
   }
@@ -924,13 +908,5 @@ p {
     width: 100%;
     min-height: 48px;
     padding: 0 14px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .service-preview-shot {
-    opacity: 1;
-    transform: none;
-    animation: none;
   }
 }
